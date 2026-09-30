@@ -1,336 +1,260 @@
-  <!-- 상단 액션 (테마 토글) -->
-  <div class="flex items-center space-x-2">
-    <button id="themeToggleBtn" class="w-9 h-9 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-yellow-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition" aria-label="테마 전환">
-      <i class="fa-solid fa-moon dark:hidden"></i>
-      <i class="fa-solid fa-sun hidden dark:inline"></i>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIFT 찬양팀</title>
+  <style>
+    /* CSS 변수: 테마 색상 설정 */
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --sub-text: #64748b;
+      --border-color: #e2e8f0;
+      --nav-bg: #ffffff;
+      --tab-bg: #f1f5f9;
+      --tab-active-bg: #3b82f6;
+      --tab-active-text: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --sub-text: #94a3b8;
+      --border-color: #334155;
+      --nav-bg: #1e293b;
+      --tab-bg: #334155;
+      --tab-active-bg: #3b82f6;
+      --tab-active-text: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding-bottom: 60px;
+    }
+
+    /* 상단 헤더 */
+    header {
+      background-color: var(--nav-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    /* 다크모드 토글 버튼 */
+    .theme-toggle-btn {
+      background-color: var(--tab-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 상단 탭 네비게이션 */
+    .tab-container {
+      background-color: var(--nav-bg);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 8px 16px;
+      display: flex;
+      gap: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      background-color: var(--tab-bg);
+      color: var(--text-color);
+      border: 1px solid transparent;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .tab-btn.active {
+      background-color: var(--tab-active-bg);
+      color: var(--tab-active-text);
+      font-weight: 600;
+    }
+
+    /* 메인 컨텐츠 영역 */
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    .tab-content {
+      display: none; /* 기본 숨김 */
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .tab-content.active {
+      display: block; /* 선택된 탭만 표시 */
+    }
+
+    .tab-content h2 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .tab-content p {
+      color: var(--sub-text);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 영역 -->
+  <header>
+    <div class="brand">SHIFT Worship</div>
+    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+      <span id="themeIcon">🌙</span>
+      <span id="themeLabel">다크 모드</span>
     </button>
-  </div>
-</div>
+  </header>
 
-<!-- 탭 메뉴 스크롤바 -->
-<nav class="max-w-5xl mx-auto mt-2 overflow-x-auto no-scrollbar flex space-x-1 border-t border-slate-100 dark:border-slate-800/60 pt-2 text-sm">
-  <button onclick="switchTab('conti')" id="tab-btn-conti" class="tab-btn active px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">이번 주 콘티</button>
-  <button onclick="switchTab('archive')" id="tab-btn-archive" class="tab-btn px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">아카이브</button>
-  <button onclick="switchTab('notice')" id="tab-btn-notice" class="tab-btn px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">공지사항</button>
-  <button onclick="switchTab('members')" id="tab-btn-members" class="tab-btn px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">시프트 명단</button>
-  <button onclick="switchTab('feedback')" id="tab-btn-feedback" class="tab-btn px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">익명의견함</button>
-  <button onclick="switchTab('playground')" id="tab-btn-playground" class="tab-btn px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">SHIFT 놀이터</button>
-  <button onclick="switchTab('admin')" id="tab-btn-admin" class="tab-btn px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">관리자</button>
-</nav>
+  <!-- 탭 메뉴 (가로 스크롤 가능) -->
+  <nav class="tab-container">
+    <button class="tab-btn active" onclick="switchTab('conti', this)">이번 주 콘티</button>
+    <button class="tab-btn" onclick="switchTab('archive', this)">아카이브</button>
+    <button class="tab-btn" onclick="switchTab('notice', this)">공지사항</button>
+    <button class="tab-btn" onclick="switchTab('members', this)">시프트 명단</button>
+    <button class="tab-btn" onclick="switchTab('feedback', this)">익명의견함</button>
+    <button class="tab-btn" onclick="switchTab('playground', this)">SHIFT 놀이터</button>
+    <button class="tab-btn" onclick="switchTab('admin', this)">관리자</button>
+  </nav>
 
+  <!-- 각 탭 본문 영역 -->
+  <main>
+    <!-- 1. 이번 주 콘티 -->
+    <section id="tab-conti" class="tab-content active">
+      <h2>🎵 이번 주 콘티</h2>
+      <p>이번 주 주일 예배 콘티 및 세션 라인업 영역입니다.</p>
+    </section>
 
-<!-- 1. [이번 주 콘티] 탭 -->
-<section id="panel-conti" class="tab-panel space-y-5">
-  <!-- 헤더 및 주차 셀렉터 -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-    <div>
-      <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Worship Schedule</span>
-      <h2 id="viewWorshipTitle" class="text-xl sm:text-2xl font-bold mt-0.5">데이터를 불러오는 중입니다...</h2>
-      <p id="viewWorshipDate" class="text-sm text-slate-500 dark:text-slate-400">-</p>
-    </div>
-    <div class="flex items-center space-x-2">
-      <label class="text-xs text-slate-500 whitespace-nowrap">주차 선택:</label>
-      <select id="scheduleSelector" onchange="onScheduleSelect(this.value)" class="text-sm bg-slate-100 dark:bg-slate-800 border-0 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500">
-        <option value="">최신 주차 불러오는 중...</option>
-      </select>
-    </div>
-  </div>
+    <!-- 2. 아카이브 -->
+    <section id="tab-archive" class="tab-content">
+      <h2>📁 아카이브</h2>
+      <p>지난 주차별 예배 콘티 및 실황 영상 기록 영역입니다.</p>
+    </section>
 
-  <!-- 빠른 액션 버튼 바 (악보, 유튜브, 모니터링) -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-    <a id="btnSheetUrl" href="#" target="_blank" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/70 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold text-sm transition">
-      <i class="fa-solid fa-file-pdf"></i>
-      <span>콘티 악보 열기</span>
-    </a>
-    <a id="btnYoutubeUrl" href="#" target="_blank" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/70 dark:hover:bg-red-900 text-red-700 dark:text-red-300 font-semibold text-sm transition">
-      <i class="fa-brands fa-youtube"></i>
-      <span>콘티 음원 듣기</span>
-    </a>
-    <a id="btnClosingSheetUrl" href="#" target="_blank" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 dark:hover:bg-amber-900 text-amber-700 dark:text-amber-300 font-semibold text-sm transition">
-      <i class="fa-solid fa-music"></i>
-      <span>결단찬양 악보</span>
-    </a>
-    <a id="btnMonitoringUrl" href="#" target="_blank" class="flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/70 dark:hover:bg-teal-900 text-teal-700 dark:text-teal-300 font-semibold text-sm transition">
-      <i class="fa-solid fa-video"></i>
-      <span>실황 모니터링</span>
-    </a>
-  </div>
+    <!-- 3. 공지사항 -->
+    <section id="tab-notice" class="tab-content">
+      <h2>📢 공지사항</h2>
+      <p>찬양팀 주요 알림 및 공지사항 영역입니다.</p>
+    </section>
 
-  <!-- 세션 라인업 그리드 -->
-  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4">
-    <h3 class="font-bold text-base flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-      <i class="fa-solid fa-users text-indigo-600"></i>
-      <span>세션 라인업</span>
-    </h3>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm">
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">인도자</span>
-        <span id="lineupLeader" class="font-bold text-base">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 col-span-2 sm:col-span-2">
-        <span class="text-xs text-slate-400 block mb-1">보컬</span>
-        <span id="lineupVocal" class="font-bold text-base text-indigo-600 dark:text-indigo-400">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">건반/키보드</span>
-        <span id="lineupKeyboard" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">드럼</span>
-        <span id="lineupDrum" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">기타</span>
-        <span id="lineupGuitar" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">베이스</span>
-        <span id="lineupBass" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">음향 엔지니어</span>
-        <span id="lineupSound" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">방송/중계</span>
-        <span id="lineupBroadcast" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">자막</span>
-        <span id="lineupSubtitle" class="font-semibold">-</span>
-      </div>
-      <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-        <span class="text-xs text-slate-400 block mb-1">영상편집</span>
-        <span id="lineupVideo" class="font-semibold">-</span>
-      </div>
-    </div>
-  </div>
+    <!-- 4. 시프트 명단 -->
+    <section id="tab-members" class="tab-content">
+      <h2>👥 시프트 명단</h2>
+      <p>찬양팀 팀원 및 파트별 명단 안내 영역입니다.</p>
+    </section>
 
-  <!-- 콘티 곡 목록 & 결단찬양 상세 박스 -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- 곡 목록 -->
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
-      <h3 class="font-bold text-base flex items-center space-x-2">
-        <i class="fa-solid fa-list-ol text-indigo-500"></i>
-        <span>찬양 콘티 목록</span>
-      </h3>
-      <div id="viewSongList" class="text-sm leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl min-h-[90px]">
-        등록된 곡 목록이 없습니다.
-      </div>
-    </div>
+    <!-- 5. 익명의견함 -->
+    <section id="tab-feedback" class="tab-content">
+      <h2>📮 익명의견함</h2>
+      <p>팀원들의 자유로운 건의와 소통을 위한 익명 게시판 영역입니다.</p>
+    </section>
 
-    <!-- 결단 찬양 -->
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
-      <h3 class="font-bold text-base flex items-center space-x-2">
-        <i class="fa-solid fa-heart text-rose-500"></i>
-        <span>결단 찬양</span>
-      </h3>
-      <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl min-h-[90px] flex flex-col justify-center">
-        <span id="viewClosingSong" class="font-bold text-base text-slate-800 dark:text-slate-100 mb-2">해당 없음</span>
-        <div class="flex space-x-2">
-          <a id="btnClosingYoutubeMini" href="#" target="_blank" class="text-xs px-2.5 py-1 rounded bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 hover:underline hidden">
-            <i class="fa-brands fa-youtube mr-1"></i>음원
-          </a>
-          <a id="btnClosingSheetMini" href="#" target="_blank" class="text-xs px-2.5 py-1 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 hover:underline hidden">
-            <i class="fa-solid fa-file-pdf mr-1"></i>악보
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+    <!-- 6. SHIFT 놀이터 -->
+    <section id="tab-playground" class="tab-content">
+      <h2>🎮 SHIFT 놀이터</h2>
+      <p>팀원 간 소통과 가벼운 즐길 거리를 위한 놀이터 영역입니다.</p>
+    </section>
 
-<!-- 2. [아카이브] 탭 -->
-<section id="panel-archive" class="tab-panel hidden space-y-4">
-  <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-    <h2 class="text-xl font-bold mb-1">예배 아카이브 📁</h2>
-    <p class="text-sm text-slate-500 mb-4">과거 주차별 예배 콘티 및 실황 모니터링 기록입니다.</p>
-    
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left">
-        <thead class="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-500 border-b border-slate-200 dark:border-slate-700">
-          <tr>
-            <th class="px-4 py-3">날짜/예배명</th>
-            <th class="px-4 py-3">인도자</th>
-            <th class="px-4 py-3">곡 목록/결단찬양</th>
-            <th class="px-4 py-3">자료 링크</th>
-          </tr>
-        </thead>
-        <tbody id="archiveTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
-          <tr>
-            <td colspan="4" class="px-4 py-6 text-center text-slate-400">데이터를 불러오는 중입니다...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+    <!-- 7. 관리자 -->
+    <section id="tab-admin" class="tab-content">
+      <h2>⚙️ 관리자 전용</h2>
+      <p>라인업 배치 및 콘티 데이터 관리 영역입니다.</p>
+    </section>
+  </main>
 
-<!-- 3. [공지사항] 탭 -->
-<section id="panel-notice" class="tab-panel hidden space-y-4">
-  <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-    <h2 class="text-xl font-bold mb-1">공지사항 📢</h2>
-    <p class="text-sm text-slate-500 mb-4">찬양팀 주요 알림 및 일정 공유 공간입니다.</p>
-    
-    <div id="noticeListContainer" class="space-y-3">
-      <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-        <div class="flex items-center justify-between mb-1">
-          <span class="font-bold text-base text-indigo-600 dark:text-indigo-400">[필독] 찬양팀 웹앱 마이그레이션 안내</span>
-          <span class="text-xs text-slate-400">2026.09.30</span>
-        </div>
-        <p class="text-sm text-slate-600 dark:text-slate-300">
-          찬양팀 웹앱이 더욱 빠르고 쾌적한 환경(GitHub Pages + Supabase)으로 리뉴얼되었습니다. 악보 및 영상 링크 연결 오류가 개선되었습니다.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
+  <script>
+    // 1. 탭 전환 기능
+    function switchTab(tabId, clickedBtn) {
+      // 모든 본문 패널 숨기기
+      const panels = document.querySelectorAll('.tab-content');
+      panels.forEach(panel => panel.classList.remove('active'));
 
-<!-- 4. [시프트 명단] 탭 -->
-<section id="panel-members" class="tab-panel hidden space-y-4">
-  <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-    <h2 class="text-xl font-bold mb-1">시프트 명단 👥</h2>
-    <p class="text-sm text-slate-500 mb-4">찬양팀 파트별 섬김이 현황입니다.</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-      <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
-        <h4 class="font-bold text-sm text-indigo-600 mb-2">보컬</h4>
-        <p class="text-sm text-slate-600 dark:text-slate-300">등록된 명단 데이터를 연동할 수 있습니다.</p>
-      </div>
-      <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
-        <h4 class="font-bold text-sm text-indigo-600 mb-2">악기 세션</h4>
-        <p class="text-sm text-slate-600 dark:text-slate-300">건반, 드럼, 기타, 베이스</p>
-      </div>
-      <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
-        <h4 class="font-bold text-sm text-indigo-600 mb-2">미디어 & 엔지니어</h4>
-        <p class="text-sm text-slate-600 dark:text-slate-300">음향, 방송, 자막, 영상편집</p>
-      </div>
-    </div>
-  </div>
-</section>
+      // 모든 탭 버튼 비활성화
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
 
-<!-- 5. [익명의견함] 탭 -->
-<section id="panel-feedback" class="tab-panel hidden space-y-4">
-  <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-    <h2 class="text-xl font-bold mb-1">익명 의견함 📮</h2>
-    <p class="text-sm text-slate-500 mb-4">찬양팀 발전을 위한 건의사항, 따뜻한 응원을 자유롭게 남겨주세요.</p>
-    <div class="space-y-3">
-      <textarea id="anonymousFeedbackInput" rows="4" placeholder="작성자의 정보는 기록되지 않습니다. 따뜻한 마음으로 소통해요 :)" class="w-full text-sm p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-      <button onclick="submitFeedback()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition">익명으로 보내기</button>
-    </div>
-  </div>
-</section>
+      // 선택한 탭 및 버튼만 활성화
+      const targetPanel = document.getElementById('tab-' + tabId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+      clickedBtn.classList.add('active');
+    }
 
-<!-- 6. [SHIFT 놀이터] 탭 -->
-<section id="panel-playground" class="tab-panel hidden space-y-4">
-  <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-center py-10">
-    <div class="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center mx-auto mb-3 text-indigo-600 text-2xl">
-      <i class="fa-solid fa-gamepad"></i>
-    </div>
-    <h2 class="text-xl font-bold mb-1">SHIFT 놀이터 🎮</h2>
-    <p class="text-sm text-slate-500 max-w-sm mx-auto">찬양팀원들을 위한 소소한 퀴즈와 친목 콘텐츠가 업데이트될 예정입니다!</p>
-  </div>
-</section>
+    // 2. 라이트 / 다크 모드 (localStorage 연동)
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('shift_theme', theme);
 
-<!-- 7. [관리자] 탭 -->
-<section id="panel-admin" class="tab-panel hidden space-y-4">
-  <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-      <div>
-        <h2 class="text-xl font-bold">스케줄 & 콘티 관리 ⚙️</h2>
-        <p class="text-xs text-slate-400">새로운 주차의 콘티 및 세션 배치를 Supabase DB에 직접 등록합니다.</p>
-      </div>
-      <span class="text-xs bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold px-2.5 py-1 rounded-full">Supabase Live</span>
-    </div>
+      const themeIcon = document.getElementById('themeIcon');
+      const themeLabel = document.getElementById('themeLabel');
 
-    <form id="scheduleAdminForm" onsubmit="saveScheduleToSupabase(event)" class="space-y-4 text-sm">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-semibold mb-1 text-slate-500">예배 날짜 (date)*</label>
-          <input type="date" id="formDate" required class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold mb-1 text-slate-500">주차/예배명 (worship_title)</label>
-          <input type="text" id="formWorshipTitle" placeholder="예: 10월 1주차 주일예배" class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
-        </div>
-      </div>
+      if (theme === 'dark') {
+        themeIcon.innerText = '☀️';
+        themeLabel.innerText = '라이트 모드';
+      } else {
+        themeIcon.innerText = '🌙';
+        themeLabel.innerText = '다크 모드';
+      }
+    }
 
-      <!-- 세션 입력 -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-2">
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">인도자 (leader)</label>
-          <input type="text" id="formLeader" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div class="col-span-2">
-          <label class="block text-xs text-slate-500 mb-1">보컬 (vocal, 쉼표 구분)</label>
-          <input type="text" id="formVocal" placeholder="예: 김보컬, 이찬양, 박싱어" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">건반 (keyboard)</label>
-          <input type="text" id="formKeyboard" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">드럼 (drum)</label>
-          <input type="text" id="formDrum" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">기타 (guitar)</label>
-          <input type="text" id="formGuitar" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">베이스 (bass)</label>
-          <input type="text" id="formBass" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">음향 (sound)</label>
-          <input type="text" id="formSound" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">방송 (broadcast)</label>
-          <input type="text" id="formBroadcast" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">자막 (subtitle)</label>
-          <input type="text" id="formSubtitle" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">영상편집 (video)</label>
-          <input type="text" id="formVideo" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-      </div>
+    function toggleTheme() {
+      const currentTheme = localStorage.getItem('shift_theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      applyTheme(newTheme);
+    }
 
-      <!-- 링크 및 곡 목록 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">콘티 PDF 드라이브 링크 (sheet_url)</label>
-          <input type="url" id="formSheetUrl" placeholder="https://drive.google.com/..." class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">콘티 유튜브 링크 (youtube_url)</label>
-          <input type="url" id="formYoutubeUrl" placeholder="https://youtube.com/..." class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">결단찬양 곡명 (closing_song)</label>
-          <input type="text" id="formClosingSong" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div>
-          <label class="block text-xs text-slate-500 mb-1">결단찬양 악보 링크 (closing_sheet_url)</label>
-          <input type="url" id="formClosingSheetUrl" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1">주일 모니터링 영상 링크 (monitoring_url)</label>
-          <input type="url" id="formMonitoringUrl" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-        </div>
-        <div class="sm:col-span-2">
-          <label class="block text-xs text-slate-500 mb-1">곡 목록 (song_list)</label>
-          <textarea id="formSongList" rows="3" placeholder="1. 주 은혜임을&#10;2. 예수 늘 함께 계시네" class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></textarea>
-        </div>
-      </div>
-
-      <div class="pt-3">
-        <button type="submit" id="btnAdminSave" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">
-          Supabase에 주차 데이터 저장하기
-        </button>
-      </div>
-    </form>
-  </div>
-</section>
+    // 초기 테마 로드 (접속 시 이전 설정 불러오기)
+    (function initTheme() {
+      const savedTheme = localStorage.getItem('shift_theme') || 'light';
+      applyTheme(savedTheme);
+    })();
+  </script>
+</body>
+</html>
