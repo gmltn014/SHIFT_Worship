@@ -376,8 +376,12 @@
             <span class="session-name" id="viewVocal">-</span>
           </div>
           <div class="session-item">
-            <span class="session-label">메인/세컨 건반</span>
-            <span class="session-name" id="viewKeyboard">-</span>
+            <span class="session-label">메인 건반</span>
+            <span class="session-name" id="viewKeyboard1">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">세컨 건반</span>
+            <span class="session-name" id="viewKeyboard2">-</span>
           </div>
           <div class="session-item">
             <span class="session-label">드럼</span>
@@ -486,7 +490,13 @@
       };
       setSession('viewLeader', item.leader);
       setSession('viewVocal', item.vocal);
-      setSession('viewKeyboard', item.keyboard);
+      const kbContainer = document.getElementById('viewKeyboard');
+      if (kbContainer) {
+        const kbParts = [];
+        if (item.keyboard1) kbParts.push(`${item.keyboard1} (메인)`);
+        if (item.keyboard2) kbParts.push(`${item.keyboard2} (세컨)`);
+        kbContainer.innerText = kbParts.length > 0 ? kbParts.join(', ') : '-';
+      }
       setSession('viewDrum', item.drum);
       setSession('viewGuitar', item.guitar);
       setSession('viewBass', item.bass);
