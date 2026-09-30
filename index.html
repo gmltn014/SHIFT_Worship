@@ -1382,6 +1382,102 @@ body.dark-mode #singleWeekContainer label {
   </style>
 
   <script>
+    // Supabase 프로젝트 설정 (본인 프로젝트 값으로 교체)
+const SUPABASE_URL = 'https://kglqxpusinxqttunkyld.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnbHF4cHVzaW54cXR0dW5reWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NDkzOTEsImV4cCI6MjEwNjMyNTM5MX0.BfGG15jXhFzOJGW0NonWDFgc2LBrK-zMCQYUuulrXSQ';
+
+// Supabase 클라이언트 객체 생성
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- Supabase JS Client 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+// schedules 테이블에서 최신 데이터 불러오기
+async function loadSchedulesFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('schedules')
+      .select('*')
+      .order('date', { ascending: false }); // 최신 날짜 순 정렬
+
+    if (error) {
+      console.error('Supabase 데이터 로드 실패:', error);
+      alert('데이터를 불러오지 못했습니다: ' + error.message);
+      return;
+    }
+
+    console.log('가져온 스케줄 데이터:', data);
+
+    if (data && data.length > 0) {
+      // 1. 가장 최신 주차(예: 8월 마지막 주) 데이터로 이번 주 콘티 화면 렌더링
+      renderCurrentConti(data[0]);
+
+      // 2. 전체 데이터 목록으로 아카이브나 주차 선택 셀렉트박스 채우기
+      if (typeof renderArchiveList === 'function') {
+        renderArchiveList(data);
+      }
+    } else {
+      console.warn('등록된 스케줄 데이터가 없습니다.');
+    }
+  } catch (err) {
+    console.error('연결 중 예외 발생:', err);
+  }
+}
+
+// 화면 렌더링 함수 예시 (기존 UI 요소 ID에 맞게 연결)
+function renderCurrentConti(item) {
+  if (!item) return;
+
+  // 예배명 및 날짜
+  const titleEl = document.getElementById('currentWorshipTitle');
+  if (titleEl) titleEl.innerText = item.worship_title || `${item.date} 예배`;
+
+  // 세션 명단 매핑 (화면의 해당 ID 요소가 있다면 채움)
+  const setField = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = val || '-';
+  };
+
+  setField('sessionLeader', item.leader);
+  setField('sessionVocal', item.vocal);
+  setField('sessionKeyboard', item.keyboard);
+  setField('sessionDrum', item.drum);
+  setField('sessionGuitar', item.guitar);
+  setField('sessionBass', item.bass);
+  setField('sessionSound', item.sound);
+  setField('sessionBroadcast', item.broadcast);
+  setField('sessionSubtitle', item.subtitle);
+  setField('sessionVideo', item.video);
+
+  // 악보 보기 버튼 연결 (sheet_url)
+  const sheetBtn = document.getElementById('btnContiSheet');
+  if (sheetBtn && item.sheet_url) {
+    sheetBtn.onclick = () => window.open(item.sheet_url, '_blank');
+    sheetBtn.style.display = 'inline-flex';
+  }
+
+  // 유튜브 음원 버튼 연결 (youtube_url)
+  const youtubeBtn = document.getElementById('btnContiYoutube');
+  if (youtubeBtn && item.youtube_url) {
+    youtubeBtn.onclick = () => window.open(item.youtube_url, '_blank');
+    youtubeBtn.style.display = 'inline-flex';
+  }
+
+  // 결단찬양 정보 매핑
+  const closingTitleEl = document.getElementById('closingSongTitle');
+  if (closingTitleEl) closingTitleEl.innerText = item.closing_song || '해당 없음';
+
+  const closingSheetBtn = document.getElementById('btnClosingSheet');
+  if (closingSheetBtn && item.closing_sheet_url) {
+    closingSheetBtn.onclick = () => window.open(item.closing_sheet_url, '_blank');
+    closingSheetBtn.style.display = 'inline-flex';
+  }
+}
+
+// 페이지가 로드되면 Supabase에서 데이터 호출
+document.addEventListener('DOMContentLoaded', () => {
+  loadSchedulesFromSupabase();
+});
+  
     var deviceId = 'DEV-' + Math.random().toString(36).substring(2, 9);
     var currentAdminList = [];
     var currentNoticeSig = "<?= noticeSignature ?>";
