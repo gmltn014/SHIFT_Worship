@@ -4,23 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SHIFT 찬양팀</title>
+
+  <!-- Supabase JS 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     /* CSS 변수: 테마 색상 설정 */
     :root {
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
+      --card-sub-bg: #f1f5f9;
       --text-color: #0f172a;
       --sub-text: #64748b;
       --border-color: #e2e8f0;
       --nav-bg: #ffffff;
       --tab-bg: #f1f5f9;
-      --tab-active-bg: #3b82f6;
+      --tab-active-bg: #2563eb;
       --tab-active-text: #ffffff;
+      --accent-color: #2563eb;
+      --accent-hover: #1d4ed8;
+      --badge-bg: #e0e7ff;
+      --badge-text: #3730a3;
     }
 
     [data-theme="dark"] {
       --bg-color: #0f172a;
       --card-bg: #1e293b;
+      --card-sub-bg: #0f172a;
       --text-color: #f8fafc;
       --sub-text: #94a3b8;
       --border-color: #334155;
@@ -28,6 +38,10 @@
       --tab-bg: #334155;
       --tab-active-bg: #3b82f6;
       --tab-active-text: #ffffff;
+      --accent-color: #3b82f6;
+      --accent-hover: #60a5fa;
+      --badge-bg: #312e81;
+      --badge-text: #c7d2fe;
     }
 
     * {
@@ -63,7 +77,6 @@
       letter-spacing: -0.5px;
     }
 
-    /* 다크모드 토글 버튼 */
     .theme-toggle-btn {
       background-color: var(--tab-bg);
       color: var(--text-color);
@@ -119,31 +132,162 @@
     }
 
     .tab-content {
-      display: none; /* 기본 숨김 */
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 24px;
+      display: none;
     }
 
     .tab-content.active {
-      display: block; /* 선택된 탭만 표시 */
+      display: block;
     }
 
-    .tab-content h2 {
-      font-size: 1.3rem;
-      margin-bottom: 10px;
+    /* 카드 컴포넌트 */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    .tab-content p {
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .worship-date-badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+    }
+
+    .worship-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    /* 버튼 그룹 */
+    .action-btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 15px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+
+    .btn-action:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background-color: var(--card-sub-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    /* 곡 목록 박스 */
+    .song-box {
+      background-color: var(--card-sub-bg);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .song-box h4 {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .song-list-content {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* 세션 라인업 그리드 */
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 24px 0 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .session-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .session-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .session-label {
+      font-size: 0.78rem;
       color: var(--sub-text);
-      line-height: 1.6;
+      font-weight: 600;
+    }
+
+    .session-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    /* 보컬과 인도는 강조 */
+    .session-item.highlight {
+      border-color: var(--accent-color);
+    }
+
+    /* 로딩 상태 표시 */
+    .loading-spinner {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--sub-text);
+      font-size: 0.95rem;
     }
   </style>
 </head>
 <body>
 
-  <!-- 헤더 영역 -->
+  <!-- 헤더 -->
   <header>
     <div class="brand">SHIFT Worship</div>
     <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
@@ -152,7 +296,7 @@
     </button>
   </header>
 
-  <!-- 탭 메뉴 (가로 스크롤 가능) -->
+  <!-- 탭 메뉴 -->
   <nav class="tab-container">
     <button class="tab-btn active" onclick="switchTab('conti', this)">이번 주 콘티</button>
     <button class="tab-btn" onclick="switchTab('archive', this)">아카이브</button>
@@ -163,98 +307,243 @@
     <button class="tab-btn" onclick="switchTab('admin', this)">관리자</button>
   </nav>
 
-  <!-- 각 탭 본문 영역 -->
+  <!-- 메인 본문 -->
   <main>
-    <!-- 1. 이번 주 콘티 -->
+    <!-- 1. 이번 주 콘티 탭 -->
     <section id="tab-conti" class="tab-content active">
-      <h2>🎵 이번 주 콘티</h2>
-      <p>이번 주 주일 예배 콘티 및 세션 라인업 영역입니다.</p>
+      
+      <!-- 로딩 인디케이터 -->
+      <div id="contiLoading" class="loading-spinner">
+        데이터를 불러오는 중입니다...
+      </div>
+
+      <!-- 콘티 컨텐츠 (데이터 로드 완료 시 표시) -->
+      <div id="contiContainer" style="display: none;">
+        
+        <!-- 예배 및 콘티 카드 -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
+              <h2 class="worship-title" id="viewWorshipTitle">예배명을 불러옵니다</h2>
+            </div>
+          </div>
+
+          <!-- 찬양 곡 목록 -->
+          <div class="song-box">
+            <h4>📋 찬양 콘티 곡 목록</h4>
+            <div class="song-list-content" id="viewSongList">등록된 곡 목록이 없습니다.</div>
+          </div>
+
+          <!-- 결단 찬양 박스 -->
+          <div class="song-box" style="margin-top: 10px;">
+            <h4>🕊️ 결단 찬양: <span id="viewClosingSong" style="font-weight: 700; color: var(--accent-color);">-</span></h4>
+            <div class="action-btn-group" style="margin-top: 8px;">
+              <a id="btnClosingSheet" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
+                📄 결단찬양 악보
+              </a>
+              <a id="btnClosingYoutube" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
+                ▶️ 결단찬양 영상
+              </a>
+            </div>
+          </div>
+
+          <!-- 콘티 바로가기 링크 버튼들 -->
+          <div class="action-btn-group">
+            <a id="btnSheet" href="#" target="_blank" class="btn-action btn-primary" style="display: none;">
+              📑 콘티 전체 악보 열기
+            </a>
+            <a id="btnYoutube" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
+              🎧 콘티 유튜브 음원
+            </a>
+            <a id="btnMonitoring" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
+              🎥 실황 모니터링
+            </a>
+          </div>
+        </div>
+
+        <!-- 세션 라인업 -->
+        <div class="section-title">
+          <span>👥 이번 주 세션 라인업</span>
+        </div>
+        <div class="session-grid">
+          <div class="session-item highlight">
+            <span class="session-label">인도자</span>
+            <span class="session-name" id="viewLeader">-</span>
+          </div>
+          <div class="session-item highlight" style="grid-column: 1 / -1;">
+            <span class="session-label">보컬</span>
+            <span class="session-name" id="viewVocal">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">메인/세컨 건반</span>
+            <span class="session-name" id="viewKeyboard">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">드럼</span>
+            <span class="session-name" id="viewDrum">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">기타</span>
+            <span class="session-name" id="viewGuitar">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">베이스</span>
+            <span class="session-name" id="viewBass">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">음향</span>
+            <span class="session-name" id="viewSound">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">방송/중계</span>
+            <span class="session-name" id="viewBroadcast">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">자막</span>
+            <span class="session-name" id="viewSubtitle">-</span>
+          </div>
+          <div class="session-item">
+            <span class="session-label">영상편집</span>
+            <span class="session-name" id="viewVideo">-</span>
+          </div>
+        </div>
+
+      </div>
     </section>
 
-    <!-- 2. 아카이브 -->
-    <section id="tab-archive" class="tab-content">
-      <h2>📁 아카이브</h2>
-      <p>지난 주차별 예배 콘티 및 실황 영상 기록 영역입니다.</p>
-    </section>
-
-    <!-- 3. 공지사항 -->
-    <section id="tab-notice" class="tab-content">
-      <h2>📢 공지사항</h2>
-      <p>찬양팀 주요 알림 및 공지사항 영역입니다.</p>
-    </section>
-
-    <!-- 4. 시프트 명단 -->
-    <section id="tab-members" class="tab-content">
-      <h2>👥 시프트 명단</h2>
-      <p>찬양팀 팀원 및 파트별 명단 안내 영역입니다.</p>
-    </section>
-
-    <!-- 5. 익명의견함 -->
-    <section id="tab-feedback" class="tab-content">
-      <h2>📮 익명의견함</h2>
-      <p>팀원들의 자유로운 건의와 소통을 위한 익명 게시판 영역입니다.</p>
-    </section>
-
-    <!-- 6. SHIFT 놀이터 -->
-    <section id="tab-playground" class="tab-content">
-      <h2>🎮 SHIFT 놀이터</h2>
-      <p>팀원 간 소통과 가벼운 즐길 거리를 위한 놀이터 영역입니다.</p>
-    </section>
-
-    <!-- 7. 관리자 -->
-    <section id="tab-admin" class="tab-content">
-      <h2>⚙️ 관리자 전용</h2>
-      <p>라인업 배치 및 콘티 데이터 관리 영역입니다.</p>
-    </section>
+    <!-- 나머지 탭 (기본 틀) -->
+    <section id="tab-archive" class="tab-content"><div class="card"><h2>📁 아카이브</h2><p>준비 중입니다.</p></div></section>
+    <section id="tab-notice" class="tab-content"><div class="card"><h2>📢 공지사항</h2><p>준비 중입니다.</p></div></section>
+    <section id="tab-members" class="tab-content"><div class="card"><h2>👥 시프트 명단</h2><p>준비 중입니다.</p></div></section>
+    <section id="tab-feedback" class="tab-content"><div class="card"><h2>📮 익명의견함</h2><p>준비 중입니다.</p></div></section>
+    <section id="tab-playground" class="tab-content"><div class="card"><h2>🎮 SHIFT 놀이터</h2><p>준비 중입니다.</p></div></section>
+    <section id="tab-admin" class="tab-content"><div class="card"><h2>⚙️ 관리자</h2><p>준비 중입니다.</p></div></section>
   </main>
 
   <script>
-    // 1. 탭 전환 기능
-    function switchTab(tabId, clickedBtn) {
-      // 모든 본문 패널 숨기기
-      const panels = document.querySelectorAll('.tab-content');
-      panels.forEach(panel => panel.classList.remove('active'));
+    /* ===================================================
+       1. Supabase 연동 설정 (본인 키를 입력해 주세요)
+    =================================================== */
+    const SUPABASE_URL = 'https://kglqxpusinxqttunkyld.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnbHF4cHVzaW54cXR0dW5reWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NDkzOTEsImV4cCI6MjEwNjMyNTM5MX0.BfGG15jXhFzOJGW0NonWDFgc2LBrK-zMCQYUuulrXSQ';
 
-      // 모든 탭 버튼 비활성화
-      const buttons = document.querySelectorAll('.tab-btn');
-      buttons.forEach(btn => btn.classList.remove('active'));
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // 선택한 탭 및 버튼만 활성화
-      const targetPanel = document.getElementById('tab-' + tabId);
-      if (targetPanel) {
-        targetPanel.classList.add('active');
+    /* ===================================================
+       2. 최신 콘티 데이터 로드 및 렌더링
+    =================================================== */
+    async function loadCurrentConti() {
+      const loadingEl = document.getElementById('contiLoading');
+      const containerEl = document.getElementById('contiContainer');
+
+      try {
+        // 날짜 기준 내림차순 정렬하여 가장 최신 등록 1건 가져오기
+        const { data, error } = await supabaseClient
+          .from('schedules')
+          .select('*')
+          .order('date', { ascending: false })
+          .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const item = data[0];
+          renderContiView(item);
+          loadingEl.style.display = 'none';
+          containerEl.style.display = 'block';
+        } else {
+          loadingEl.innerText = '등록된 예배 일정이 없습니다. Supabase에 일정을 등록해 주세요.';
+        }
+      } catch (err) {
+        console.error('데이터 로드 실패:', err);
+        loadingEl.innerText = '데이터를 불러오는 중 오류가 발생했습니다: ' + err.message;
       }
+    }
+
+    function renderContiView(item) {
+      // 1) 날짜 및 예배명
+      document.getElementById('viewWorshipDate').innerText = item.date || '';
+      document.getElementById('viewWorshipTitle').innerText = item.worship_title || `${item.date} 주일예배`;
+
+      // 2) 곡 목록
+      document.getElementById('viewSongList').innerText = item.song_list || '등록된 곡 목록이 없습니다.';
+
+      // 3) 결단 찬양
+      document.getElementById('viewClosingSong').innerText = item.closing_song || '해당 없음';
+      setupLinkBtn('btnClosingSheet', item.closing_sheet_url);
+      setupLinkBtn('btnClosingYoutube', item.closing_youtube_url);
+
+      // 4) 콘티 바로가기 링크 버튼들
+      setupLinkBtn('btnSheet', item.sheet_url);
+      setupLinkBtn('btnYoutube', item.youtube_url);
+      setupLinkBtn('btnMonitoring', item.monitoring_url);
+
+      // 5) 세션 라인업
+      const setSession = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val || '-';
+      };
+      setSession('viewLeader', item.leader);
+      setSession('viewVocal', item.vocal);
+      setSession('viewKeyboard', item.keyboard);
+      setSession('viewDrum', item.drum);
+      setSession('viewGuitar', item.guitar);
+      setSession('viewBass', item.bass);
+      setSession('viewSound', item.sound);
+      setSession('viewBroadcast', item.broadcast);
+      setSession('viewSubtitle', item.subtitle);
+      setSession('viewVideo', item.video);
+    }
+
+    // 링크 버튼 설정 유틸
+    function setupLinkBtn(elementId, url) {
+      const btn = document.getElementById(elementId);
+      if (!btn) return;
+      if (url && url.trim().length > 0) {
+        btn.href = url.trim();
+        btn.style.display = 'inline-flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    /* ===================================================
+       3. 탭 전환 및 테마 관리
+    =================================================== */
+    function switchTab(tabId, clickedBtn) {
+      document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
       clickedBtn.classList.add('active');
     }
 
-    // 2. 라이트 / 다크 모드 (localStorage 연동)
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('shift_theme', theme);
-
-      const themeIcon = document.getElementById('themeIcon');
-      const themeLabel = document.getElementById('themeLabel');
-
+      const icon = document.getElementById('themeIcon');
+      const label = document.getElementById('themeLabel');
       if (theme === 'dark') {
-        themeIcon.innerText = '☀️';
-        themeLabel.innerText = '라이트 모드';
+        icon.innerText = '☀️';
+        label.innerText = '라이트 모드';
       } else {
-        themeIcon.innerText = '🌙';
-        themeLabel.innerText = '다크 모드';
+        icon.innerText = '🌙';
+        label.innerText = '다크 모드';
       }
     }
 
     function toggleTheme() {
-      const currentTheme = localStorage.getItem('shift_theme') || 'light';
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      applyTheme(newTheme);
+      const current = localStorage.getItem('shift_theme') || 'light';
+      applyTheme(current === 'light' ? 'dark' : 'light');
     }
 
-    // 초기 테마 로드 (접속 시 이전 설정 불러오기)
-    (function initTheme() {
-      const savedTheme = localStorage.getItem('shift_theme') || 'light';
-      applyTheme(savedTheme);
-    })();
+    // 초기 실행
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTheme(localStorage.getItem('shift_theme') || 'light');
+      loadCurrentConti();
+    });
   </script>
 </body>
 </html>
