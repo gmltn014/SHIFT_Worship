@@ -7,6 +7,8 @@
 
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 카드 캡처 및 이미지 다운로드를 위한 html2canvas 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <style>
     /* CSS 변수: 테마 색상 설정 */
@@ -363,53 +365,73 @@
         </div>
 
         <!-- 세션 라인업 -->
-        <div class="section-title">
-          <span>👥 이번 주 세션 라인업</span>
+        <div class="lineup-header-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px 0;">
+          <div class="section-title" style="margin: 0;">
+            <span>👥 이번 주 세션 라인업</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-action btn-secondary" onclick="copyLineupText()" style="padding: 6px 12px; font-size: 0.8rem;">
+              📋 라인업 복사
+            </button>
+            <button class="btn-action btn-secondary" onclick="downloadLineupImage()" style="padding: 6px 12px; font-size: 0.8rem;">
+              🖼️ 이미지 저장
+            </button>
+          </div>
         </div>
-        <div class="session-grid">
-          <div class="session-item highlight">
-            <span class="session-label">인도자</span>
-            <span class="session-name" id="viewLeader">-</span>
+
+        <!-- 이미지 캡처 대상 컨테이너 (id="lineupCaptureArea") -->
+        <div id="lineupCaptureArea" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+          <!-- 캡처 이미지 상단에 표시될 예배 정보 헤더 -->
+          <div style="margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-color);" id="captureDate">-</span>
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin-top: 2px;" id="captureTitle">예배 라인업</h3>
           </div>
-          <div class="session-item highlight" style="grid-column: 1 / -1;">
-            <span class="session-label">보컬</span>
-            <span class="session-name" id="viewVocal">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">메인 건반</span>
-            <span class="session-name" id="viewKeyboard1">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">세컨 건반</span>
-            <span class="session-name" id="viewKeyboard2">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">드럼</span>
-            <span class="session-name" id="viewDrum">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">기타</span>
-            <span class="session-name" id="viewGuitar">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">베이스</span>
-            <span class="session-name" id="viewBass">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">음향</span>
-            <span class="session-name" id="viewSound">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">방송/중계</span>
-            <span class="session-name" id="viewBroadcast">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">자막</span>
-            <span class="session-name" id="viewSubtitle">-</span>
-          </div>
-          <div class="session-item">
-            <span class="session-label">영상편집</span>
-            <span class="session-name" id="viewVideo">-</span>
+
+          <div class="session-grid">
+            <div class="session-item highlight">
+              <span class="session-label">인도자</span>
+              <span class="session-name" id="viewLeader">-</span>
+            </div>
+            <div class="session-item highlight" style="grid-column: 1 / -1;">
+              <span class="session-label">보컬</span>
+              <span class="session-name" id="viewVocal">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">메인 건반</span>
+              <span class="session-name" id="viewKeyboard1">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">세컨 건반</span>
+              <span class="session-name" id="viewKeyboard2">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">드럼</span>
+              <span class="session-name" id="viewDrum">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">기타</span>
+              <span class="session-name" id="viewGuitar">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">베이스</span>
+              <span class="session-name" id="viewBass">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">음향</span>
+              <span class="session-name" id="viewSound">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">방송/중계</span>
+              <span class="session-name" id="viewBroadcast">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">자막</span>
+              <span class="session-name" id="viewSubtitle">-</span>
+            </div>
+            <div class="session-item">
+              <span class="session-label">영상편집</span>
+              <span class="session-name" id="viewVideo">-</span>
+            </div>
           </div>
         </div>
 
@@ -511,6 +533,89 @@
       } else {
         btn.style.display = 'none';
       }
+    }
+
+    // 전역 변수로 현재 선택된 스케줄 데이터 보관
+    let currentScheduleData = null;
+
+    // renderContiView 함수 내부 최상단에 추가:
+    // currentScheduleData = item;
+    // document.getElementById('captureDate').innerText = item.date || '';
+    // document.getElementById('captureTitle').innerText = item.worship_title || `${item.date} 주일예배`;
+
+    // 1. 단톡방 공유용 라인업 텍스트 복사 기능
+    function copyLineupText() {
+      if (!currentScheduleData) {
+        alert('복사할 라인업 데이터가 없습니다.');
+        return;
+      }
+
+      const item = currentScheduleData;
+      const dateStr = item.date || '';
+      const titleStr = item.worship_title || `${dateStr} 주일예배`;
+
+      // 건반 텍스트 정리
+      const kbParts = [];
+      if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) kbParts.push(`${item.keyboard1} (메인)`);
+      if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) kbParts.push(`${item.keyboard2} (세컨)`);
+      const kbText = kbParts.length > 0 ? kbParts.join(', ') : '-';
+
+      // 카카오톡 단톡방 맞춤 포맷 멘트
+      const message = 
+`[${titleStr}] 세션 라인업 안내 🕊️
+
+📅 일시: ${dateStr}
+━━━━━━━━━━━━━━
+🎤 인도: ${item.leader || '-'}
+👥 보컬: ${item.vocal || '-'}
+🎹 건반: ${kbText}
+🥁 드럼: ${item.drum || '-'}
+🎸 기타: ${item.guitar || '-'}
+🎸 베이스: ${item.bass || '-'}
+🎚️ 음향: ${item.sound || '-'}
+💻 방송: ${item.broadcast || '-'}
+📑 자막: ${item.subtitle || '-'}
+🎬 영상: ${item.video || '-'}
+━━━━━━━━━━━━━━
+* 변경 사항이 있으신 분은 미리 말씀해 주세요. 이번 주도 기도로 준비하며 은혜의 시간 되길 소망합니다! 🙏`;
+
+      navigator.clipboard.writeText(message).then(() => {
+        alert('📋 이번 주 라인업이 클립보드에 복사되었습니다!\n단톡방에 바로 붙여넣기(Ctrl+V) 하세요.');
+      }).catch(err => {
+        console.error('복사 실패:', err);
+        // 모바일/구형 브라우저 fallback
+        const textArea = document.createElement("textarea");
+        textArea.value = message;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        alert('📋 라인업이 복사되었습니다!');
+      });
+    }
+
+    // 2. 라인업 카드 이미지 캡처 다운로드 기능
+    function downloadLineupImage() {
+      const captureEl = document.getElementById('lineupCaptureArea');
+      if (!captureEl) return;
+
+      // 현재 테마 색상(배경 등)을 반영하여 캡처
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      
+      html2canvas(captureEl, {
+        scale: 2, // 고해상도 (레티나 대응)
+        backgroundColor: isDark ? '#1e293b' : '#ffffff',
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        const filename = `${currentScheduleData?.date || '예배'}_SHIFT_라인업.png`;
+        link.download = filename;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(err => {
+        console.error('이미지 저장 오류:', err);
+        alert('이미지 생성 중 오류가 발생했습니다.');
+      });
     }
 
     /* ===================================================
