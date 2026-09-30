@@ -490,21 +490,8 @@
       };
       setSession('viewLeader', item.leader);
       setSession('viewVocal', item.vocal);
-      const kbContainer = document.getElementById('viewKeyboard');
-      if (kbContainer) {
-        const kbParts = [];
-        // 메인 건반 (값이 있고 X나 -가 아닐 때)
-        if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) {
-          kbParts.push(`${item.keyboard1.trim()} (메인)`);
-        }
-        // 세컨 건반 (값이 있고 X나 -가 아닐 때)
-        if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) {
-          kbParts.push(`${item.keyboard2.trim()} (세컨)`);
-        }
-
-        // 둘 다 없으면 '-', 있으면 콤마로 연결
-        kbContainer.innerText = kbParts.length > 0 ? kbParts.join(', ') : '-';
-      }
+      setSession('viewKeyboard1', item.keyboard1);
+      setSession('viewKeyboard2', item.keyboard2);
       setSession('viewDrum', item.drum);
       setSession('viewGuitar', item.guitar);
       setSession('viewBass', item.bass);
