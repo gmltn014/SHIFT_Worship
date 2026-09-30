@@ -493,8 +493,16 @@
       const kbContainer = document.getElementById('viewKeyboard');
       if (kbContainer) {
         const kbParts = [];
-        if (item.keyboard1) kbParts.push(`${item.keyboard1} (메인)`);
-        if (item.keyboard2) kbParts.push(`${item.keyboard2} (세컨)`);
+        // 메인 건반 (값이 있고 X나 -가 아닐 때)
+        if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) {
+          kbParts.push(`${item.keyboard1.trim()} (메인)`);
+        }
+        // 세컨 건반 (값이 있고 X나 -가 아닐 때)
+        if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) {
+          kbParts.push(`${item.keyboard2.trim()} (세컨)`);
+        }
+
+        // 둘 다 없으면 '-', 있으면 콤마로 연결
         kbContainer.innerText = kbParts.length > 0 ? kbParts.join(', ') : '-';
       }
       setSession('viewDrum', item.drum);
