@@ -387,6 +387,87 @@
     .border-schedule { border-left: 4px solid #ef4444 !important; }
     .border-update { border-left: 4px solid #3b82f6 !important; }
     .border-ui { border-left: 4px solid #f59e0b !important; }
+
+    /* 명단 탭 카테고리 필터 버튼 */
+    .member-cat-btn {
+      background-color: var(--card-sub-bg);
+      color: var(--sub-text);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .member-cat-btn.active {
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border-color: var(--accent-color);
+    }
+
+    /* 팀원 카드 스타일 */
+    .member-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .member-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .member-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+    .member-category-pill {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--card-sub-bg);
+      color: var(--sub-text);
+      text-transform: uppercase;
+    }
+    .member-tag-pill {
+      display: inline-block;
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      margin-right: 4px;
+      margin-top: 4px;
+    }
+    .member-call-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      background: var(--card-sub-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      margin-top: 4px;
+      transition: background 0.15s;
+    }
+    .member-call-btn:hover {
+      background: var(--border-color);
+    }
   </style>
 </head>
 <body>
@@ -594,7 +675,32 @@
       <div id="updateNoticeList" style="display: none; flex-direction: column; gap: 12px;"></div>
     </section>
 
-    <section id="tab-members" class="tab-content"><div class="card"><h2>👥 시프트 명단</h2><p>준비 중입니다.</p></div></section>
+    <!-- 4. 시프트 명단 탭 -->
+    <section id="tab-members" class="tab-content">
+      
+      <!-- 상단 카테고리 필터 버튼 -->
+      <div style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; padding-bottom: 8px; margin-bottom: 14px; -webkit-overflow-scrolling: touch;">
+        <button class="member-cat-btn active" onclick="filterMembersCategory('ALL', this)">전체</button>
+        <button class="member-cat-btn" onclick="filterMembersCategory('Worship', this)">Worship (예배/보컬)</button>
+        <button class="member-cat-btn" onclick="filterMembersCategory('Session', this)">Session (악기)</button>
+        <button class="member-cat-btn" onclick="filterMembersCategory('Live Ops', this)">Live Ops (현장방송)</button>
+        <button class="member-cat-btn" onclick="filterMembersCategory('Post Prod', this)">Post Prod (영상/미디어)</button>
+      </div>
+
+      <!-- 멤버 검색창 & 인원수 표시 바 -->
+      <div class="card" style="padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <input type="text" id="memberSearchInput" placeholder="🔍 팀원 이름 또는 파트 검색..." oninput="handleMemberSearch()" style="flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+        <span id="memberCountBadge" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-color);">활동 중 0명</span>
+      </div>
+
+      <!-- 로딩 표시 -->
+      <div id="membersLoading" class="loading-spinner">명단을 불러오는 중입니다...</div>
+
+      <!-- 팀원 카드 그리드 컨테이너 -->
+      <div id="membersGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
+
+    </section>
+    
     <section id="tab-feedback" class="tab-content"><div class="card"><h2>📮 익명의견함</h2><p>준비 중입니다.</p></div></section>
     <section id="tab-playground" class="tab-content"><div class="card"><h2>🎮 SHIFT 놀이터</h2><p>준비 중입니다.</p></div></section>
     <section id="tab-admin" class="tab-content"><div class="card"><h2>⚙️ 관리자</h2><p>준비 중입니다.</p></div></section>
@@ -642,6 +748,9 @@
       }
       if (tabId === 'notice' && typeof allNotices !== 'undefined' && allNotices.length === 0) {
         loadNoticeData();
+      }
+      if (tabId === 'members' && typeof allMembersList !== 'undefined' && allMembersList.length === 0) {
+        loadMembersData();
       }
     }
 
@@ -1529,6 +1638,134 @@
         body.classList.add('open');
         btn.classList.add('open');
       }
+    }
+
+    /* ===================================================
+       시프트 명단 관리
+    =================================================== */
+    let allMembersList = [];
+    let selectedMemberCategory = 'ALL';
+
+    /* Supabase에서 멤버 목록 불러오기 */
+    async function loadMembersData() {
+      const loadingEl = document.getElementById('membersLoading');
+      try {
+        const { data, error } = await supabaseClient
+          .from('members')
+          .select('*')
+          .order('name', { ascending: true }); // 이름순 정렬
+
+        if (error) throw error;
+
+        allMembersList = data || [];
+        if (loadingEl) loadingEl.style.display = 'none';
+
+        renderMembers();
+      } catch (err) {
+        console.error('명단 로드 실패:', err);
+        if (loadingEl) loadingEl.innerText = '명단을 불러오지 못했습니다: ' + err.message;
+      }
+    }
+
+    /* 카테고리 필터 클릭 */
+    function filterMembersCategory(category, btn) {
+      selectedMemberCategory = category;
+      document.querySelectorAll('.member-cat-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderMembers();
+    }
+
+    /* 검색창 실시간 반응 */
+    function handleMemberSearch() {
+      renderMembers();
+    }
+
+    /* 필터링된 멤버 데이터 가져오기 ('활동 중'인 멤버만) */
+    function getFilteredMembers() {
+      const keyword = (document.getElementById('memberSearchInput')?.value || '').trim().toLowerCase();
+
+      return allMembersList.filter(item => {
+        // 1) 기본 규칙: '활동 중'인 인원만 표시 (공백 제거 후 비교)
+        const activeStatus = (item.active || '').trim();
+        if (activeStatus !== '활동 중') return false;
+
+        // 2) 카테고리 필터 (Worship, Session, Live Ops, Post Prod)
+        if (selectedMemberCategory !== 'ALL') {
+          const itemCat = (item.main_category || '').trim().toLowerCase();
+          if (itemCat !== selectedMemberCategory.toLowerCase()) return false;
+        }
+
+        // 3) 검색어 필터 (이름, 주파트, 부파트, 파트태그)
+        if (keyword) {
+          const searchSource = [
+            item.name,
+            item.main_category,
+            item.main_part,
+            item.part_b,
+            item.part_tag
+          ].filter(Boolean).join(' ').toLowerCase();
+
+          if (!searchSource.includes(keyword)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    /* 멤버 카드 렌더링 */
+    function renderMembers() {
+      const grid = document.getElementById('membersGrid');
+      const countBadge = document.getElementById('memberCountBadge');
+      if (!grid) return;
+
+      const filtered = getFilteredMembers();
+      if (countBadge) countBadge.innerText = `활동 중 ${filtered.length}명`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--sub-text);">해당 조건의 팀원이 없습니다.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        // 태그 만들기: Part_Tag가 있으면 우선 사용, 없으면 주파트+부파트 결합
+        let tagsHtml = '';
+        if (item.part_tag && item.part_tag.trim() !== '') {
+          tagsHtml = item.part_tag.split(/[,\s]+/).map(t => {
+            const clean = t.startsWith('#') ? t : `#${t}`;
+            return `<span class="member-tag-pill">${clean}</span>`;
+          }).join('');
+        } else {
+          if (item.main_part) tagsHtml += `<span class="member-tag-pill">#${item.main_part}</span>`;
+          if (item.part_b) tagsHtml += `<span class="member-tag-pill">#${item.part_b}</span>`;
+        }
+
+        // 전화번호 버튼 (있을 때만 표시)
+        const callNum = (item.call || '').trim();
+        const callButtonHtml = callNum ? `
+          <a href="tel:${callNum}" class="member-call-btn">
+            📞 ${callNum}
+          </a>
+        ` : '';
+
+        return `
+          <div class="member-card">
+            <div>
+              <div class="member-card-header">
+                <span class="member-name">${item.name}</span>
+                <span class="member-category-pill">${item.main_category || 'TEAM'}</span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--sub-text); margin-top: 4px;">
+                주파트: <strong style="color: var(--text-color);">${item.main_part || '-'}</strong>
+                ${item.part_b ? `<span style="font-size: 0.78rem; margin-left: 4px;">(${item.part_b})</span>` : ''}
+              </div>
+              <div style="margin-top: 6px;">
+                ${tagsHtml}
+              </div>
+            </div>
+            ${callButtonHtml}
+          </div>
+        `;
+      }).join('');
     }
 
     /* ===================================================
