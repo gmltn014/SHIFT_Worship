@@ -307,6 +307,68 @@
       opacity: 0.8;
       font-family: monospace, -apple-system, sans-serif;
     }
+
+    /* 아카이브 아코디언 스타일 */
+    .archive-item-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: border-color 0.2s;
+    }
+    .archive-item-header {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .archive-item-header:hover {
+      background-color: var(--card-sub-bg);
+    }
+    .accordion-toggle-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: var(--sub-text);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .accordion-toggle-btn.open {
+      transform: rotate(180deg);
+    }
+    .archive-item-body {
+      display: none;
+      padding: 0 16px 16px 16px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--card-sub-bg);
+    }
+    .archive-item-body.open {
+      display: block;
+    }
+    
+    /* 섬김이 리스트 그리드 */
+    .members-history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .members-history-item {
+      background: var(--card-bg);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+    .members-history-item span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--sub-text);
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -461,7 +523,52 @@
     </section>
 
     <!-- 나머지 탭 (기본 틀) -->
-    <section id="tab-archive" class="tab-content"><div class="card"><h2>📁 아카이브</h2><p>준비 중입니다.</p></div></section>
+    <!-- 2. 아카이브 탭 -->
+    <section id="tab-archive" class="tab-content">
+      
+      <!-- 아카이브 내부 서브 탭 (콘티 vs 섬김이) -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+        <button id="subtab-btn-conti" class="btn-action btn-primary" onclick="switchArchiveSubTab('conti')" style="font-size: 0.85rem; padding: 7px 14px;">
+          🎵 예배/콘티 아카이브
+        </button>
+        <button id="subtab-btn-members" class="btn-action btn-secondary" onclick="switchArchiveSubTab('members')" style="font-size: 0.85rem; padding: 7px 14px;">
+          👥 섬김이(라인업) 내역
+        </button>
+      </div>
+
+      <!-- 상단 컨트롤러: 월 이동 / 검색 바 -->
+      <div class="card" style="padding: 14px; margin-bottom: 16px;">
+        <!-- 월 이동 컨트롤러 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button class="btn-action btn-secondary" onclick="navigateArchiveMonth(-1)" style="padding: 5px 10px;">◀</button>
+            <span id="archiveCurrentMonthText" style="font-weight: 700; font-size: 1.05rem; min-width: 100px; text-align: center;">2026년 00월</span>
+            <button class="btn-action btn-secondary" onclick="navigateArchiveMonth(1)" style="padding: 5px 10px;">▶</button>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <input type="month" id="archiveMonthPicker" onchange="onMonthPickerChange(this.value)" style="padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            <button id="archiveViewAllBtn" class="btn-action btn-secondary" onclick="toggleArchiveViewAll()" style="font-size: 0.82rem; padding: 6px 10px;">
+              전체 보기
+            </button>
+          </div>
+        </div>
+
+        <!-- 찬양 및 세션 검색창 -->
+        <div style="margin-top: 12px;">
+          <input type="text" id="archiveSearchInput" placeholder="🔍 곡명, 인도자, 섬김이 이름 검색..." oninput="handleArchiveSearch()" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.9rem;">
+        </div>
+      </div>
+
+      <!-- 로딩 및 상태 표시 -->
+      <div id="archiveLoading" class="loading-spinner">아카이브 데이터를 불러오는 중입니다...</div>
+      
+      <!-- 2-A. 콘티 아카이브 뷰 -->
+      <div id="archiveContiList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+      <!-- 2-B. 섬김이(라인업) 내역 뷰 -->
+      <div id="archiveMembersList" style="display: none; flex-direction: column; gap: 12px;"></div>
+
+    </section>
     <section id="tab-notice" class="tab-content"><div class="card"><h2>📢 공지사항</h2><p>준비 중입니다.</p></div></section>
     <section id="tab-members" class="tab-content"><div class="card"><h2>👥 시프트 명단</h2><p>준비 중입니다.</p></div></section>
     <section id="tab-feedback" class="tab-content"><div class="card"><h2>📮 익명의견함</h2><p>준비 중입니다.</p></div></section>
@@ -778,6 +885,284 @@ let currentScheduleData = null;
 
       // 파싱되지 않는 일반 URL 형태라면 원본 그대로 반환
       return trimmed;
+    }
+
+    /* ===================================================
+       아카이브 상태 관리 변수
+    =================================================== */
+    let allScheduleArchive = []; // 전체 스케줄 데이터 캐싱
+    let archiveCurrentYear = new Date().getFullYear();
+    let archiveCurrentMonth = new Date().getMonth() + 1; // 1~12
+    let isArchiveViewAll = false;
+    let currentArchiveSubTab = 'conti'; // 'conti' | 'members'
+
+    // 탭을 눌렀을 때 아카이브 첫 로드 트리거
+    const originalSwitchTab = switchTab;
+    switchTab = function(tabId, clickedBtn) {
+      originalSwitchTab(tabId, clickedBtn);
+      if (tabId === 'archive' && allScheduleArchive.length === 0) {
+        loadAllArchiveData();
+      }
+    };
+
+    /* Supabase에서 전체 아카이브 데이터 조회 */
+    async function loadAllArchiveData() {
+      const loadingEl = document.getElementById('archiveLoading');
+      try {
+        const { data, error } = await supabaseClient
+          .from('schedules')
+          .select('*')
+          .order('date', { ascending: false });
+
+        if (error) throw error;
+
+        allScheduleArchive = data || [];
+        loadingEl.style.display = 'none';
+
+        // 최신 데이터의 연/월로 초기 기준 설정
+        if (allScheduleArchive.length > 0) {
+          const latestDate = new Date(allScheduleArchive[0].date);
+          if (!isNaN(latestDate)) {
+            archiveCurrentYear = latestDate.getFullYear();
+            archiveCurrentMonth = latestDate.getMonth() + 1;
+          }
+        }
+
+        updateMonthDisplay();
+        renderArchive();
+      } catch (err) {
+        console.error('아카이브 로드 실패:', err);
+        loadingEl.innerText = '데이터를 불러오지 못했습니다: ' + err.message;
+      }
+    }
+
+    /* 서브 탭 전환 (콘티 vs 섬김이) */
+    function switchArchiveSubTab(subTab) {
+      currentArchiveSubTab = subTab;
+      const btnConti = document.getElementById('subtab-btn-conti');
+      const btnMembers = document.getElementById('subtab-btn-members');
+      const listConti = document.getElementById('archiveContiList');
+      const listMembers = document.getElementById('archiveMembersList');
+
+      if (subTab === 'conti') {
+        btnConti.className = 'btn-action btn-primary';
+        btnMembers.className = 'btn-action btn-secondary';
+        listConti.style.display = 'flex';
+        listMembers.style.display = 'none';
+      } else {
+        btnConti.className = 'btn-action btn-secondary';
+        btnMembers.className = 'btn-action btn-primary';
+        listConti.style.display = 'none';
+        listMembers.style.display = 'flex';
+      }
+      renderArchive();
+    }
+
+    /* 달 이동 및 전체보기 토글 */
+    function navigateArchiveMonth(delta) {
+      isArchiveViewAll = false;
+      archiveCurrentMonth += delta;
+      if (archiveCurrentMonth > 12) {
+        archiveCurrentMonth = 1;
+        archiveCurrentYear += 1;
+      } else if (archiveCurrentMonth < 1) {
+        archiveCurrentMonth = 12;
+        archiveCurrentYear -= 1;
+      }
+      updateMonthDisplay();
+      renderArchive();
+    }
+
+    function onMonthPickerChange(val) {
+      if (!val) return;
+      const [y, m] = val.split('-');
+      archiveCurrentYear = parseInt(y, 10);
+      archiveCurrentMonth = parseInt(m, 10);
+      isArchiveViewAll = false;
+      updateMonthDisplay();
+      renderArchive();
+    }
+
+    function toggleArchiveViewAll() {
+      isArchiveViewAll = !isArchiveViewAll;
+      updateMonthDisplay();
+      renderArchive();
+    }
+
+    function updateMonthDisplay() {
+      const monthText = document.getElementById('archiveCurrentMonthText');
+      const viewAllBtn = document.getElementById('archiveViewAllBtn');
+      const picker = document.getElementById('archiveMonthPicker');
+
+      const mm = String(archiveCurrentMonth).padStart(2, '0');
+      picker.value = `${archiveCurrentYear}-${mm}`;
+
+      if (isArchiveViewAll) {
+        monthText.innerText = '전체 주차';
+        viewAllBtn.className = 'btn-action btn-primary';
+        viewAllBtn.innerText = '월별로 보기';
+      } else {
+        monthText.innerText = `${archiveCurrentYear}년 ${mm}월`;
+        viewAllBtn.className = 'btn-action btn-secondary';
+        viewAllBtn.innerText = '전체 보기';
+      }
+    }
+
+    /* 검색 처리 */
+    function handleArchiveSearch() {
+      renderArchive();
+    }
+
+    /* 필터링된 데이터 가져오기 */
+    function getFilteredArchiveData() {
+      const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
+      const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
+
+      return allScheduleArchive.filter(item => {
+        // 1) 날짜/월 필터
+        if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
+          return false;
+        }
+        // 2) 검색어 필터 (곡명, 인도자, 결단찬양, 팀원 이름 전체 매칭)
+        if (keyword) {
+          const matchTarget = [
+            item.date,
+            item.worship_title,
+            item.song_list,
+            item.closing_song,
+            item.leader,
+            item.vocal,
+            item.keyboard1,
+            item.keyboard2,
+            item.drum,
+            item.guitar,
+            item.bass,
+            item.sound,
+            item.broadcast,
+            item.subtitle,
+            item.video
+          ].filter(Boolean).join(' ').toLowerCase();
+
+          if (!matchTarget.includes(keyword)) return false;
+        }
+        return true;
+      });
+    }
+
+    /* 아카이브 렌더링 총괄 */
+    function renderArchive() {
+      const filtered = getFilteredArchiveData();
+      if (currentArchiveSubTab === 'conti') {
+        renderContiArchive(filtered);
+      } else {
+        renderMembersArchive(filtered);
+      }
+    }
+
+    /* 2-A. 콘티 아카이브 렌더링 (아코디언 형태) */
+    function renderContiArchive(list) {
+      const container = document.getElementById('archiveContiList');
+      if (!container) return;
+
+      if (list.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">해당 기간의 예배 기록이 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map((item, idx) => {
+        const computedYt = buildYoutubePlaylistUrl(item.youtube_url);
+        return `
+          <div class="archive-item-card">
+            <div class="archive-item-header" onclick="toggleArchiveAccordion(${idx})">
+              <div>
+                <span class="worship-date-badge">${item.date}</span>
+                <strong style="font-size: 1.05rem; display: block; margin-top: 4px;">${item.worship_title || item.date + ' 예배'}</strong>
+                <span style="font-size: 0.82rem; color: var(--sub-text);">인도: ${item.leader || '-'}</span>
+              </div>
+              <button class="accordion-toggle-btn" id="acc-btn-${idx}">▼</button>
+            </div>
+            
+            <div class="archive-item-body" id="acc-body-${idx}">
+              <div style="margin: 12px 0 8px 0;">
+                <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
+                <div style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>
+              </div>
+
+              ${item.closing_song ? `
+                <div style="margin: 8px 0; font-size: 0.88rem;">
+                  <strong>🕊️ 결단찬양:</strong> ${item.closing_song}
+                </div>` : ''}
+
+              <!-- 버튼 모음 (아코디언 내부) -->
+              <div class="action-btn-group" style="margin-top: 12px; gap: 6px;">
+                ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
+                ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원(연속재생)</a>` : ''}
+                ${item.closing_sheet_url ? `<a href="${item.closing_sheet_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">📄 결단악보</a>` : ''}
+                ${item.closing_youtube_url ? `<a href="${item.closing_youtube_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">▶️ 결단영상</a>` : ''}
+                ${item.monitoring_url ? `<a href="${item.monitoring_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎥 실황</a>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleArchiveAccordion(idx) {
+      const body = document.getElementById(`acc-body-${idx}`);
+      const btn = document.getElementById(`acc-btn-${idx}`);
+      if (!body || !btn) return;
+
+      const isOpen = body.classList.contains('open');
+      if (isOpen) {
+        body.classList.remove('open');
+        btn.classList.remove('open');
+      } else {
+        body.classList.add('open');
+        btn.classList.add('open');
+      }
+    }
+
+    /* 2-B. 섬김이(라인업) 아카이브 렌더링 */
+    function renderMembersArchive(list) {
+      const container = document.getElementById('archiveMembersList');
+      if (!container) return;
+
+      if (list.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">해당 기간의 섬김이 기록이 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(item => {
+        // 건반 텍스트 정리
+        const kbParts = [];
+        if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) kbParts.push(`${item.keyboard1}(메인)`);
+        if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) kbParts.push(`${item.keyboard2}(세컨)`);
+        const kbText = kbParts.length > 0 ? kbParts.join(', ') : '-';
+
+        return `
+          <div class="card" style="margin-bottom: 12px; padding: 16px;">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+              <span class="worship-date-badge">${item.date}</span>
+              <strong style="font-size: 1rem; margin-left: 6px;">${item.worship_title || item.date + ' 라인업'}</strong>
+            </div>
+            
+            <div class="members-history-grid">
+              <div class="members-history-item" style="grid-column: 1 / -1; background: var(--card-sub-bg);">
+                <span>인도자 / 보컬</span>
+                <strong>🎤 ${item.leader || '-'} / 👥 ${item.vocal || '-'}</strong>
+              </div>
+              <div class="members-history-item"><span>건반</span>${kbText}</div>
+              <div class="members-history-item"><span>드럼</span>${item.drum || '-'}</div>
+              <div class="members-history-item"><span>기타</span>${item.guitar || '-'}</div>
+              <div class="members-history-item"><span>베이스</span>${item.bass || '-'}</div>
+              <div class="members-history-item"><span>음향</span>${item.sound || '-'}</div>
+              <div class="members-history-item"><span>방송</span>${item.broadcast || '-'}</div>
+              <div class="members-history-item"><span>자막</span>${item.subtitle || '-'}</div>
+              <div class="members-history-item"><span>영상</span>${item.video || '-'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     /* ===================================================
