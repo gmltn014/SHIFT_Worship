@@ -1353,30 +1353,32 @@
     }
 
     function parseNoticeMetadata(title) {
-      const trimmed = (title || '').trim();
+      const raw = (title || '').trim();
       let tag = '일반';
       let tagClass = 'tag-general';
       let borderClass = '';
 
-      if (/\[공지\]|공지/i.test(trimmed)) {
+      // 1) 태그 유형 판단
+      if (/\[공지\]|공지/i.test(raw)) {
         tag = '공지';
         tagClass = 'tag-notice';
         borderClass = 'border-notice';
-      } else if (/\[일정\]|일정/i.test(trimmed)) {
+      } else if (/\[일정\]|일정/i.test(raw)) {
         tag = '일정';
         tagClass = 'tag-schedule';
         borderClass = 'border-schedule';
-      } else if (/\[UI\s*개선\]|UI\s*개선|UI/i.test(trimmed)) {
+      } else if (/\[UI\s*개선\]|UI\s*개선|UI/i.test(raw)) {
         tag = 'UI 개선';
         tagClass = 'tag-ui';
         borderClass = 'border-ui';
-      } else if (/\[업데이트\]|업데이트|v\d+\.\d+/i.test(trimmed)) {
+      } else if (/\[업데이트\]|업데이트|v\d+\.\d+/i.test(raw)) {
         tag = '업데이트';
         tagClass = 'tag-update';
         borderClass = 'border-update';
       }
 
-      const cleanTitle = trimmed.replace(/^\[(공지\vert{}일정\vert{}업데이트\vert{}UI\s*개선\vert{}일반)\]\s*/i, '');
+      // 2) 앞부분의 [공지], [일정], [업데이트], [UI 개선] 등 모든 대괄호 태그 깔끔히 제거
+      const cleanTitle = raw.replace(/^\[[^\]]+\]\s*/, '').trim();
 
       return { tag, tagClass, borderClass, cleanTitle };
     }
@@ -1452,10 +1454,11 @@
               작성: ${item.author || '관리자'} • ${dateStr}
             </div>
             <div style="font-size: 0.92rem; line-height: 1.7; white-space: pre-wrap; color: var(--text-color);">${(item.content || '').trim()}</div>
+          </div>
         `;
       }).join('');
     }
-
+    
     function renderUpdateNotices() {
       const container = document.getElementById('updateNoticeList');
       if (!container) return;
