@@ -985,10 +985,18 @@
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">👥 팀원 명단 관리</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">팀원 추가, 파트 수정, 활동 상태 변경</p>
           </div>
-          <div class="card" style="opacity: 0.7;">
-            <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📅 예배 콘티 등록/수정</h4>
-            <p style="font-size: 0.82rem; color: var(--sub-text);">콘티, 라인업 업데이트 (준비 중)</p>
+          <!-- 1. 예배 콘티 & 한 주 라인업 등록/수정 연결 -->
+          <div class="card" style="cursor: pointer; transition: transform 0.15s;" onclick="openContiAdminModal();">
+            <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📅 예배 콘티 및 라인업 (주간)</h4>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">이번 주 또는 특정 주차 콘티 및 세션 배정</p>
           </div>
+
+          <!-- 2. 한 달 라인업 일괄 관리 메뉴 추가 -->
+          <div class="card" style="cursor: pointer; transition: transform 0.15s;" onclick="openMonthLineupModal();">
+            <h4 style="font-size: 1.05rem; margin-bottom: 6px;">🗓️ 월간 세션 라인업 일괄 관리</h4>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">한 달 전체 일요일 세션 일괄 배정 및 수정</p>
+          </div>
+
           <div class="card" style="opacity: 0.7;">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📢 공지사항 및 업데이트</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">공지 작성, 버전 배포 노트 등록 (준비 중)</p>
@@ -996,7 +1004,16 @@
         </div>
       </div>
 
-          <!-- 이번 주 콘티 관리자 모달 -->
+    </section>
+  </main>
+
+  <!-- 하단 푸터 -->
+  <footer class="site-footer">
+    <p class="footer-title">SHIFT 찬양팀 웹 포털</p>
+    <p class="footer-version">v2.0.0 (Supabase Engine)</p>
+  </footer>
+
+            <!-- 이번 주 콘티 관리자 모달 -->
     <div id="contiAdminModal" class="modal-overlay" style="display: none;">
       <div class="modal-card" style="max-width: 580px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
@@ -1075,15 +1092,115 @@
       </div>
     </div>
 
+            <!-- 3. 해당 주차 세션 라인업 입력 (한 주 관리) -->
+          <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+            <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+              <span>👥 세션 라인업 배정</span>
+              <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(없을 경우 '-' 또는 비워둠)</span>
+            </div>
 
-    </section>
-  </main>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">인도자</label>
+                <input type="text" id="adminLeader" placeholder="인도자 이름" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">보컬</label>
+                <input type="text" id="adminVocal" placeholder="예: 김보컬, 이보컬" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+            </div>
 
-  <!-- 하단 푸터 -->
-  <footer class="site-footer">
-    <p class="footer-title">SHIFT 찬양팀 웹 포털</p>
-    <p class="footer-version">v2.0.0 (Supabase Engine)</p>
-  </footer>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">메인 건반</label>
+                <input type="text" id="adminKeyboard1" placeholder="메인 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">세컨 건반</label>
+                <input type="text" id="adminKeyboard2" placeholder="세컨 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">드럼</label>
+                <input type="text" id="adminDrum" placeholder="드럼" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">기타</label>
+                <input type="text" id="adminGuitar" placeholder="기타" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">베이스</label>
+                <input type="text" id="adminBass" placeholder="베이스" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">음향</label>
+                <input type="text" id="adminSound" placeholder="음향 엔지니어" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">방송/중계</label>
+                <input type="text" id="adminBroadcast" placeholder="방송" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">자막</label>
+                <input type="text" id="adminSubtitle" placeholder="자막" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">영상편집</label>
+                <input type="text" id="adminVideo" placeholder="영상편집" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              </div>
+            </div>
+          </div>
+
+    <!-- 한 달 라인업 일괄 관리 모달 -->
+  <div id="monthLineupModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 900px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3 style="font-size: 1.15rem; font-weight: 700;">🗓️ 월간 세션 라인업 일괄 관리</h3>
+          <input type="month" id="monthLineupPicker" onchange="loadMonthLineupData(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; font-weight: 600;">
+        </div>
+        <button onclick="closeMonthLineupModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+
+      <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 12px;">
+        선택한 월의 모든 주일(일요일) 세션 배정을 한눈에 확인하고 일괄 수정할 수 있습니다.
+      </div>
+
+      <!-- 월간 라인업 테이블 (가로 스크롤 가능) -->
+      <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; max-height: 55vh; margin-bottom: 14px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 800px; text-align: left;">
+          <thead style="background: var(--card-sub-bg); position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border-color);">
+            <tr>
+              <th style="padding: 8px 10px; width: 110px;">주일 일자</th>
+              <th style="padding: 8px;">인도자</th>
+              <th style="padding: 8px;">보컬</th>
+              <th style="padding: 8px;">건반 (메인 / 세컨)</th>
+              <th style="padding: 8px;">드럼</th>
+              <th style="padding: 8px;">기타 / 베이스</th>
+              <th style="padding: 8px;">방송/엔지니어 (음향,중계,자막,영상)</th>
+            </tr>
+          </thead>
+          <tbody id="monthLineupTableBody">
+            <!-- 자바스크립트로 주차별 row 생성 -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn-action btn-secondary" onclick="closeMonthLineupModal()" style="font-size: 0.85rem;">닫기</button>
+        <button type="button" id="btnSaveMonthLineup" class="btn-action btn-primary" onclick="saveAllMonthLineup()" style="font-size: 0.85rem; padding: 8px 18px;">한 달 라인업 일괄 저장</button>
+      </div>
+    </div>
+  </div>
+
 
   <script>
     /* ===================================================
@@ -1515,21 +1632,34 @@
       document.getElementById('adminSheetUrl').value = currentItem.sheet_url || '';
       document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
 
-      // 기존 등록된 song_list에서 개별 곡명 분리 파싱
+      // 세션 라인업 채우기
+      document.getElementById('adminLeader').value = currentItem.leader || '';
+      document.getElementById('adminVocal').value = currentItem.vocal || '';
+      document.getElementById('adminKeyboard1').value = currentItem.keyboard1 || '';
+      document.getElementById('adminKeyboard2').value = currentItem.keyboard2 || '';
+      document.getElementById('adminDrum').value = currentItem.drum || '';
+      document.getElementById('adminGuitar').value = currentItem.guitar || '';
+      document.getElementById('adminBass').value = currentItem.bass || '';
+      document.getElementById('adminSound').value = currentItem.sound || '';
+      document.getElementById('adminBroadcast').value = currentItem.broadcast || '';
+      document.getElementById('adminSubtitle').value = currentItem.subtitle || '';
+      document.getElementById('adminVideo').value = currentItem.video || '';
+
+      // 곡 목록 파싱 (최대 6곡)
       const rawSongList = currentItem.song_list || '';
       let songs = [];
       if (rawSongList.trim()) {
         songs = rawSongList
           .split(/\r?\n/)
-          .map(line => line.replace(/^\d+[\.\)\-\s]\s*/, '').trim()) // 앞의 '1. ', '1) ' 등 번호 제거
+          .map(line => line.replace(/^\d+[\.\)\-\s]\s*/, '').trim())
           .filter(Boolean);
       }
 
       const songCount = songs.length > 0 ? Math.min(Math.max(songs.length, 1), 6) : 4;
-    const countSelect = document.getElementById('adminSongCountSelect');
-    if (countSelect) countSelect.value = String(songCount);
+      const countSelect = document.getElementById('adminSongCountSelect');
+      if (countSelect) countSelect.value = String(songCount);
 
-    generateSongInputFields(songCount, songs);
+      generateSongInputFields(songCount, songs);
     }
 
     // 유튜브 스마트 파싱 로직: 11자리 코드 추출 또는 비공개/재생목록 보존
@@ -1603,7 +1733,20 @@
         closing_song: closing_song || null,
         youtube_url: youtube_url || null,
         sheet_url: sheet_url || null,
-        monitoring_url: monitoring_url || null
+        monitoring_url: monitoring_url || null,
+
+        // 세션 라인업 필드
+        leader: document.getElementById('adminLeader').value.trim() || null,
+        vocal: document.getElementById('adminVocal').value.trim() || null,
+        keyboard1: document.getElementById('adminKeyboard1').value.trim() || null,
+        keyboard2: document.getElementById('adminKeyboard2').value.trim() || null,
+        drum: document.getElementById('adminDrum').value.trim() || null,
+        guitar: document.getElementById('adminGuitar').value.trim() || null,
+        bass: document.getElementById('adminBass').value.trim() || null,
+        sound: document.getElementById('adminSound').value.trim() || null,
+        broadcast: document.getElementById('adminBroadcast').value.trim() || null,
+        subtitle: document.getElementById('adminSubtitle').value.trim() || null,
+        video: document.getElementById('adminVideo').value.trim() || null
       };
 
       submitBtn.disabled = true;
@@ -2849,6 +2992,184 @@
         renderAdminFeedbackList();
       } catch (err) {
         alert('삭제 실패: ' + err.message);
+      }
+    }
+
+        /* ===================================================
+       월간 라인업 일괄 관리 모듈
+    =================================================== */
+    let currentMonthSundays = [];
+    let currentMonthSchedulesMap = {};
+
+    function openMonthLineupModal() {
+      checkAdminAuth(() => {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const defaultMonth = `${yyyy}-${mm}`;
+
+        const picker = document.getElementById('monthLineupPicker');
+        if (picker) picker.value = defaultMonth;
+
+        loadMonthLineupData(defaultMonth);
+        document.getElementById('monthLineupModal').style.display = 'flex';
+      });
+    }
+
+    function closeMonthLineupModal() {
+      document.getElementById('monthLineupModal').style.display = 'none';
+    }
+
+    // 특정 연/월의 모든 일요일 YYYY-MM-DD 목록 반환
+    function getAllSundaysInMonth(year, month) {
+      const sundays = [];
+      const date = new Date(year, month - 1, 1);
+      while (date.getMonth() === month - 1) {
+        if (date.getDay() === 0) { // 0: 일요일
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const d = String(date.getDate()).padStart(2, '0');
+          sundays.push(`${y}-${m}-${d}`);
+        }
+        date.setDate(date.getDate() + 1);
+      }
+      return sundays;
+    }
+
+    // 선택한 월의 일요일별 데이터 불러오기
+    async function loadMonthLineupData(yearMonthStr) {
+      if (!yearMonthStr) return;
+      const [y, m] = yearMonthStr.split('-').map(Number);
+      currentMonthSundays = getAllSundaysInMonth(y, m);
+
+      const tbody = document.getElementById('monthLineupTableBody');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
+
+      try {
+        // 해당 월에 등록된 스케줄 조회
+        const { data, error } = await supabaseClient
+          .from('schedules')
+          .select('*')
+          .like('date', `${yearMonthStr}%`);
+
+        if (error) throw error;
+
+        currentMonthSchedulesMap = {};
+        (data || []).forEach(row => {
+          currentMonthSchedulesMap[row.date] = row;
+        });
+
+        renderMonthLineupTable();
+      } catch (err) {
+        console.error('월간 라인업 로드 오류:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 20px;">오류: ${err.message}</td></tr>`;
+      }
+    }
+
+    // 월간 라인업 테이블 렌더링
+    function renderMonthLineupTable() {
+      const tbody = document.getElementById('monthLineupTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = currentMonthSundays.map(dateStr => {
+        const item = currentMonthSchedulesMap[dateStr] || {};
+        const isCanceled = /^x_/i.test((item.worship_title || '').trim());
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
+            <td style="padding: 10px; font-weight: 700; vertical-align: top;">
+              <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
+              ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700;">🚫 예배 없음</div>' : ''}
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <textarea id="m_vocal_${dateStr}" rows="2" placeholder="보컬" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; resize: none;">${item.vocal || ''}</textarea>
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_kb2_${dateStr}" value="${item.keyboard2 || ''}" placeholder="세컨건반" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_drum_${dateStr}" value="${item.drum || ''}" placeholder="드럼" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_guitar_${dateStr}" value="${item.guitar || ''}" placeholder="기타" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_bass_${dateStr}" value="${item.bass || ''}" placeholder="베이스" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                <input type="text" id="m_sound_${dateStr}" value="${item.sound || ''}" placeholder="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_broadcast_${dateStr}" value="${item.broadcast || ''}" placeholder="방송" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_subtitle_${dateStr}" value="${item.subtitle || ''}" placeholder="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_video_${dateStr}" value="${item.video || ''}" placeholder="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 한 달 라인업 일괄 저장 처리
+    async function saveAllMonthLineup() {
+      const saveBtn = document.getElementById('btnSaveMonthLineup');
+      saveBtn.disabled = true;
+      saveBtn.innerText = '저장 중...';
+
+      try {
+        for (const dateStr of currentMonthSundays) {
+          const leader = document.getElementById(`m_leader_${dateStr}`)?.value.trim() || null;
+          const vocal = document.getElementById(`m_vocal_${dateStr}`)?.value.trim() || null;
+          const keyboard1 = document.getElementById(`m_kb1_${dateStr}`)?.value.trim() || null;
+          const keyboard2 = document.getElementById(`m_kb2_${dateStr}`)?.value.trim() || null;
+          const drum = document.getElementById(`m_drum_${dateStr}`)?.value.trim() || null;
+          const guitar = document.getElementById(`m_guitar_${dateStr}`)?.value.trim() || null;
+          const bass = document.getElementById(`m_bass_${dateStr}`)?.value.trim() || null;
+          const sound = document.getElementById(`m_sound_${dateStr}`)?.value.trim() || null;
+          const broadcast = document.getElementById(`m_broadcast_${dateStr}`)?.value.trim() || null;
+          const subtitle = document.getElementById(`m_subtitle_${dateStr}`)?.value.trim() || null;
+          const video = document.getElementById(`m_video_${dateStr}`)?.value.trim() || null;
+
+          const existing = currentMonthSchedulesMap[dateStr];
+
+          const lineupData = {
+            date: dateStr,
+            leader, vocal, keyboard1, keyboard2,
+            drum, guitar, bass, sound, broadcast, subtitle, video
+          };
+
+          if (existing && existing.id) {
+            // 이미 존재하는 주차: UPDATE
+            const { error: updateErr } = await supabaseClient
+              .from('schedules')
+              .update(lineupData)
+              .eq('id', existing.id);
+            if (updateErr) throw updateErr;
+          } else {
+            // 등록되지 않은 새 주차: 기본 예배명과 함께 INSERT
+            lineupData.worship_title = `${dateStr} 주일예배`;
+            const { error: insertErr } = await supabaseClient
+              .from('schedules')
+              .insert([lineupData]);
+            if (insertErr) throw insertErr;
+          }
+        }
+
+        alert('한 달 라인업이 성공적으로 일괄 저장되었습니다! 🎉');
+        closeMonthLineupModal();
+
+        // 메인 콘티 화면 및 아카이브 데이터 실시간 갱신
+        await loadCurrentConti();
+        if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
+          await loadAllArchiveData();
+        }
+      } catch (err) {
+        console.error('월간 라인업 저장 오류:', err);
+        alert('저장 중 오류가 발생했습니다: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = '한 달 라인업 일괄 저장';
       }
     }
 
