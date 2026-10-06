@@ -448,6 +448,8 @@
   </main>
 
   <script>
+let currentScheduleData = null;
+    
     /* ===================================================
        1. Supabase 연동 설정 (본인 키를 입력해 주세요)
     =================================================== */
@@ -488,15 +490,30 @@
     }
 
     function renderContiView(item) {
+      if (!item) return;
+
+      // ★ 핵심: 현재 불러온 객체를 전역 변수에 반드시 저장
+      currentScheduleData = item;
+
+      // 캡처 헤더 동기화
+      const capDate = document.getElementById('captureDate');
+      const capTitle = document.getElementById('captureTitle');
+      if (capDate) capDate.innerText = item.date || '';
+      if (capTitle) capTitle.innerText = item.worship_title || `${item.date} 주일예배`;
+
       // 1) 날짜 및 예배명
-      document.getElementById('viewWorshipDate').innerText = item.date || '';
-      document.getElementById('viewWorshipTitle').innerText = item.worship_title || `${item.date} 주일예배`;
+      const dateEl = document.getElementById('viewWorshipDate');
+      const titleEl = document.getElementById('viewWorshipTitle');
+      if (dateEl) dateEl.innerText = item.date || '';
+      if (titleEl) titleEl.innerText = item.worship_title || `${item.date} 주일예배`;
 
       // 2) 곡 목록
-      document.getElementById('viewSongList').innerText = item.song_list || '등록된 곡 목록이 없습니다.';
+      const songEl = document.getElementById('viewSongList');
+      if (songEl) songEl.innerText = item.song_list || '등록된 곡 목록이 없습니다.';
 
       // 3) 결단 찬양
-      document.getElementById('viewClosingSong').innerText = item.closing_song || '해당 없음';
+      const closingEl = document.getElementById('viewClosingSong');
+      if (closingEl) closingEl.innerText = item.closing_song || '해당 없음';
       setupLinkBtn('btnClosingSheet', item.closing_sheet_url);
       setupLinkBtn('btnClosingYoutube', item.closing_youtube_url);
 
@@ -508,8 +525,9 @@
       // 5) 세션 라인업
       const setSession = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.innerText = val || '-';
+        if (el) el.innerText = (val && val.trim() !== '') ? val.trim() : '-';
       };
+
       setSession('viewLeader', item.leader);
       setSession('viewVocal', item.vocal);
       setSession('viewKeyboard1', item.keyboard1);
@@ -523,93 +541,95 @@
       setSession('viewVideo', item.video);
     }
 
-    // 링크 버튼 설정 유틸
-    function setupLinkBtn(elementId, url) {
-      const btn = document.getElementById(elementId);
-      if (!btn) return;
-      if (url && url.trim().length > 0) {
-        btn.href = url.trim();
-        btn.style.display = 'inline-flex';
-      } else {
-        btn.style.display = 'none';
-      }
-    }
-
-    // 전역 변수로 현재 선택된 스케줄 데이터 보관
-    let currentScheduleData = null;
-
-    // renderContiView 함수 내부 최상단에 추가:
-    // currentScheduleData = item;
-    // document.getElementById('captureDate').innerText = item.date || '';
-    // document.getElementById('captureTitle').innerText = item.worship_title || `${item.date} 주일예배`;
-
-    // 1. 단톡방 공유용 라인업 텍스트 복사 기능
+    // 3. 라인업 텍스트 복사 기능 (변수 누락 시 화면 텍스트 직접 추출)
     function copyLineupText() {
-      if (!currentScheduleData) {
-        alert('복사할 라인업 데이터가 없습니다.');
-        return;
-      }
+      // 헬퍼: 요소에서 텍스트 안전하게 가져오기
+      const getText = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.innerText.trim() : '-';
+      };
 
-      const item = currentScheduleData;
-      const dateStr = item.date || '';
-      const titleStr = item.worship_title || `${dateStr} 주일예배`;
+      const dateStr = currentScheduleData?.date || getText('viewWorshipDate');
+      const titleStr = currentScheduleData?.worship_title || getText('viewWorshipTitle');
 
       // 건반 텍스트 정리
+      const kb1 = currentScheduleData?.keyboard1 || getText('viewKeyboard1');
+      const kb2 = currentScheduleData?.keyboard2 || getText('viewKeyboard2');
       const kbParts = [];
-      if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) kbParts.push(`${item.keyboard1} (메인)`);
-      if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) kbParts.push(`${item.keyboard2} (세컨)`);
+      if (kb1 && !['X', 'x', '-'].includes(kb1)) kbParts.push(`${kb1} (메인)`);
+      if (kb2 && !['X', 'x', '-'].includes(kb2)) kbParts.push(`${kb2} (세컨)`);
       const kbText = kbParts.length > 0 ? kbParts.join(', ') : '-';
 
-      // 카카오톡 단톡방 맞춤 포맷 멘트
+      const leader = currentScheduleData?.leader || getText('viewLeader');
+      const vocal = currentScheduleData?.vocal || getText('viewVocal');
+      const drum = currentScheduleData?.drum || getText('viewDrum');
+      const guitar = currentScheduleData?.guitar || getText('viewGuitar');
+      const bass = currentScheduleData?.bass || getText('viewBass');
+      const sound = currentScheduleData?.sound || getText('viewSound');
+      const broadcast = currentScheduleData?.broadcast || getText('viewBroadcast');
+      const subtitle = currentScheduleData?.subtitle || getText('viewSubtitle');
+      const video = currentScheduleData?.video || getText('viewVideo');
+
+      // 단톡방 공유용 양식
       const message = 
 `[${titleStr}] 세션 라인업 안내 🕊️
 
 📅 일시: ${dateStr}
 ━━━━━━━━━━━━━━
-🎤 인도: ${item.leader || '-'}
-👥 보컬: ${item.vocal || '-'}
+🎤 인도: ${leader}
+👥 보컬: ${vocal}
 🎹 건반: ${kbText}
-🥁 드럼: ${item.drum || '-'}
-🎸 기타: ${item.guitar || '-'}
-🎸 베이스: ${item.bass || '-'}
-🎚️ 음향: ${item.sound || '-'}
-💻 방송: ${item.broadcast || '-'}
-📑 자막: ${item.subtitle || '-'}
-🎬 영상: ${item.video || '-'}
+🥁 드럼: ${drum}
+🎸 기타: ${guitar}
+🎸 베이스: ${bass}
+🎚️ 음향: ${sound}
+💻 방송: ${broadcast}
+📑 자막: ${subtitle}
+🎬 영상: ${video}
 ━━━━━━━━━━━━━━
 * 변경 사항이 있으신 분은 미리 말씀해 주세요. 이번 주도 기도로 준비하며 은혜의 시간 되길 소망합니다! 🙏`;
 
-      navigator.clipboard.writeText(message).then(() => {
-        alert('📋 이번 주 라인업이 클립보드에 복사되었습니다!\n단톡방에 바로 붙여넣기(Ctrl+V) 하세요.');
-      }).catch(err => {
-        console.error('복사 실패:', err);
-        // 모바일/구형 브라우저 fallback
-        const textArea = document.createElement("textarea");
-        textArea.value = message;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        alert('📋 라인업이 복사되었습니다!');
-      });
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(message).then(() => {
+          alert('📋 이번 주 라인업이 복사되었습니다!\n단톡방에 붙여넣기(Ctrl+V) 하세요.');
+        }).catch(() => fallbackCopy(message));
+      } else {
+        fallbackCopy(message);
+      }
     }
 
-    // 2. 라인업 카드 이미지 캡처 다운로드 기능
+    function fallbackCopy(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('📋 이번 주 라인업이 복사되었습니다!\n단톡방에 붙여넣기(Ctrl+V) 하세요.');
+      } catch (err) {
+        alert('복사에 실패했습니다. 수동으로 복사해 주세요.');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    // 4. 라인업 카드 이미지 캡처 다운로드 기능
     function downloadLineupImage() {
       const captureEl = document.getElementById('lineupCaptureArea');
       if (!captureEl) return;
 
-      // 현재 테마 색상(배경 등)을 반영하여 캡처
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      
+      const dateStr = currentScheduleData?.date || document.getElementById('viewWorshipDate')?.innerText || '예배';
+
       html2canvas(captureEl, {
-        scale: 2, // 고해상도 (레티나 대응)
+        scale: 2,
         backgroundColor: isDark ? '#1e293b' : '#ffffff',
         useCORS: true
       }).then(canvas => {
         const link = document.createElement('a');
-        const filename = `${currentScheduleData?.date || '예배'}_SHIFT_라인업.png`;
-        link.download = filename;
+        link.download = `${dateStr}_SHIFT_라인업.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       }).catch(err => {
