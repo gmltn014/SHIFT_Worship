@@ -468,6 +468,31 @@
     .member-call-btn:hover {
       background: var(--border-color);
     }
+    /* 파트별 테마 컬러 클래스 */
+    /* 1) Worship (보라) */
+    .cat-worship { color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
+    .badge-worship { background-color: rgba(139, 92, 246, 0.15) !important; color: #8b5cf6 !important; }
+    .border-worship { border-left: 4px solid #8b5cf6 !important; }
+    .btn-worship.active { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; color: #fff !important; }
+
+    /* 2) Session (로즈/다홍) */
+    .cat-session { color: #f43f5e !important; border-color: #f43f5e !important; }
+    .badge-session { background-color: rgba(244, 63, 94, 0.15) !important; color: #f43f5e !important; }
+    .border-session { border-left: 4px solid #f43f5e !important; }
+    .btn-session.active { background-color: #f43f5e !important; border-color: #f43f5e !important; color: #fff !important; }
+
+    /* 3) Live Ops (오렌지/앰버) */
+    .cat-liveops { color: #f59e0b !important; border-color: #f59e0b !important; }
+    .badge-liveops { background-color: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; }
+    .border-liveops { border-left: 4px solid #f59e0b !important; }
+    .btn-liveops.active { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
+
+    /* 4) Post Prod (청록/시안) */
+    .cat-postprod { color: #06b6d4 !important; border-color: #06b6d4 !important; }
+    .badge-postprod { background-color: rgba(6, 182, 212, 0.15) !important; color: #06b6d4 !important; }
+    .border-postprod { border-left: 4px solid #06b6d4 !important; }
+    .btn-postprod.active { background-color: #06b6d4 !important; border-color: #06b6d4 !important; color: #fff !important; }
+    
   </style>
 </head>
 <body>
@@ -681,10 +706,10 @@
       <!-- 상단 카테고리 필터 버튼 -->
       <div style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; padding-bottom: 8px; margin-bottom: 14px; -webkit-overflow-scrolling: touch;">
         <button class="member-cat-btn active" onclick="filterMembersCategory('ALL', this)">전체</button>
-        <button class="member-cat-btn" onclick="filterMembersCategory('Worship', this)">Worship (예배/보컬)</button>
-        <button class="member-cat-btn" onclick="filterMembersCategory('Session', this)">Session (악기)</button>
-        <button class="member-cat-btn" onclick="filterMembersCategory('Live Ops', this)">Live Ops (현장방송)</button>
-        <button class="member-cat-btn" onclick="filterMembersCategory('Post Prod', this)">Post Prod (영상/미디어)</button>
+        <button class="member-cat-btn btn-worship" onclick="filterMembersCategory('Worship', this)">Worship (예배/보컬)</button>
+        <button class="member-cat-btn btn-session" onclick="filterMembersCategory('Session', this)">Session (악기)</button>
+        <button class="member-cat-btn btn-liveops" onclick="filterMembersCategory('Live Ops', this)">Live Ops (현장방송)</button>
+        <button class="member-cat-btn btn-postprod" onclick="filterMembersCategory('Post Prod', this)">Post Prod (영상/미디어)</button>
       </div>
 
       <!-- 멤버 검색창 & 인원수 표시 바 -->
@@ -1727,7 +1752,27 @@
       }
 
       grid.innerHTML = filtered.map(item => {
-        // 태그 만들기: Part_Tag가 있으면 우선 사용, 없으면 주파트+부파트 결합
+        // 1) 대분류별 테마 클래스 매핑
+        const rawCat = (item.main_category || '').trim().toLowerCase();
+        let catColorClass = 'cat-worship';
+        let badgeColorClass = 'badge-worship';
+        let borderColorClass = 'border-worship';
+
+        if (rawCat.includes('session')) {
+          catColorClass = 'cat-session';
+          badgeColorClass = 'badge-session';
+          borderColorClass = 'border-session';
+        } else if (rawCat.includes('live')) {
+          catColorClass = 'cat-liveops';
+          badgeColorClass = 'badge-liveops';
+          borderColorClass = 'border-liveops';
+        } else if (rawCat.includes('post') || rawCat.includes('prod')) {
+          catColorClass = 'cat-postprod';
+          badgeColorClass = 'badge-postprod';
+          borderColorClass = 'border-postprod';
+        }
+
+        // 2) 태그 분리 생성
         let tagsHtml = '';
         if (item.part_tag && item.part_tag.trim() !== '') {
           tagsHtml = item.part_tag.split(/[,\s]+/).map(t => {
@@ -1739,7 +1784,7 @@
           if (item.part_b) tagsHtml += `<span class="member-tag-pill">#${item.part_b}</span>`;
         }
 
-        // 전화번호 버튼 (있을 때만 표시)
+        // 3) 전화번호 버튼 (있을 때만 표시)
         const callNum = (item.call || '').trim();
         const callButtonHtml = callNum ? `
           <a href="tel:${callNum}" class="member-call-btn">
@@ -1748,11 +1793,11 @@
         ` : '';
 
         return `
-          <div class="member-card">
+          <div class="member-card ${borderColorClass}">
             <div>
               <div class="member-card-header">
                 <span class="member-name">${item.name}</span>
-                <span class="member-category-pill">${item.main_category || 'TEAM'}</span>
+                <span class="member-category-pill ${badgeColorClass}">${item.main_category || 'TEAM'}</span>
               </div>
               <div style="font-size: 0.85rem; color: var(--sub-text); margin-top: 4px;">
                 주파트: <strong style="color: var(--text-color);">${item.main_part || '-'}</strong>
