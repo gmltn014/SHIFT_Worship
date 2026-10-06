@@ -675,38 +675,91 @@ let currentScheduleData = null;
     function renderContiView(item) {
       if (!item) return;
 
-      // ★ 핵심: 현재 불러온 객체를 전역 변수에 반드시 저장
       currentScheduleData = item;
+
+      // 1) 취소/휴무 예배 판별 (worship_title이 'X_' 또는 'x_'로 시작하는지 검사)
+      const rawTitle = (item.worship_title || '').trim();
+      const isCanceled = /^x_/i.test(rawTitle);
+      const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
+
+      // UI 요소들
+      const dateEl = document.getElementById('viewWorshipDate');
+      const titleEl = document.getElementById('viewWorshipTitle');
+      const songBox = document.querySelector('#tab-conti .song-box'); // 찬양 콘티 박스
+      const closingBox = songBox?.nextElementSibling; // 결단 찬양 박스
+      const actionGroup = document.querySelector('#tab-conti .action-btn-group');
+      const lineupSection = document.querySelector('.lineup-header-wrapper') || document.querySelector('.section-title');
+      const lineupCapture = document.getElementById('lineupCaptureArea');
+
+      // 취소 안내 전용 알림 박스 (없으면 생성)
+      let cancelNoticeEl = document.getElementById('contiCancelNotice');
+      if (!cancelNoticeEl) {
+        cancelNoticeEl = document.createElement('div');
+        cancelNoticeEl.id = 'contiCancelNotice';
+        cancelNoticeEl.style.cssText = 'background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 24px; text-align: center; margin-top: 14px;';
+        const cardHeader = document.querySelector('#tab-conti .card-header');
+        if (cardHeader && cardHeader.parentNode) {
+          cardHeader.parentNode.insertBefore(cancelNoticeEl, cardHeader.nextSibling);
+        }
+      }
+
+      // 날짜 세팅
+      if (dateEl) dateEl.innerText = item.date || '';
+
+      if (isCanceled) {
+        // [취소 상태 UI 처리]
+        if (titleEl) {
+          titleEl.innerHTML = `<span style="color: #ef4444;">🚫 [예배 없음]</span> ${cancelReason || '예배 일정이 취소되었습니다.'}`;
+        }
+        
+        cancelNoticeEl.innerHTML = `
+          <div style="font-size: 2rem; margin-bottom: 8px;">🚫</div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #ef4444; margin-bottom: 6px;">해당 주차는 예배가 없습니다</h3>
+          <p style="font-size: 0.95rem; color: var(--sub-text);"><strong>안내 사유:</strong> ${cancelReason || '사유 미입력'}</p>
+        `;
+        cancelNoticeEl.style.display = 'block';
+
+        // 기존 콘티/버튼/라인업 영역 숨김
+        if (songBox) songBox.style.display = 'none';
+        if (closingBox) closingBox.style.display = 'none';
+        if (actionGroup) actionGroup.style.display = 'none';
+        if (lineupSection) lineupSection.style.display = 'none';
+        if (lineupCapture) lineupCapture.style.display = 'none';
+        return;
+      }
+
+      // [정상 예배 UI 복원]
+      if (cancelNoticeEl) cancelNoticeEl.style.display = 'none';
+      if (songBox) songBox.style.display = 'block';
+      if (closingBox) closingBox.style.display = 'block';
+      if (actionGroup) actionGroup.style.display = 'flex';
+      if (lineupSection) lineupSection.style.display = 'flex';
+      if (lineupCapture) lineupCapture.style.display = 'block';
+
+      if (titleEl) titleEl.innerText = rawTitle || `${item.date} 주일예배`;
 
       // 캡처 헤더 동기화
       const capDate = document.getElementById('captureDate');
       const capTitle = document.getElementById('captureTitle');
       if (capDate) capDate.innerText = item.date || '';
-      if (capTitle) capTitle.innerText = item.worship_title || `${item.date} 주일예배`;
+      if (capTitle) capTitle.innerText = rawTitle || `${item.date} 주일예배`;
 
-      // 1) 날짜 및 예배명
-      const dateEl = document.getElementById('viewWorshipDate');
-      const titleEl = document.getElementById('viewWorshipTitle');
-      if (dateEl) dateEl.innerText = item.date || '';
-      if (titleEl) titleEl.innerText = item.worship_title || `${item.date} 주일예배`;
-
-      // 2) 곡 목록
+      // 2) 곡 목록 및 결단찬양
       const songEl = document.getElementById('viewSongList');
       if (songEl) songEl.innerText = item.song_list || '등록된 곡 목록이 없습니다.';
 
-      // 3) 결단 찬양
       const closingEl = document.getElementById('viewClosingSong');
       if (closingEl) closingEl.innerText = item.closing_song || '해당 없음';
       setupLinkBtn('btnClosingSheet', item.closing_sheet_url);
       setupLinkBtn('btnClosingYoutube', item.closing_youtube_url);
 
-      // 4) 콘티 바로가기 링크 버튼들
+      // 3) 콘티 링크 버튼들
       setupLinkBtn('btnSheet', item.sheet_url);
       const computedYoutubeUrl = buildYoutubePlaylistUrl(item.youtube_url);
       setupLinkBtn('btnYoutube', computedYoutubeUrl);
       setupLinkBtn('btnMonitoring', item.monitoring_url);
 
-      // 5) 세션 라인업
+      // 4) 세션 라인업
       const setSession = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.innerText = (val && val.trim() !== '') ? val.trim() : '-';
