@@ -515,6 +515,30 @@
       padding: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
+
+    /* 의견 처리 상태 태그 뱃지 */
+    .status-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .status-received { background-color: #fee2e2; color: #dc2626; }   /* 접수됨: 연빨강 */
+    .status-reviewing { background-color: #fef3c7; color: #d97706; }  /* 검토중: 앰버/노랑 */
+    .status-completed { background-color: #d1fae5; color: #047857; }  /* 반영완료: 초록 */
+    .status-hold { background-color: #e2e8f0; color: #475569; }       /* 보류: 회색 */
+
+    /* 관리자 답변 박스 */
+    .admin-comment-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-color);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
     
   </style>
 </head>
@@ -842,7 +866,83 @@
       </div>
     </div>
     
-    <section id="tab-feedback" class="tab-content"><div class="card"><h2>📮 익명의견함</h2><p>준비 중입니다.</p></div></section>
+    <!-- 5. 익명의견함 탭 -->
+    <section id="tab-feedback" class="tab-content">
+      
+      <!-- 상단 안내 및 건의 작성 폼 카드 -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">📮 SHIFT 익명 의견함</h3>
+            <p style="font-size: 0.85rem; color: var(--sub-text);">
+              이름이나 계정 정보가 일절 남지 않는 100% 익명 공간입니다. 팀을 위한 따뜻한 제안과 솔직한 의견을 남겨주세요.
+            </p>
+          </div>
+          <button class="btn-action btn-secondary" onclick="openFeedbackAdminModal()" style="font-size: 0.8rem; padding: 6px 10px; border-color: var(--accent-color); color: var(--accent-color); flex-shrink: 0;">
+            ⚙️ 의견함 관리
+          </button>
+        </div>
+
+        <form id="feedbackSubmitForm" onsubmit="handleFeedbackSubmit(event)">
+          <!-- 카테고리 선택 -->
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--sub-text); margin-bottom: 6px;">건의 분류</label>
+            <select id="feedbackCategory" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.9rem;">
+              <option value="예배/콘티">🙏 예배/콘티 (예배 진행, 선곡 및 콘티 구성 건의)</option>
+              <option value="연습/일정">⏰ 연습/일정 (찬양팀 연습 진행, 일정 및 시간 건의)</option>
+              <option value="악기/음향장비">🎸 악기/음향장비 (악기·음향 기기 고장 수리 및 개선점)</option>
+              <option value="팀운영/친교">☕ 팀운영/친교 (팀 사역 운영, 친교 모임 및 이벤트 제안)</option>
+              <option value="기타">💡 기타 (웹앱 개선점 및 새로운 기능 건의)</option>
+            </select>
+          </div>
+
+          <!-- 건의 내용 입력창 -->
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--sub-text); margin-bottom: 6px;">의견 내용</label>
+            <textarea id="feedbackContent" rows="4" required placeholder="솔직하고 자유로운 의견을 남겨주세요. 비방보다는 팀을 세우는 따뜻한 제안을 부탁드립니다." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.92rem; line-height: 1.6; resize: vertical;"></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmitFeedback" class="btn-action btn-primary" style="width: 100%; justify-content: center; padding: 11px; font-size: 0.95rem;">
+            ✉️ 익명으로 의견 보내기
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. 내가 남긴 의견 진행 상황 (내 기기에서만 보임) -->
+      <div id="myFeedbackSection" class="card" style="display: none; background: var(--card-sub-bg);">
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <span>🔍 내가 남긴 의견 처리 현황</span>
+          <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(이 기기에서 작성한 글만 안전하게 조회됩니다)</span>
+        </h4>
+        <div id="myFeedbackList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+
+      <!-- 3. 반영 완료된 의견 공개 피드 -->
+      <div style="margin-top: 28px;">
+        <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+          <span>🎉 반영 완료된 소중한 의견들</span>
+        </h4>
+        <div id="completedFeedbackList" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="loading-spinner">반영된 의견을 불러오는 중입니다...</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 관리자용 의견함 관리 모달 -->
+    <div id="feedbackAdminModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card" style="max-width: 650px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+          <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 익명의견함 관리 (관리자)</h3>
+          <button onclick="closeFeedbackAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        </div>
+
+        <div id="adminFeedbackList" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
+          <div class="loading-spinner">의견 목록을 불러오는 중입니다...</div>
+        </div>
+      </div>
+    </div>
+  
     <section id="tab-playground" class="tab-content"><div class="card"><h2>🎮 SHIFT 놀이터</h2><p>준비 중입니다.</p></div></section>
     <!-- 7. 관리자 탭 -->
     <section id="tab-admin" class="tab-content">
@@ -943,6 +1043,9 @@
       }
       if (tabId === 'admin') {
         syncAdminUI(); // ★ 관리자 탭 전환 시 최신 인증 상태 반영
+      }
+      if (tabId === 'feedback') {
+        loadSuggestionBoxData();
       }
     }
 
@@ -2207,6 +2310,276 @@
 
       if (authenticateAdmin(input.trim())) {
         if (typeof onSuccessCallback === 'function') onSuccessCallback();
+      }
+    }
+
+    /* ===================================================
+       익명 의견함 관리 모듈
+    =================================================== */
+    let allSuggestions = [];
+    const MY_SUGGESTIONS_KEY = 'shift_my_suggestion_ids';
+
+    // 로컬 스토리지에서 내가 작성한 ID 목록 가져오기/저장하기
+    function getMySuggestionIds() {
+      try {
+        return JSON.parse(localStorage.getItem(MY_SUGGESTIONS_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveMySuggestionId(newId) {
+      const ids = getMySuggestionIds();
+      if (!ids.includes(newId)) {
+        ids.push(newId);
+        localStorage.setItem(MY_SUGGESTIONS_KEY, JSON.stringify(ids));
+      }
+    }
+
+    /* Supabase에서 의견함 데이터 조회 */
+    async function loadSuggestionBoxData() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('suggestion_box')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        allSuggestions = data || [];
+
+        renderMySuggestions();
+        renderCompletedSuggestions();
+      } catch (err) {
+        console.error('의견함 데이터 로드 오류:', err);
+      }
+    }
+
+    /* 1. 의견 신규 제출 (익명) */
+    async function handleFeedbackSubmit(e) {
+      e.preventDefault();
+
+      const categoryEl = document.getElementById('feedbackCategory');
+      const contentEl = document.getElementById('feedbackContent');
+      const btn = document.getElementById('btnSubmitFeedback');
+
+      const category = categoryEl.value;
+      const content = contentEl.value.trim();
+
+      if (!content) {
+        alert('의견 내용을 입력해 주세요.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = '전송 중...';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('suggestion_box')
+          .insert([{
+            category,
+            content,
+            status: '접수됨'
+          }])
+          .select();
+
+        if (error) throw error;
+
+        // 생성된 글 ID를 내 기기에 보관 (익명 유지하면서 본인 글 상태 추적)
+        if (data && data.length > 0) {
+          saveMySuggestionId(data[0].id);
+        }
+
+        alert('소중한 의견이 익명으로 안전하게 접수되었습니다! 🙏');
+        contentEl.value = '';
+        await loadSuggestionBoxData();
+      } catch (err) {
+        console.error('의견 제출 실패:', err);
+        alert('의견 제출 중 오류가 발생했습니다: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '✉️ 익명으로 의견 보내기';
+      }
+    }
+
+    /* 상태에 따른 CSS 클래스 매핑 */
+    function getStatusClass(status) {
+      switch (status) {
+        case '접수됨': return 'status-received';
+        case '검토중': return 'status-reviewing';
+        case '반영완료': return 'status-completed';
+        case '보류': return 'status-hold';
+        default: return 'status-received';
+      }
+    }
+
+    /* 2. 내가 남긴 의견 진행 상황 렌더링 */
+    function renderMySuggestions() {
+      const section = document.getElementById('myFeedbackSection');
+      const container = document.getElementById('myFeedbackList');
+      if (!section || !container) return;
+
+      const myIds = getMySuggestionIds();
+      const myItems = allSuggestions.filter(item => myIds.includes(item.id));
+
+      if (myItems.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      container.innerHTML = myItems.map(item => {
+        const dateStr = item.created_at ? item.created_at.split('T')[0] : '';
+        return `
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-color);">[${item.category}]</span>
+              <span class="status-tag ${getStatusClass(item.status)}">${item.status || '접수됨'}</span>
+            </div>
+            <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text-color);">${item.content}</div>
+            ${item.admin_comment ? `
+              <div class="admin-comment-box">
+                <strong style="color: var(--accent-color); font-size: 0.78rem; display: block; margin-bottom: 2px;">💬 관리자 답변</strong>
+                ${item.admin_comment}
+              </div>
+            ` : ''}
+            <div style="font-size: 0.75rem; color: var(--sub-text); text-align: right; margin-top: 4px;">작성일: ${dateStr}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* 3. '반영완료' 의견 공개 갤러리 렌더링 */
+    function renderCompletedSuggestions() {
+      const container = document.getElementById('completedFeedbackList');
+      if (!container) return;
+
+      const completed = allSuggestions.filter(item => item.status === '반영완료');
+
+      if (completed.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text); background: var(--card-sub-bg); border-radius: 10px;">아직 반영 완료된 의견이 없습니다. 좋은 의견을 남겨주시면 정성껏 검토하겠습니다!</div>';
+        return;
+      }
+
+      container.innerHTML = completed.map(item => {
+        const dateStr = item.created_at ? item.created_at.split('T')[0] : '';
+        return `
+          <div class="card" style="border-left: 4px solid #10b981; margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="notice-tag tag-notice">${item.category}</span>
+              <span class="status-tag status-completed">✅ 반영완료</span>
+            </div>
+            <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); margin-bottom: 10px; white-space: pre-wrap;">${item.content}</div>
+            ${item.admin_comment ? `
+              <div class="admin-comment-box" style="background: var(--card-sub-bg);">
+                <strong style="color: #047857; font-size: 0.8rem; display: block; margin-bottom: 3px;">💬 관리자 코멘트</strong>
+                <div style="font-size: 0.88rem; color: var(--text-color);">${item.admin_comment}</div>
+              </div>
+            ` : ''}
+            <div style="font-size: 0.75rem; color: var(--sub-text); margin-top: 8px; text-align: right;">반영 처리일: ${dateStr}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ===================================================
+       관리자용 익명의견함 제어 모달
+    =================================================== */
+    function openFeedbackAdminModal() {
+      checkAdminAuth(() => {
+        renderAdminFeedbackList();
+        document.getElementById('feedbackAdminModal').style.display = 'flex';
+      });
+    }
+
+    function closeFeedbackAdminModal() {
+      document.getElementById('feedbackAdminModal').style.display = 'none';
+    }
+
+    function renderAdminFeedbackList() {
+      const container = document.getElementById('adminFeedbackList');
+      if (!container) return;
+
+      if (allSuggestions.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">들어온 의견이 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = allSuggestions.map(item => `
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 700; font-size: 0.85rem; color: var(--accent-color);">[${item.category}]</span>
+            <span class="status-tag ${getStatusClass(item.status)}">${item.status}</span>
+          </div>
+          <p style="font-size: 0.92rem; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap;">${item.content}</p>
+
+          <!-- 상태 변경 버튼 그룹 -->
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+            <button onclick="updateSuggestionStatus(${item.id}, '접수됨')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">접수됨</button>
+            <button onclick="updateSuggestionStatus(${item.id}, '검토중')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #d97706; color: #d97706;">🔍 검토중</button>
+            <button onclick="updateSuggestionStatus(${item.id}, '반영완료')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #10b981; color: #10b981;">✅ 반영완료</button>
+            <button onclick="updateSuggestionStatus(${item.id}, '보류')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #64748b; color: #64748b;">⏸️ 보류</button>
+            <button onclick="deleteSuggestion(${item.id})" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; margin-left: auto;">삭제</button>
+          </div>
+
+          <!-- 관리자 코멘트 달기 -->
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="comment-input-${item.id}" value="${item.admin_comment || ''}" placeholder="팀원들에게 보여줄 답변/코멘트 입력..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+            <button onclick="saveAdminComment(${item.id})" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">코멘트 저장</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* 의견 상태 변경 (검토중, 반영완료, 보류) */
+    async function updateSuggestionStatus(id, newStatus) {
+      try {
+        const { error } = await supabaseClient
+          .from('suggestion_box')
+          .update({ status: newStatus })
+          .eq('id', id);
+
+        if (error) throw error;
+        await loadSuggestionBoxData();
+        renderAdminFeedbackList();
+      } catch (err) {
+        alert('상태 변경 실패: ' + err.message);
+      }
+    }
+
+    /* 관리자 코멘트 저장 */
+    async function saveAdminComment(id) {
+      const input = document.getElementById(`comment-input-${id}`);
+      const comment = input ? input.value.trim() : '';
+
+      try {
+        const { error } = await supabaseClient
+          .from('suggestion_box')
+          .update({ admin_comment: comment || null })
+          .eq('id', id);
+
+        if (error) throw error;
+        alert('코멘트가 저장되었습니다.');
+        await loadSuggestionBoxData();
+        renderAdminFeedbackList();
+      } catch (err) {
+        alert('코멘트 저장 실패: ' + err.message);
+      }
+    }
+
+    /* 의견 삭제 */
+    async function deleteSuggestion(id) {
+      if (!confirm('이 의견을 정말 삭제하시겠습니까?')) return;
+      try {
+        const { error } = await supabaseClient
+          .from('suggestion_box')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        await loadSuggestionBoxData();
+        renderAdminFeedbackList();
+      } catch (err) {
+        alert('삭제 실패: ' + err.message);
       }
     }
 
