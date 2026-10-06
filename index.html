@@ -396,6 +396,27 @@
     .tag-ui { background-color: #d1fae5; color: #059669; }
     .tag-general { background-color: var(--card-sub-bg); color: var(--sub-text); }
     
+    /* 공지사항 태그 뱃지 색상 */
+    .notice-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-right: 6px;
+    }
+    .tag-notice { background-color: #d1fae5; color: #047857; }    /* 초록 */
+    .tag-schedule { background-color: #fee2e2; color: #b91c1c; }  /* 빨강 */
+    .tag-update { background-color: #dbeafe; color: #1d4ed8; }    /* 파랑 */
+    .tag-ui { background-color: #fef3c7; color: #b45309; }        /* 노랑 */
+    .tag-general { background-color: var(--card-sub-bg); color: var(--sub-text); }
+
+    /* 카드 왼쪽 포인트 보더 색상 (예배 취소 스타일과 동일) */
+    .border-notice { border-left: 4px solid #10b981 !important; }
+    .border-schedule { border-left: 4px solid #ef4444 !important; }
+    .border-update { border-left: 4px solid #3b82f6 !important; }
+    .border-ui { border-left: 4px solid #f59e0b !important; }
+    
   </style>
 </head>
 <body>
@@ -1421,21 +1442,30 @@ let currentScheduleData = null;
       const trimmed = title.trim();
       let tag = '일반';
       let tagClass = 'tag-general';
+      let borderClass = '';
 
-      // 1) 대괄호 태그 또는 키워드 추출
       if (/\[공지\]|공지/i.test(trimmed)) {
         tag = '공지';
         tagClass = 'tag-notice';
+        borderClass = 'border-notice'; // 초록색
       } else if (/\[일정\]|일정/i.test(trimmed)) {
         tag = '일정';
         tagClass = 'tag-schedule';
+        borderClass = 'border-schedule'; // 빨간색
       } else if (/\[UI\s*개선\]|UI\s*개선|UI/i.test(trimmed)) {
         tag = 'UI 개선';
         tagClass = 'tag-ui';
+        borderClass = 'border-ui'; // 노란색
       } else if (/\[업데이트\]|업데이트|v\d+\.\d+/i.test(trimmed)) {
         tag = '업데이트';
         tagClass = 'tag-update';
+        borderClass = 'border-update'; // 파란색
       }
+
+      const cleanTitle = trimmed.replace(/^\[(공지|일정|업데이트|UI\s*개선|일반)\]\s*/i, '');
+
+      return { tag, tagClass, borderClass, cleanTitle };
+    }
 
       // 제목에서 [태그] 부분 제거한 순수 제목
       const cleanTitle = trimmed.replace(/^\[(공지\vert{}일정\vert{}업데이트\vert{}UI\s*개선\vert{}일반)\]\s*/i, '');
@@ -1485,7 +1515,6 @@ let currentScheduleData = null;
       const container = document.getElementById('mainNoticeList');
       if (!container) return;
 
-      // '공지'와 '일정' 태그만 필터링
       const mainItems = allNotices.filter(item => {
         const { tag } = parseNoticeMetadata(item.title);
         return tag === '공지' || tag === '일정';
@@ -1496,20 +1525,18 @@ let currentScheduleData = null;
         return;
       }
 
-      // 정렬 규칙: is_pinned(true) 맨 위, 나머지는 등록일 오름차순(새로운 공지가 아래로 추가)
       const sorted = [...mainItems].sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
-        // 둘 다 pinned 상태가 같으면 생성일 오름차순 (옛날 글 위, 새 글 아래)
         return new Date(a.created_at) - new Date(b.created_at);
       });
 
       container.innerHTML = sorted.map(item => {
-        const { tag, tagClass, cleanTitle } = parseNoticeMetadata(item.title);
+        const { tag, tagClass, borderClass, cleanTitle } = parseNoticeMetadata(item.title);
         const dateStr = formatNoticeDate(item.created_at);
 
         return `
-          <div class="notice-card ${item.is_pinned ? 'pinned' : ''}">
+          <div class="notice-card ${item.is_pinned ? 'pinned' : ''} ${borderClass}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
               <div>
                 ${item.is_pinned ? '<span style="color: var(--accent-color); font-weight: 700; font-size: 0.82rem; margin-right: 4px;">📌 필독</span>' : ''}
@@ -1533,7 +1560,6 @@ let currentScheduleData = null;
       const container = document.getElementById('updateNoticeList');
       if (!container) return;
 
-      // '업데이트'와 'UI 개선' 태그만 필터링
       const updateItems = allNotices.filter(item => {
         const { tag } = parseNoticeMetadata(item.title);
         return tag === '업데이트' || tag === 'UI 개선';
@@ -1544,18 +1570,16 @@ let currentScheduleData = null;
         return;
       }
 
-      // 정렬 규칙: 신규 업데이트가 위로 (created_at 내림차순)
       const sorted = [...updateItems].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
       container.innerHTML = sorted.map((item, idx) => {
-        const { tag, tagClass, cleanTitle } = parseNoticeMetadata(item.title);
+        const { tag, tagClass, borderClass, cleanTitle } = parseNoticeMetadata(item.title);
         const dateStr = formatNoticeDate(item.created_at);
-        const isLatest = (idx === 0); // 최신 업데이트 글
+        const isLatest = (idx === 0);
 
         if (isLatest) {
-          // 최신 업데이트: 아코디언 없이 본문 전체 바로 노출 + NEW 뱃지
           return `
-            <div class="notice-card" style="border: 2px solid var(--accent-color);">
+            <div class="notice-card ${borderClass}" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <div>
                   <span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">LATEST</span>
@@ -1572,9 +1596,8 @@ let currentScheduleData = null;
             </div>
           `;
         } else {
-          // 이전 업데이트: 제목만 간단히 나오고 아코디언으로 본문 숨김
           return `
-            <div class="archive-item-card">
+            <div class="archive-item-card ${borderClass}">
               <div class="archive-item-header" onclick="toggleUpdateAccordion(${idx})">
                 <div>
                   <span class="notice-tag ${tagClass}">${tag}</span>
