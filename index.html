@@ -568,7 +568,8 @@ let currentScheduleData = null;
 
       // 4) 콘티 바로가기 링크 버튼들
       setupLinkBtn('btnSheet', item.sheet_url);
-      setupLinkBtn('btnYoutube', item.youtube_url);
+      const computedYoutubeUrl = buildYoutubePlaylistUrl(item.youtube_url);
+      setupLinkBtn('btnYoutube', computedYoutubeUrl);
       setupLinkBtn('btnMonitoring', item.monitoring_url);
 
       // 5) 세션 라인업
@@ -698,6 +699,58 @@ let currentScheduleData = null;
       } else {
         btn.style.display = 'none';
       }
+    }
+
+    // 유튜브 URL/텍스트에서 11자리 영상 ID를 추출하는 함수
+    function extractYoutubeVideoId(urlOrText) {
+      if (!urlOrText) return null;
+      // 일반 영상 ID (11자리 영문, 숫자, -, _) 정규식 매칭
+      const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/;
+      const match = urlOrText.match(regExp);
+      if (match && match[1]) {
+        return match[1];
+      }
+      // 이미 11자리 ID만 단독으로 적혀있는 경우
+      const trimmed = urlOrText.trim();
+      if (/^[\w-]{11}$/.test(trimmed)) {
+        return trimmed;
+      }
+      return null;
+    }
+
+    // Supabase의 youtube_url 데이터를 가상 재생목록 URL로 변환하는 함수
+    function buildYoutubePlaylistUrl(rawInput) {
+      if (!rawInput || rawInput.trim() === '') return '';
+
+      const trimmed = rawInput.trim();
+
+      // 만약 기존 방식대로 이미 공식 재생목록 링크(list=PL...)라면 그대로 사용
+      if (trimmed.includes('list=PL') || trimmed.includes('list=OLAK5uy_')) {
+        return trimmed;
+      }
+
+      // 줄바꿈, 쉼표, 공백 등으로 쪼개서 개별 영상 ID 추출
+      const tokens = trimmed.split(/[\r\n,\s]+/);
+      const videoIds = [];
+
+      tokens.forEach(token => {
+        const id = extractYoutubeVideoId(token);
+        if (id && !videoIds.includes(id)) {
+          videoIds.push(id);
+        }
+      });
+
+      // 1) 추출된 영상 ID가 2개 이상이면 -> 연속 가상 재생목록 URL 생성
+      if (videoIds.length > 1) {
+        return `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`;
+      }
+      // 2) 영상 ID가 1개만 들어있으면 -> 해당 단일 영상 URL 생성
+      if (videoIds.length === 1) {
+        return `https://www.youtube.com/watch?v=${videoIds[0]}`;
+      }
+
+      // 파싱되지 않는 일반 URL 형태라면 원본 그대로 반환
+      return trimmed;
     }
 
     /* ===================================================
