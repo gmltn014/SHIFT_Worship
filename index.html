@@ -555,9 +555,28 @@
 
         <!-- 찬양 및 세션 검색창 -->
         <div style="margin-top: 12px;">
-          <input type="text" id="archiveSearchInput" placeholder="🔍 곡명, 인도자, 섬김이 이름 검색..." oninput="handleArchiveSearch()" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.9rem;">
+          <!-- 찬양 및 세션 검색 & 상세 필터창 -->
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <!-- 1) 텍스트 검색 입력창 -->
+          <input type="text" id="archiveSearchInput" placeholder="🔍 곡명 또는 검색어 입력..." oninput="handleArchiveSearch()" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.9rem;">
+
+          <!-- 2) 상세 필터 (인도자 선택 & 결단찬양 포함 여부 체크) -->
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; background-color: var(--card-sub-bg); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+            <!-- 인도자 필터 드롭다운 -->
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <label for="archiveLeaderFilter" style="font-weight: 600; color: var(--sub-text);">🎤 인도자:</label>
+              <select id="archiveLeaderFilter" onchange="handleArchiveSearch()" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
+                <option value="">전체 인도자</option>
+              </select>
+            </div>
+
+            <!-- 결단찬양 포함 여부 토글 체크박스 -->
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; color: var(--text-color); font-weight: 500;">
+              <input type="checkbox" id="archiveIncludeClosingSong" checked onchange="handleArchiveSearch()" style="cursor: pointer; width: 15px; height: 15px; accent-color: var(--accent-color);">
+              결단찬양 포함 검색
+            </label>
+          </div>
         </div>
-      </div>
 
       <!-- 로딩 및 상태 표시 -->
       <div id="archiveLoading" class="loading-spinner">아카이브 데이터를 불러오는 중입니다...</div>
@@ -972,6 +991,8 @@ let currentScheduleData = null;
         allScheduleArchive = data || [];
         loadingEl.style.display = 'none';
 
+        populateLeaderFilterOptions(); // ★ 인도자 필터 드롭다운 생성
+
         // 최신 데이터의 연/월로 초기 기준 설정
         if (allScheduleArchive.length > 0) {
           const latestDate = new Date(allScheduleArchive[0].date);
@@ -1069,6 +1090,8 @@ let currentScheduleData = null;
     /* 필터링된 데이터 가져오기 */
     function getFilteredArchiveData() {
       const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
+      const selectedLeader = (document.getElementById('archiveLeaderFilter')?.value || '').trim();
+      const includeClosing = document.getElementById('archiveIncludeClosingSong')?.checked ?? true;
       const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
 
       return allScheduleArchive.filter(item => {
@@ -1076,28 +1099,39 @@ let currentScheduleData = null;
         if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
           return false;
         }
-        // 2) 검색어 필터 (곡명, 인도자, 결단찬양, 팀원 이름 전체 매칭)
+
+        // 2) 인도자 필터 (선택되어 있는 경우)
+        if (selectedLeader && (item.leader || '').trim() !== selectedLeader) {
+          return false;
+        }
+
+        // 3) 키워드 검색 (곡명, 인도자, 본문 등)
         if (keyword) {
-          const matchTarget = [
+          const targets = [
             item.date,
             item.worship_title,
             item.song_list,
-            item.closing_song,
-            item.leader,
-            item.vocal,
-            item.keyboard1,
-            item.keyboard2,
-            item.drum,
-            item.guitar,
-            item.bass,
-            item.sound,
-            item.broadcast,
-            item.subtitle,
-            item.video
-          ].filter(Boolean).join(' ').toLowerCase();
+            item.leader
+          ];
 
-          if (!matchTarget.includes(keyword)) return false;
+          // 결단찬양 포함 체크되어 있을 때만 검색 대상 배열에 추가
+          if (includeClosing && item.closing_song) {
+            targets.push(item.closing_song);
+          }
+
+          // 섬김이 탭을 보고 있다면 다른 세션 이름도 매칭
+          if (currentArchiveSubTab === 'members') {
+            targets.push(
+              item.vocal, item.keyboard1, item.keyboard2,
+              item.drum, item.guitar, item.bass,
+              item.sound, item.broadcast, item.subtitle, item.video
+            );
+          }
+
+          const matchText = targets.filter(Boolean).join(' ').toLowerCase();
+          if (!matchText.includes(keyword)) return false;
         }
+
         return true;
       });
     }
@@ -1248,6 +1282,33 @@ let currentScheduleData = null;
           </div>
         `;
       }).join('');
+    }
+
+    /* 등록된 모든 데이터에서 중복 없는 인도자 목록 추출하여 드롭다운 구성 */
+    function populateLeaderFilterOptions() {
+      const leaderSelect = document.getElementById('archiveLeaderFilter');
+      if (!leaderSelect) return;
+
+      const currentVal = leaderSelect.value;
+      const leaderSet = new Set();
+
+      allScheduleArchive.forEach(item => {
+        // 예배 취소(X_) 건은 제외하고, 인도자명이 있는 경우만 수집
+        const isCanceled = /^x_/i.test((item.worship_title || '').trim());
+        if (!isCanceled && item.leader && item.leader.trim() !== '' && item.leader.trim() !== '-') {
+          leaderSet.add(item.leader.trim());
+        }
+      });
+
+      leaderSelect.innerHTML = '<option value="">전체 인도자</option>';
+      Array.from(leaderSet).sort().forEach(leader => {
+        const opt = document.createElement('option');
+        opt.value = leader;
+        opt.textContent = leader;
+        leaderSelect.appendChild(opt);
+      });
+
+      leaderSelect.value = currentVal;
     }
 
     /* ===================================================
