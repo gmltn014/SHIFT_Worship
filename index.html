@@ -638,6 +638,18 @@ let currentScheduleData = null;
       });
     }
 
+    // 링크 버튼 표시/숨김 설정 유틸 함수
+    function setupLinkBtn(elementId, url) {
+      const btn = document.getElementById(elementId);
+      if (!btn) return;
+      if (url && url.trim().length > 0) {
+        btn.href = url.trim();
+        btn.style.display = 'inline-flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
     /* ===================================================
        3. 탭 전환 및 테마 관리
     =================================================== */
