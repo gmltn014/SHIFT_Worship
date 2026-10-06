@@ -459,36 +459,85 @@ let currentScheduleData = null;
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ===================================================
-       2. 최신 콘티 데이터 로드 및 렌더링
+       이번 주 일요일 계산 헬퍼 함수
+    =================================================== */
+    function getThisSundayDateString() {
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
+      
+      // 이번 주 일요일까지 남은 일수 계산
+      // (일요일 당일이면 0일 뒤, 월요일이면 6일 뒤, 토요일이면 1일 뒤)
+      const daysUntilSunday = (7 - dayOfWeek) % 7;
+      
+      const thisSunday = new Date(now);
+      thisSunday.setDate(now.getDate() + daysUntilSunday);
+
+      const yyyy = thisSunday.getFullYear();
+      const mm = String(thisSunday.getMonth() + 1).padStart(2, '0');
+      const dd = String(thisSunday.getDate()).padStart(2, '0');
+
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    /* ===================================================
+       이번 주 콘티 데이터 로드 로직
     =================================================== */
     async function loadCurrentConti() {
       const loadingEl = document.getElementById('contiLoading');
       const containerEl = document.getElementById('contiContainer');
 
       try {
-        // 날짜 기준 내림차순 정렬하여 가장 최신 등록 1건 가져오기
-        const { data, error } = await supabaseClient
+        const thisSundayStr = getThisSundayDateString();
+        console.log('기준 이번 주 일요일 날짜:', thisSundayStr);
+
+        // 1. 이번 주 일요일 날짜(date)와 정확히 일치하는 스케줄 먼저 조회
+        const { data: sundayData, error: sundayError } = await supabaseClient
+          .from('schedules')
+          .select('*')
+          .eq('date', thisSundayStr)
+          .maybeSingle(); // 결과가 없어도 에러 대신 null 반환
+
+        if (sundayError) throw sundayError;
+
+        if (sundayData) {
+          // [Case A] 이번 주 일요일 콘티가 등록되어 있는 경우
+          renderContiView(sundayData);
+          loadingEl.style.display = 'none';
+          containerEl.style.display = 'block';
+          return;
+        }
+
+        // 2. [Case B] 아직 이번 주 일요일 데이터가 없을 때 -> 가장 최신 등록 주차로 대체
+        console.warn(`이번 주(${thisSundayStr}) 데이터가 없어 가장 최신 등록 주차를 불러옵니다.`);
+        
+        const { data: latestData, error: latestError } = await supabaseClient
           .from('schedules')
           .select('*')
           .order('date', { ascending: false })
           .limit(1);
 
-        if (error) throw error;
+        if (latestError) throw latestError;
 
-        if (data && data.length > 0) {
-          const item = data[0];
-          renderContiView(item);
+        if (latestData && latestData.length > 0) {
+          renderContiView(latestData[0]);
           loadingEl.style.display = 'none';
           containerEl.style.display = 'block';
+          
+          // 이번 주 콘티가 아니라는 안내 문구를 날짜 뱃지 옆에 살짝 표시
+          const dateBadge = document.getElementById('viewWorshipDate');
+          if (dateBadge) {
+            dateBadge.innerText = `${latestData[0].date} (최근 주차)`;
+          }
         } else {
-          loadingEl.innerText = '등록된 예배 일정이 없습니다. Supabase에 일정을 등록해 주세요.';
+          loadingEl.innerText = '등록된 예배 일정이 없습니다. Supabase에서 일정을 추가해 주세요.';
         }
+
       } catch (err) {
-        console.error('데이터 로드 실패:', err);
+        console.error('콘티 로드 실패:', err);
         loadingEl.innerText = '데이터를 불러오는 중 오류가 발생했습니다: ' + err.message;
       }
     }
-
+    
     function renderContiView(item) {
       if (!item) return;
 
@@ -572,7 +621,8 @@ let currentScheduleData = null;
 
       // 단톡방 공유용 양식
       const message = 
-`[${titleStr}] 세션 라인업 안내 🕊️
+`[${titleStr}] SHIFT 세션 라인업 안내 🕊️
+(we will Sing Higher and Imagine Forever. Thanks God.)
 
 📅 일시: ${dateStr}
 ━━━━━━━━━━━━━━
