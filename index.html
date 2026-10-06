@@ -579,7 +579,12 @@
               <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
               <h2 class="worship-title" id="viewWorshipTitle">예배명을 불러옵니다</h2>
             </div>
+            <!-- 콘티 관리자 버튼 추가 -->
+            <button class="btn-action btn-secondary" onclick="openContiAdminModal()" style="font-size: 0.82rem; padding: 6px 12px; border-color: var(--accent-color); color: var(--accent-color); flex-shrink: 0;">
+              ⚙️ 콘티 관리
+            </button>
           </div>
+
 
           <div class="song-box">
             <h4>📋 찬양 콘티 곡 목록</h4>
@@ -991,6 +996,86 @@
         </div>
       </div>
 
+          <!-- 이번 주 콘티 관리자 모달 -->
+    <div id="contiAdminModal" class="modal-overlay" style="display: none;">
+      <div class="modal-card" style="max-width: 580px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+          <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 이번 주 콘티 등록 및 수정</h3>
+          <button onclick="closeContiAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        </div>
+
+        <form id="contiAdminForm" onsubmit="handleSaveConti(event)">
+          <!-- 예배 기본 정보 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배 일자</label>
+              <input type="date" id="adminContiDate" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배명 (취소 시 'X_사유')</label>
+              <input type="text" id="adminContiTitle" placeholder="예: 주일 3부 청년예배" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+            </div>
+          </div>
+
+          <!-- 1. 콘티 곡 수 및 곡 목록 동적 입력기 -->
+          <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <label style="font-size: 0.88rem; font-weight: 700;">📋 찬양 콘티 곡 목록</label>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.78rem; color: var(--sub-text);">곡 수:</span>
+                <select id="adminSongCountSelect" onchange="generateSongInputFields(parseInt(this.value, 10))" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem; font-weight: 600;">
+                  <option value="1">1곡</option>
+                  <option value="2">2곡</option>
+                  <option value="3">3곡</option>
+                  <option value="4" selected>4곡</option>
+                  <option value="5">5곡</option>
+                  <option value="6">6곡</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 동적으로 생성되는 곡 입력 필드들 -->
+            <div id="adminSongInputsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+
+          <!-- 결단 찬양 -->
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 결단 찬양 (곡명 및 코드)</label>
+            <input type="text" id="adminClosingSong" placeholder="예: 꽃들도 (G)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+          </div>
+
+          <!-- 2. 유튜브 음원 링크 입력 (스마트 파싱 안내 포함) -->
+          <div style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">🎧 유튜브 음원 링크 (재생목록 / 영상 링크들)</label>
+              <button type="button" onclick="formatYoutubeInputHelper()" style="background: none; border: none; font-size: 0.75rem; color: var(--accent-color); cursor: pointer; text-decoration: underline;">
+                ⚡ 11자리 코드 자동 추출
+              </button>
+            </div>
+            <textarea id="adminYoutubeUrl" rows="2" placeholder="유튜브 영상 링크(여러 개 줄바꿈) 또는 재생목록 링크를 붙여넣으세요. 저장 시 11자리 코드로 자동 변환됩니다." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; font-family: monospace;"></textarea>
+          </div>
+
+          <!-- 기타 링크들 (악보, 실황 등) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📑 전체 악보 링크</label>
+              <input type="url" id="adminSheetUrl" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎥 실황 모니터링 링크</label>
+              <input type="url" id="adminMonitoringUrl" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+            <button type="button" class="btn-action btn-secondary" onclick="closeContiAdminModal()" style="font-size: 0.85rem;">취소</button>
+            <button type="submit" id="btnSaveContiSubmit" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px;">저장하기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
     </section>
   </main>
 
@@ -1382,6 +1467,190 @@
       }
 
       return trimmed;
+    }
+
+        /* ===================================================
+       이번 주 콘티 관리 모듈 (관리자 기능)
+    =================================================== */
+    
+    // 모달 열기 (관리자 인증 체크 연동)
+    function openContiAdminModal() {
+      checkAdminAuth(() => {
+        setupContiAdminForm();
+        document.getElementById('contiAdminModal').style.display = 'flex';
+      });
+    }
+
+    function closeContiAdminModal() {
+      document.getElementById('contiAdminModal').style.display = 'none';
+    }
+
+    // 곡 수에 맞춘 동적 input 필드 생성
+    function generateSongInputFields(count, initialSongs = []) {
+      const container = document.getElementById('adminSongInputsContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+      for (let i = 1; i <= count; i++) {
+        const val = initialSongs[i - 1] || '';
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+        row.innerHTML = `
+          <span style="font-size: 0.85rem; font-weight: 700; width: 22px; text-align: right; color: var(--sub-text);">${i}.</span>
+          <input type="text" class="admin-song-input" data-index="${i}" value="${val}" placeholder="${i}번째 곡명 및 코드 (예: 시선 - E)" style="flex: 1; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+        `;
+        container.appendChild(row);
+      }
+    }
+
+    // 기존 데이터로 폼 채우기
+    function setupContiAdminForm() {
+      const thisSundayStr = getThisSundayDateString();
+      const currentItem = currentScheduleData || {};
+
+      document.getElementById('adminContiDate').value = currentItem.date || thisSundayStr;
+      document.getElementById('adminContiTitle').value = currentItem.worship_title || '';
+      document.getElementById('adminClosingSong').value = currentItem.closing_song || '';
+      document.getElementById('adminYoutubeUrl').value = currentItem.youtube_url || '';
+      document.getElementById('adminSheetUrl').value = currentItem.sheet_url || '';
+      document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
+
+      // 기존 등록된 song_list에서 개별 곡명 분리 파싱
+      const rawSongList = currentItem.song_list || '';
+      let songs = [];
+      if (rawSongList.trim()) {
+        songs = rawSongList
+          .split(/\r?\n/)
+          .map(line => line.replace(/^\d+[\.\)\-\s]\s*/, '').trim()) // 앞의 '1. ', '1) ' 등 번호 제거
+          .filter(Boolean);
+      }
+
+      const songCount = songs.length > 0 ? Math.min(Math.max(songs.length, 1), 6) : 4;
+    const countSelect = document.getElementById('adminSongCountSelect');
+    if (countSelect) countSelect.value = String(songCount);
+
+    generateSongInputFields(songCount, songs);
+    }
+
+    // 유튜브 스마트 파싱 로직: 11자리 코드 추출 또는 비공개/재생목록 보존
+    function parseAndFormatYoutubeInput(rawText) {
+      if (!rawText || !rawText.trim()) return '';
+      const trimmed = rawText.trim();
+
+      // 만약 비공개/공개 재생목록 링크(list=...) 형태라면 링크 그대로 유지
+      if (trimmed.includes('list=')) {
+        return trimmed;
+      }
+
+      // 영상 링크나 텍스트에서 11자리 ID들 전부 추출
+      const tokens = trimmed.split(/[\r\n,\s]+/);
+      const videoIds = [];
+
+      tokens.forEach(token => {
+        const id = extractYoutubeVideoId(token);
+        if (id && !videoIds.includes(id)) {
+          videoIds.push(id);
+        }
+      });
+
+      // 추출된 11자리 코드들을 "ID1, ID2, ID3" 형태로 결합
+      if (videoIds.length > 0) {
+        return videoIds.join(', ');
+      }
+
+      return trimmed;
+    }
+
+    // UI에서 추출 버튼 눌렀을 때 텍스트창 즉시 변환 도우미
+    function formatYoutubeInputHelper() {
+      const textarea = document.getElementById('adminYoutubeUrl');
+      if (!textarea) return;
+      const formatted = parseAndFormatYoutubeInput(textarea.value);
+      textarea.value = formatted;
+      alert('유튜브 영상 코드가 추출 및 정리되었습니다!');
+    }
+
+    // 폼 저장 (INSERT or UPDATE)
+    async function handleSaveConti(e) {
+      e.preventDefault();
+
+      const date = document.getElementById('adminContiDate').value;
+      const worship_title = document.getElementById('adminContiTitle').value.trim();
+      const closing_song = document.getElementById('adminClosingSong').value.trim();
+      const rawYoutube = document.getElementById('adminYoutubeUrl').value.trim();
+      const sheet_url = document.getElementById('adminSheetUrl').value.trim();
+      const monitoring_url = document.getElementById('adminMonitoringUrl').value.trim();
+      const submitBtn = document.getElementById('btnSaveContiSubmit');
+
+      // 1. 각 곡 입력창들의 값을 모아 "1. 곡명\n2. 곡명..." 양식으로 조합
+      const songInputs = document.querySelectorAll('.admin-song-input');
+      const songLines = [];
+      songInputs.forEach((input, idx) => {
+        const val = input.value.trim();
+        if (val) {
+          songLines.push(`${idx + 1}. ${val}`);
+        }
+      });
+      const song_list = songLines.join('\n');
+
+      // 2. 유튜브 링크 스마트 파싱 적용
+      const youtube_url = parseAndFormatYoutubeInput(rawYoutube);
+
+      const payload = {
+        date,
+        worship_title: worship_title || null,
+        song_list: song_list || null,
+        closing_song: closing_song || null,
+        youtube_url: youtube_url || null,
+        sheet_url: sheet_url || null,
+        monitoring_url: monitoring_url || null
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = '저장 중...';
+
+      try {
+        // 해당 date의 스케줄이 이미 있는지 확인
+        const { data: existing, error: checkError } = await supabaseClient
+          .from('schedules')
+          .select('id')
+          .eq('date', date)
+          .maybeSingle();
+
+        if (checkError) throw checkError;
+
+        if (existing && existing.id) {
+          // 기존 데이터 UPDATE
+          const { error: updateError } = await supabaseClient
+            .from('schedules')
+            .update(payload)
+            .eq('id', existing.id);
+          if (updateError) throw updateError;
+          alert('이번 주 콘티 정보가 성공적으로 수정되었습니다! ✨');
+        } else {
+          // 신규 데이터 INSERT
+          const { error: insertError } = await supabaseClient
+            .from('schedules')
+            .insert([payload]);
+          if (insertError) throw insertError;
+          alert('새로운 주차의 콘티가 성공적으로 등록되었습니다! ✨');
+        }
+
+        closeContiAdminModal();
+
+        // 메인 콘티 화면 및 아카이브 데이터 갱신
+        await loadCurrentConti();
+        if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
+          await loadAllArchiveData();
+        }
+
+      } catch (err) {
+        console.error('콘티 저장 오류:', err);
+        alert('저장에 실패했습니다: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = '저장하기';
+      }
     }
 
     /* ===================================================
