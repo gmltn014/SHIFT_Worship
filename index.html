@@ -1123,37 +1123,53 @@ let currentScheduleData = null;
       }
 
       container.innerHTML = list.map((item, idx) => {
+        const rawTitle = (item.worship_title || '').trim();
+        const isCanceled = /^x_/i.test(rawTitle);
+        const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
         const computedYt = buildYoutubePlaylistUrl(item.youtube_url);
+
         return `
-          <div class="archive-item-card">
+          <div class="archive-item-card" style="${isCanceled ? 'border-left: 4px solid #ef4444;' : ''}">
             <div class="archive-item-header" onclick="toggleArchiveAccordion(${idx})">
               <div>
-                <span class="worship-date-badge">${item.date}</span>
-                <strong style="font-size: 1.05rem; display: block; margin-top: 4px;">${item.worship_title || item.date + ' 예배'}</strong>
-                <span style="font-size: 0.82rem; color: var(--sub-text);">인도: ${item.leader || '-'}</span>
+                <span class="worship-date-badge" style="${isCanceled ? 'background-color: #fee2e2; color: #b91c1c;' : ''}">
+                  ${item.date} ${isCanceled ? '• 예배 없음' : ''}
+                </span>
+                <strong style="font-size: 1.05rem; display: block; margin-top: 4px; ${isCanceled ? 'color: #ef4444;' : ''}">
+                  ${isCanceled ? `🚫 [예배 없음] ${cancelReason || '취소'}` : (rawTitle || item.date + ' 주일예배')}
+                </strong>
+                <span style="font-size: 0.82rem; color: var(--sub-text);">
+                  ${isCanceled ? '⚠️ 상세 취소 사유를 보려면 터치하세요' : `인도: ${item.leader || '-'}`}
+                </span>
               </div>
               <button class="accordion-toggle-btn" id="acc-btn-${idx}">▼</button>
             </div>
             
             <div class="archive-item-body" id="acc-body-${idx}">
-              <div style="margin: 12px 0 8px 0;">
-                <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
-                <div style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>
-              </div>
+              ${isCanceled ? `
+                <div style="background: rgba(239, 68, 68, 0.08); border-radius: 8px; padding: 14px; margin: 12px 0; border: 1px dashed #ef4444;">
+                  <strong style="color: #ef4444; display: block; margin-bottom: 4px;">🚫 예배 미진행 안내</strong>
+                  <div style="font-size: 0.92rem; color: var(--text-color);">${cancelReason || '별도 사유가 기재되지 않았습니다.'}</div>
+                </div>
+              ` : `
+                <div style="margin: 12px 0 8px 0;">
+                  <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
+                  <div style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>
+                </div>
 
-              ${item.closing_song ? `
-                <div style="margin: 8px 0; font-size: 0.88rem;">
-                  <strong>🕊️ 결단찬양:</strong> ${item.closing_song}
-                </div>` : ''}
+                ${item.closing_song ? `
+                  <div style="margin: 8px 0; font-size: 0.88rem;">
+                    <strong>🕊️ 결단찬양:</strong> ${item.closing_song}
+                  </div>` : ''}
 
-              <!-- 버튼 모음 (아코디언 내부) -->
-              <div class="action-btn-group" style="margin-top: 12px; gap: 6px;">
-                ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
-                ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원(연속재생)</a>` : ''}
-                ${item.closing_sheet_url ? `<a href="${item.closing_sheet_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">📄 결단악보</a>` : ''}
-                ${item.closing_youtube_url ? `<a href="${item.closing_youtube_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">▶️ 결단영상</a>` : ''}
-                ${item.monitoring_url ? `<a href="${item.monitoring_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎥 실황</a>` : ''}
-              </div>
+                <div class="action-btn-group" style="margin-top: 12px; gap: 6px;">
+                  ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
+                  ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원(연속재생)</a>` : ''}
+                  ${item.closing_sheet_url ? `<a href="${item.closing_sheet_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">📄 결단악보</a>` : ''}
+                  ${item.closing_youtube_url ? `<a href="${item.closing_youtube_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">▶️ 결단영상</a>` : ''}
+                  ${item.monitoring_url ? `<a href="${item.monitoring_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎥 실황</a>` : ''}
+                </div>
+              `}
             </div>
           </div>
         `;
@@ -1186,7 +1202,23 @@ let currentScheduleData = null;
       }
 
       container.innerHTML = list.map(item => {
-        // 건반 텍스트 정리
+        const rawTitle = (item.worship_title || '').trim();
+        const isCanceled = /^x_/i.test(rawTitle);
+        const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
+
+        if (isCanceled) {
+          return `
+            <div class="card" style="margin-bottom: 12px; padding: 16px; border-left: 4px solid #ef4444;">
+              <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+                <span class="worship-date-badge" style="background-color: #fee2e2; color: #b91c1c;">${item.date}</span>
+                <strong style="font-size: 1rem; margin-left: 6px; color: #ef4444;">🚫 [예배 없음] ${cancelReason}</strong>
+              </div>
+              <p style="font-size: 0.88rem; color: var(--sub-text); margin: 6px 0;">해당 주차는 예배가 없어 세션 배치가 없습니다.</p>
+            </div>
+          `;
+        }
+
+        // 일반 정상 예배 섬김이 카드
         const kbParts = [];
         if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) kbParts.push(`${item.keyboard1}(메인)`);
         if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) kbParts.push(`${item.keyboard2}(세컨)`);
@@ -1196,7 +1228,7 @@ let currentScheduleData = null;
           <div class="card" style="margin-bottom: 12px; padding: 16px;">
             <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
               <span class="worship-date-badge">${item.date}</span>
-              <strong style="font-size: 1rem; margin-left: 6px;">${item.worship_title || item.date + ' 라인업'}</strong>
+              <strong style="font-size: 1rem; margin-left: 6px;">${rawTitle || item.date + ' 라인업'}</strong>
             </div>
             
             <div class="members-history-grid">
