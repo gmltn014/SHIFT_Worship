@@ -369,6 +369,33 @@
       color: var(--sub-text);
       font-weight: 600;
     }
+    /* 공지사항 전용 스타일 */
+    .notice-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      position: relative;
+    }
+    .notice-card.pinned {
+      border: 2px solid var(--accent-color);
+      background-color: var(--card-bg);
+    }
+    .notice-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-right: 6px;
+    }
+    .tag-notice { background-color: #fee2e2; color: #dc2626; }
+    .tag-schedule { background-color: #fef3c7; color: #d97706; }
+    .tag-update { background-color: #e0e7ff; color: #4338ca; }
+    .tag-ui { background-color: #d1fae5; color: #059669; }
+    .tag-general { background-color: var(--card-sub-bg); color: var(--sub-text); }
+    
   </style>
 </head>
 <body>
@@ -588,7 +615,29 @@
       <div id="archiveMembersList" style="display: none; flex-direction: column; gap: 12px;"></div>
 
     </section>
-    <section id="tab-notice" class="tab-content"><div class="card"><h2>📢 공지사항</h2><p>준비 중입니다.</p></div></section>
+    <!-- 3. 공지사항 탭 -->
+    <section id="tab-notice" class="tab-content">
+      
+      <!-- 공지사항 내부 서브 탭 (주요 공지 vs 업데이트 노트) -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+        <button id="subtab-btn-mainNotice" class="btn-action btn-primary" onclick="switchNoticeSubTab('main')" style="font-size: 0.85rem; padding: 7px 14px;">
+          📢 주요 공지
+        </button>
+        <button id="subtab-btn-updateNotice" class="btn-action btn-secondary" onclick="switchNoticeSubTab('update')" style="font-size: 0.85rem; padding: 7px 14px;">
+          📝 업데이트 노트
+        </button>
+      </div>
+
+      <!-- 로딩 표시 -->
+      <div id="noticeLoading" class="loading-spinner">공지사항을 불러오는 중입니다...</div>
+
+      <!-- 3-A. 주요 공지 목록 컨테이너 -->
+      <div id="mainNoticeList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
+      <!-- 3-B. 업데이트 노트 목록 컨테이너 -->
+      <div id="updateNoticeList" style="display: none; flex-direction: column; gap: 12px;"></div>
+
+    </section>
     <section id="tab-members" class="tab-content"><div class="card"><h2>👥 시프트 명단</h2><p>준비 중입니다.</p></div></section>
     <section id="tab-feedback" class="tab-content"><div class="card"><h2>📮 익명의견함</h2><p>준비 중입니다.</p></div></section>
     <section id="tab-playground" class="tab-content"><div class="card"><h2>🎮 SHIFT 놀이터</h2><p>준비 중입니다.</p></div></section>
@@ -1309,6 +1358,255 @@ let currentScheduleData = null;
       });
 
       leaderSelect.value = currentVal;
+    }
+
+    /* ===================================================
+       공지사항 & 업데이트 노트 관리
+    =================================================== */
+    let allNotices = [];
+    let currentNoticeSubTab = 'main'; // 'main' | 'update'
+
+    // 탭 전환 시 공지사항 첫 로드 트리거 연동
+    const prevSwitchTab = switchTab;
+    switchTab = function(tabId, clickedBtn) {
+      prevSwitchTab(tabId, clickedBtn);
+      if (tabId === 'notice' && allNotices.length === 0) {
+        loadNoticeData();
+      }
+    };
+
+    /* Supabase에서 공지사항 데이터 불러오기 */
+    async function loadNoticeData() {
+      const loadingEl = document.getElementById('noticeLoading');
+      try {
+        const { data, error } = await supabaseClient
+          .from('notice')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allNotices = data || [];
+        loadingEl.style.display = 'none';
+
+        // 1) 업데이트 노트 제목에서 최신 버전(v0.0.0) 감지하여 푸터 업데이트
+        syncAppVersionFromNotices();
+
+        // 2) 렌더링
+        renderNotices();
+      } catch (err) {
+        console.error('공지사항 로드 오류:', err);
+        loadingEl.innerText = '공지사항을 불러오지 못했습니다: ' + err.message;
+      }
+    }
+
+    /* 제목에서 v0.0.0 형태의 버전을 찾아 푸터에 동기화 */
+    function syncAppVersionFromNotices() {
+      for (const item of allNotices) {
+        const title = item.title || '';
+        const match = title.match(/v\d+\.\d+(\.\d+)?/i);
+        if (match) {
+          const detectedVersion = match[0];
+          const footerVer = document.querySelector('.footer-version');
+          if (footerVer) {
+            footerVer.innerText = `${detectedVersion} (Supabase Engine)`;
+          }
+          break; // 최신 등록 기준 첫 번째 매칭 버전 채택
+        }
+      }
+    }
+
+    /* 제목에서 태그 및 버전 추출 */
+    function parseNoticeMetadata(title = '') {
+      const trimmed = title.trim();
+      let tag = '일반';
+      let tagClass = 'tag-general';
+
+      // 1) 대괄호 태그 또는 키워드 추출
+      if (/\[공지\]|공지/i.test(trimmed)) {
+        tag = '공지';
+        tagClass = 'tag-notice';
+      } else if (/\[일정\]|일정/i.test(trimmed)) {
+        tag = '일정';
+        tagClass = 'tag-schedule';
+      } else if (/\[UI\s*개선\]|UI\s*개선|UI/i.test(trimmed)) {
+        tag = 'UI 개선';
+        tagClass = 'tag-ui';
+      } else if (/\[업데이트\]|업데이트|v\d+\.\d+/i.test(trimmed)) {
+        tag = '업데이트';
+        tagClass = 'tag-update';
+      }
+
+      // 제목에서 [태그] 부분 제거한 순수 제목
+      const cleanTitle = trimmed.replace(/^\[(공지\vert{}일정\vert{}업데이트\vert{}UI\s*개선\vert{}일반)\]\s*/i, '');
+
+      return { tag, tagClass, cleanTitle };
+    }
+
+    /* 날짜 포맷 (YYYY-MM-DD) */
+    function formatNoticeDate(isoString) {
+      if (!isoString) return '';
+      return isoString.split('T')[0];
+    }
+
+    /* 서브 탭 전환 */
+    function switchNoticeSubTab(subTab) {
+      currentNoticeSubTab = subTab;
+      const btnMain = document.getElementById('subtab-btn-mainNotice');
+      const btnUpdate = document.getElementById('subtab-btn-updateNotice');
+      const listMain = document.getElementById('mainNoticeList');
+      const listUpdate = document.getElementById('updateNoticeList');
+
+      if (subTab === 'main') {
+        btnMain.className = 'btn-action btn-primary';
+        btnUpdate.className = 'btn-action btn-secondary';
+        listMain.style.display = 'flex';
+        listUpdate.style.display = 'none';
+      } else {
+        btnMain.className = 'btn-action btn-secondary';
+        btnUpdate.className = 'btn-action btn-primary';
+        listMain.style.display = 'none';
+        listUpdate.style.display = 'flex';
+      }
+      renderNotices();
+    }
+
+    /* 공지사항 목록 렌더링 총괄 */
+    function renderNotices() {
+      if (currentNoticeSubTab === 'main') {
+        renderMainNotices();
+      } else {
+        renderUpdateNotices();
+      }
+    }
+
+    /* 3-A. 주요 공지 렌더링 */
+    function renderMainNotices() {
+      const container = document.getElementById('mainNoticeList');
+      if (!container) return;
+
+      // '공지'와 '일정' 태그만 필터링
+      const mainItems = allNotices.filter(item => {
+        const { tag } = parseNoticeMetadata(item.title);
+        return tag === '공지' || tag === '일정';
+      });
+
+      if (mainItems.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">등록된 주요 공지가 없습니다.</div>';
+        return;
+      }
+
+      // 정렬 규칙: is_pinned(true) 맨 위, 나머지는 등록일 오름차순(새로운 공지가 아래로 추가)
+      const sorted = [...mainItems].sort((a, b) => {
+        if (a.is_pinned && !b.is_pinned) return -1;
+        if (!a.is_pinned && b.is_pinned) return 1;
+        // 둘 다 pinned 상태가 같으면 생성일 오름차순 (옛날 글 위, 새 글 아래)
+        return new Date(a.created_at) - new Date(b.created_at);
+      });
+
+      container.innerHTML = sorted.map(item => {
+        const { tag, tagClass, cleanTitle } = parseNoticeMetadata(item.title);
+        const dateStr = formatNoticeDate(item.created_at);
+
+        return `
+          <div class="notice-card ${item.is_pinned ? 'pinned' : ''}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                ${item.is_pinned ? '<span style="color: var(--accent-color); font-weight: 700; font-size: 0.82rem; margin-right: 4px;">📌 필독</span>' : ''}
+                <span class="notice-tag ${tagClass}">${tag}</span>
+                <strong style="font-size: 1.05rem; vertical-align: middle;">${cleanTitle}</strong>
+              </div>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 12px;">
+              작성: ${item.author || '관리자'} • ${dateStr}
+            </div>
+            <div style="font-size: 0.92rem; line-height: 1.7; white-space: pre-wrap; color: var(--text-color);">
+              ${item.content || ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* 3-B. 업데이트 노트 렌더링 */
+    function renderUpdateNotices() {
+      const container = document.getElementById('updateNoticeList');
+      if (!container) return;
+
+      // '업데이트'와 'UI 개선' 태그만 필터링
+      const updateItems = allNotices.filter(item => {
+        const { tag } = parseNoticeMetadata(item.title);
+        return tag === '업데이트' || tag === 'UI 개선';
+      });
+
+      if (updateItems.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">등록된 업데이트 노트가 없습니다.</div>';
+        return;
+      }
+
+      // 정렬 규칙: 신규 업데이트가 위로 (created_at 내림차순)
+      const sorted = [...updateItems].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      container.innerHTML = sorted.map((item, idx) => {
+        const { tag, tagClass, cleanTitle } = parseNoticeMetadata(item.title);
+        const dateStr = formatNoticeDate(item.created_at);
+        const isLatest = (idx === 0); // 최신 업데이트 글
+
+        if (isLatest) {
+          // 최신 업데이트: 아코디언 없이 본문 전체 바로 노출 + NEW 뱃지
+          return `
+            <div class="notice-card" style="border: 2px solid var(--accent-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div>
+                  <span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">LATEST</span>
+                  <span class="notice-tag ${tagClass}">${tag}</span>
+                  <strong style="font-size: 1.05rem;">${cleanTitle}</strong>
+                </div>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 12px;">
+                배포일: ${dateStr}
+              </div>
+              <div style="font-size: 0.92rem; line-height: 1.7; white-space: pre-wrap; background: var(--card-sub-bg); padding: 14px; border-radius: 8px;">
+                ${item.content || ''}
+              </div>
+            </div>
+          `;
+        } else {
+          // 이전 업데이트: 제목만 간단히 나오고 아코디언으로 본문 숨김
+          return `
+            <div class="archive-item-card">
+              <div class="archive-item-header" onclick="toggleUpdateAccordion(${idx})">
+                <div>
+                  <span class="notice-tag ${tagClass}">${tag}</span>
+                  <strong style="font-size: 0.95rem;">${cleanTitle}</strong>
+                  <span style="font-size: 0.8rem; color: var(--sub-text); margin-left: 6px;">(${dateStr})</span>
+                </div>
+                <button class="accordion-toggle-btn" id="update-acc-btn-${idx}">▼</button>
+              </div>
+              <div class="archive-item-body" id="update-acc-body-${idx}">
+                <div style="padding-top: 10px; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;">
+                  ${item.content || ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    function toggleUpdateAccordion(idx) {
+      const body = document.getElementById(`update-acc-body-${idx}`);
+      const btn = document.getElementById(`update-acc-btn-${idx}`);
+      if (!body || !btn) return;
+
+      const isOpen = body.classList.contains('open');
+      if (isOpen) {
+        body.classList.remove('open');
+        btn.classList.remove('open');
+      } else {
+        body.classList.add('open');
+        btn.classList.add('open');
+      }
     }
 
     /* ===================================================
