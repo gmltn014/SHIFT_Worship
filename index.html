@@ -1059,16 +1059,26 @@
             <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(없을 경우 '-' 또는 공란)</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">인도자</label>
-              <input type="text" id="adminLeader" placeholder="인도자 이름" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+          <div style="grid-column: 1 / -1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">보컬 싱어 선택 (최대 4명)</label>
+                <span style="font-size: 0.72rem; color: var(--sub-text);">드롭다운에서 팀원을 선택하세요</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px;">
+                <select id="adminVocalSelect1" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+                  <option value="">(싱어 1 선택)</option>
+                </select>
+                <select id="adminVocalSelect2" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+                  <option value="">(싱어 2 선택)</option>
+                </select>
+                <select id="adminVocalSelect3" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+                  <option value="">(싱어 3 선택)</option>
+                </select>
+                <select id="adminVocalSelect4" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+                  <option value="">(싱어 4 선택)</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">보컬</label>
-              <input type="text" id="adminVocal" placeholder="예: 김보컬, 이보컬" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-          </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
             <div>
@@ -1634,6 +1644,12 @@
     }
 
     function setupContiAdminForm() {
+      // 팀원 명단이 아직 로드되지 않았다면 먼저 로드
+      if (!allMembersList || allMembersList.length === 0) {
+        await loadMembersData();
+      }
+      populateVocalSelectOptions();
+
       const thisSundayStr = getThisSundayDateString();
       const currentItem = currentScheduleData || {};
 
@@ -1645,7 +1661,17 @@
       document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
 
       document.getElementById('adminLeader').value = currentItem.leader || '';
-      document.getElementById('adminVocal').value = currentItem.vocal || '';
+      
+      // ★ 기존 보컬 텍스트("김철수, 이영희, 박민수")를 쪼개어 각각의 셀렉트에 매칭
+      const rawVocal = currentItem.vocal || '';
+      const currentVocals = rawVocal.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+      for (let i = 1; i <= 4; i++) {
+        const sel = document.getElementById(`adminVocalSelect${i}`);
+        if (sel) {
+          sel.value = currentVocals[i - 1] || '';
+        }
+      }
+
       document.getElementById('adminKeyboard1').value = currentItem.keyboard1 || '';
       document.getElementById('adminKeyboard2').value = currentItem.keyboard2 || '';
       document.getElementById('adminDrum').value = currentItem.drum || '';
@@ -1656,6 +1682,7 @@
       document.getElementById('adminSubtitle').value = currentItem.subtitle || '';
       document.getElementById('adminVideo').value = currentItem.video || '';
 
+      // 곡 목록 파싱
       const rawSongList = currentItem.song_list || '';
       let songs = [];
       if (rawSongList.trim()) {
@@ -1715,6 +1742,16 @@
       const song_list = songLines.join('\n');
       const youtube_url = parseAndFormatYoutubeInput(rawYoutube);
 
+      const vocalArr = [];
+      for (let i = 1; i <= 4; i++) {
+        const val = document.getElementById(`adminVocalSelect${i}`)?.value.trim();
+        if (val && !vocalArr.includes(val)) {
+          vocalArr.push(val);
+        }
+      }
+      const combinedVocal = vocalArr.length > 0 ? vocalArr.join(', ') : null;
+
+      // payload 구성 시 vocal에 대입
       const payload = {
         date,
         worship_title: worship_title || null,
@@ -1725,7 +1762,7 @@
         monitoring_url: monitoring_url || null,
 
         leader: document.getElementById('adminLeader').value.trim() || null,
-        vocal: document.getElementById('adminVocal').value.trim() || null,
+        vocal: combinedVocal, // ★ 드롭다운으로 선택된 보컬 목록
         keyboard1: document.getElementById('adminKeyboard1').value.trim() || null,
         keyboard2: document.getElementById('adminKeyboard2').value.trim() || null,
         drum: document.getElementById('adminDrum').value.trim() || null,
@@ -2970,6 +3007,41 @@
       } catch (err) {
         alert('삭제 실패: ' + err.message);
       }
+    }
+
+    /* members 테이블에서 보컬 가능한 멤버 목록 추출 */
+    function getVocalMemberList() {
+      if (!allMembersList || allMembersList.length === 0) return [];
+      
+      return allMembersList.filter(m => {
+        // 활동 중인 인원만 대상
+        if ((m.active || '').trim() !== '활동 중') return false;
+
+        const partSource = [m.main_part, m.part_b, m.part_tag].filter(Boolean).join(' ').toLowerCase();
+        return partSource.includes('vocal') || partSource.includes('보컬');
+      }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+
+    /* 4개의 드롭다운에 보컬 옵션 채우기 */
+    function populateVocalSelectOptions() {
+      const vocalMembers = getVocalMemberList();
+      const selects = [
+        document.getElementById('adminVocalSelect1'),
+        document.getElementById('adminVocalSelect2'),
+        document.getElementById('adminVocalSelect3'),
+        document.getElementById('adminVocalSelect4')
+      ];
+
+      selects.forEach((sel, idx) => {
+        if (!sel) return;
+        sel.innerHTML = `<option value="">(싱어 ${idx + 1} 선택 안 함)</option>`;
+        vocalMembers.forEach(mem => {
+          const opt = document.createElement('option');
+          opt.value = mem.name;
+          opt.textContent = mem.name;
+          sel.appendChild(opt);
+        });
+      });
     }
 
     /* 11. 진입점 */
