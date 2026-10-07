@@ -1573,7 +1573,19 @@
           </div>
         </div>
 
-        <!-- 3. [NEW] 내 기기 기억하기 & 기기 간 동기화 -->
+        <!-- ★ [복구] 3. 브라우저 알림 설정 -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🔔 알림</h4>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 600; display: block;">새 공지 & 콘티 알림</label>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">새로운 소식이나 콘티 등록 시 브라우저 알림을 받습니다.</span>
+            </div>
+            <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+          </div>
+        </div>
+
+        <!-- 4. [NEW] 내 기기 기억하기 & 기기 간 동기화 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <h4 style="font-size: 0.88rem; font-weight: 700;">🔄 내 기기 기억 & 동기화</h4>
@@ -1603,7 +1615,7 @@
           </div>
         </div>
 
-        <!-- 4. [NEW] 홈 화면에 앱 설치 (PWA) -->
+        <!-- 5. [NEW] 홈 화면에 앱 설치 (PWA) -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -1616,7 +1628,7 @@
           </div>
         </div>
 
-        <!-- 5. 앱 동기화 & 보안 -->
+        <!-- 6. 앱 동기화 & 보안 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">⚡ 동기화 & 보안</h4>
           
@@ -3679,7 +3691,7 @@
     let wakeLockSentinel = null;
 
     function openSettingsModal() {
-      // 1. 현재 테마 & 폰트 옵션 반영
+      // 1. 테마 & 폰트 세팅 반영
       const currentTheme = localStorage.getItem('shift_theme') || 'light';
       const themeSelect = document.getElementById('settingThemeSelect');
       if (themeSelect) themeSelect.value = currentTheme;
@@ -3688,11 +3700,17 @@
       const fontSelect = document.getElementById('settingFontSelect');
       if (fontSelect) fontSelect.value = currentFont;
 
-      // 2. 내 연동 코드 표시
+      // 2. ★ 브라우저 알림 토글 상태 반영
+      const notiToggle = document.getElementById('settingNotificationToggle');
+      if (notiToggle) {
+        notiToggle.checked = ('Notification' in window && Notification.permission === 'granted');
+      }
+
+      // 3. 내 기기 연동 키 표시
       const keyDisplay = document.getElementById('mySyncKeyDisplay');
       if (keyDisplay) keyDisplay.innerText = getOrCreateSyncKey();
 
-      // 3. 관리자 상태 반영
+      // 4. 관리자 상태 반영
       const isAuth = isAdminAuthenticated();
       const statusText = document.getElementById('settingAdminStatusText');
       const logoutBtn = document.getElementById('settingAdminLogoutBtn');
@@ -3711,62 +3729,7 @@
       document.getElementById('settingsModal').style.display = 'flex';
     }
 
-    function closeSettingsModal() {
-      document.getElementById('settingsModal').style.display = 'none';
-    }
-
-    function changeThemeFromSetting(theme) {
-      applyTheme(theme);
-      pushSyncDataToCloud();
-    }
-
-    function changeAppFont(fontKey) {
-      let fontStack = '';
-      switch (fontKey) {
-        case 'score':
-          fontStack = '"S-CoreDream-3Light", -apple-system, sans-serif';
-          break;
-        case 'serif':
-          fontStack = '"Noto Serif KR", serif';
-          break;
-        case 'system':
-        default:
-          fontStack = '-apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-          break;
-      }
-      document.documentElement.style.setProperty('--app-font', fontStack);
-      localStorage.setItem('shift_font', fontKey);
-      pushSyncDataToCloud(); // 이제 에러 없이 정상 실행됩니다!
-    }
-
-    function initAppFont() {
-      const savedFont = localStorage.getItem('shift_font') || 'system';
-      changeAppFont(savedFont);
-    }
-    initAppFont();
-
-    async function toggleWakeLock(enable) {
-      if (!('wakeLock' in navigator)) {
-        alert('현재 브라우저는 화면 켜짐 유지(Wake Lock)를 지원하지 않습니다.');
-        document.getElementById('settingWakeLockToggle').checked = false;
-        return;
-      }
-
-      try {
-        if (enable) {
-          wakeLockSentinel = await navigator.wakeLock.request('screen');
-          alert('화면 켜짐 유지가 활성화되었습니다! 예배 중 절전되지 않습니다.');
-        } else {
-          if (wakeLockSentinel) {
-            await wakeLockSentinel.release();
-            wakeLockSentinel = null;
-          }
-        }
-      } catch (err) {
-        console.error('Wake Lock 설정 오류:', err);
-      }
-    }
-
+    /* 알림 토글 핸들러 */
     async function toggleAppNotification(enable) {
       if (!('Notification' in window)) {
         alert('이 브라우저는 웹 알림 기능을 지원하지 않습니다.');
@@ -3775,14 +3738,19 @@
       }
 
       if (enable) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          new Notification('SHIFT Worship', {
-            body: 'SHIFT 찬양팀 웹앱 알림이 켜졌습니다! 🕊️',
-            icon: 'favicon.ico'
-          });
-        } else {
-          alert('알림 권한이 거부되었습니다.');
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            new Notification('SHIFT Worship', {
+              body: 'SHIFT 찬양팀 웹앱 알림이 켜졌습니다! 새로운 콘티와 소식을 전해드릴게요. 🕊️',
+              icon: 'favicon.ico'
+            });
+          } else {
+            alert('알림 권한이 허용되지 않았습니다. 브라우저 설정에서 권한을 허용해 주세요.');
+            document.getElementById('settingNotificationToggle').checked = false;
+          }
+        } catch (err) {
+          console.error('알림 권한 요청 오류:', err);
           document.getElementById('settingNotificationToggle').checked = false;
         }
       }
