@@ -2222,9 +2222,9 @@
           case '자막':
             // 자막, subtitle, ppt 외에도 방송/라이브옵스 파트 인원들이 자막을 겸하는 경우까지 안전하게 포함
             return source.includes('Prompter') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션') || source.includes('live ops');
-          case 'Video Editor':
+          case 'Video':
           case '영상':
-            return source.includes('Video Editor') || source.includes('영상') || source.includes('편집') || source.includes('미디어') || source.includes('post prod');
+            return source.includes('Video') || source.includes('영상') || source.includes('편집') || source.includes('미디어') || source.includes('post prod');
           default:
             return source.includes(target);
         }
@@ -2287,7 +2287,7 @@
       setMedia('adminSound', 'sound', currentItem.sound || '');
       setMedia('adminBroadcast', 'broadcast', currentItem.broadcast || '');
       setMedia('adminSubtitle', 'Prompter', currentItem.Prompter || '');
-      setMedia('adminVideo', 'Video Editor', currentItem.Video Editor || '');
+      setMedia('adminVideo', 'Video', currentItem.Video || '');
     }
 
     function openContiAdminModal() {
@@ -2606,7 +2606,7 @@
                   ${generatePartOptionsHtml('Prompter', item.Prompter || '', false)}
                 </select>
                 <select id="m_video_${dateStr}" title="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('Video Editor', item.Video Editor || '', false)}
+                  ${generatePartOptionsHtml('Video', item.Video || '', false)}
                 </select>
               </div>
             </td>
