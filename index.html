@@ -4285,17 +4285,30 @@ ${details}
     }
     initAppFont();
     
-    // 3. 다른 기기의 연동 코드를 입력하여 데이터 가져오기
-    async function applySyncKeyFromInput() {
-      const inputEl = document.getElementById('syncCodeInput');
-  const code = inputEl ? inputEl.value.trim() : '';
+    async function handleApplySyncCode() {
+  // 1. 흔히 쓰이는 동기화 입력창 ID 후보군을 순서대로 탐색
+  const inputEl = document.getElementById('syncCodeInput') || 
+                  document.getElementById('inputSyncCode') || 
+                  document.getElementById('targetSyncCode') || 
+                  document.getElementById('deviceSyncCode') ||
+                  document.querySelector('#settingsModal input[type="text"]') ||
+                  document.querySelector('input[placeholder*="동기화"]');
 
-  if (!code) {
-    alert('동기화 코드를 입력해 주세요.');
+  if (!inputEl) {
+    console.error('동기화 입력창 태그를 찾지 못했습니다.');
+    alert('동기화 입력창을 찾을 수 없습니다. 관리자에게 문의해 주세요.');
     return;
   }
 
-  // SYNC_KEY_STORAGE가 선언되지 않았을 경우를 대비한 안전 키 참조
+  // 2. 값 추출 및 공백/하이픈 제거 정돈
+  const code = inputEl.value ? inputEl.value.trim() : '';
+
+  if (!code) {
+    alert('동기화 코드를 입력해 주세요.');
+    inputEl.focus();
+    return;
+  }
+
   const storageKey = (typeof SYNC_KEY_STORAGE !== 'undefined') ? SYNC_KEY_STORAGE : 'shift_portal_sync_key';
 
   try {
@@ -4310,13 +4323,13 @@ ${details}
       .single();
 
     if (error || !data) {
-      throw new Error('유효하지 않거나 만료된 동기화 코드입니다.');
+      throw new Error('유효하지 않거나 일치하는 동기화 코드가 없습니다.');
     }
 
-    // 1. 브라우저 로컬스토리지에 동기화 키 저장
+    // 1. 로컬스토리지에 동기화 키 저장
     localStorage.setItem(storageKey, code);
 
-    // 2. 백업된 환경설정 값(테마, 글꼴 등) 복원
+    // 2. 테마 및 글꼴 복원
     if (data.settings) {
       const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
       if (settings.theme && typeof applyTheme === 'function') applyTheme(settings.theme);
@@ -4326,7 +4339,7 @@ ${details}
     }
 
     alert('🎉 기기 동기화가 성공적으로 완료되었습니다!');
-    location.reload(); // 설정 적용을 위해 새로고침
+    location.reload();
 
   } catch (err) {
     console.error('동기화 복원 오류:', err);
