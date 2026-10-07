@@ -8,7 +8,7 @@
   <!-- 웹폰트: Pretendard, S-Core Dream, Noto Serif -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff">
+  <link rel="stylesheet" href="https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.css">
 
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -4301,7 +4301,6 @@ ${details}
         return;
       }
 
-      // 결과 항목 수 맞추기
       let finalResults = [...rawResults];
       while (finalResults.length < selectedMembers.length) {
         finalResults.push('통과 🍀');
@@ -4313,16 +4312,26 @@ ${details}
       const shuffledResults = [...finalResults].sort(() => Math.random() - 0.5);
 
       box.style.display = 'block';
+
+      // 템플릿 표현식 내부 에러 방지를 위해 변수로 분리 후 렌더링
+      const rowsHtml = selectedMembers.map((m, idx) => {
+        const resText = shuffledResults[idx];
+        const isPenalty = resText.includes('당첨') || resText.includes('청소') || resText.includes('간식');
+        const color = isPenalty ? '#ef4444' : 'var(--accent-color)';
+
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-bottom: 1px dashed var(--border-color); padding: 5px 0;">
+            <span><strong>${m}</strong></span>
+            <span>➔</span>
+            <span style="color: ${color}; font-weight: 700;">${resText}</span>
+          </div>
+        `;
+      }).join('');
+
       box.innerHTML = `
         <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 8px;">🪜 사다리 매칭 결과</h4>
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          ${selectedMembers.map((m, idx) => `
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-bottom: 1px dashed var(--border-color); padding: 5px 0;">
-              <span><strong>${m}</strong></span>
-              <span>➔</span>
-              <span style="color: ${shuffledResults[idx].includes('당첨') \vert{}\vert{} shuffledResults[idx].includes('청소') ? '#ef4444' : 'var(--accent-color)'}; font-weight: 700;">${shuffledResults[idx]}</span>
-            </div>
-          `).join('')}
+          ${rowsHtml}
         </div>
       `;
     }
@@ -4408,38 +4417,55 @@ ${details}
         listEl.innerHTML = data.map(item => {
           const dateStr = item.created_at ? item.created_at.split('T')[0] : '';
           const authorBadge = item.is_anonymous ? '🎭 익명' : '👤 실명';
+          const cardBorderColor = item.card_color || 'var(--accent-color)';
+
+          let wordHtml = '';
+          if (item.word_qt) {
+            wordHtml = `
+              <div style="font-size: 0.83rem; margin-bottom: 8px;">
+                <span style="color: var(--sub-text); font-weight: 700; display: block; margin-bottom: 2px;">📖 은혜의 말씀</span>
+                <div style="line-height: 1.45;">${item.word_qt}</div>
+              </div>
+            `;
+          }
+
+          let favHtml = '';
+          if (item.favorite_songs) {
+            const ytFavUrl = getYoutubeSearchUrl(item.favorite_songs);
+            favHtml = `
+              <div style="font-size: 0.83rem; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span>
+                  <a href="${ytFavUrl}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 검색</a>
+                </div>
+                <div style="line-height: 1.45;">${item.favorite_songs}</div>
+              </div>
+            `;
+          }
+
+          let recHtml = '';
+          if (item.recommended_song) {
+            const ytRecUrl = getYoutubeSearchUrl(item.recommended_song);
+            recHtml = `
+              <div style="font-size: 0.83rem; margin-bottom: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span style="color: var(--sub-text); font-weight: 700;">🎧 요즘 추천곡</span>
+                  <a href="${ytRecUrl}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 바로듣기</a>
+                </div>
+                <div style="line-height: 1.45;">${item.recommended_song}</div>
+              </div>
+            `;
+          }
 
           return `
-            <div class="card" style="border-top: 5px solid ${item.card_color || 'var(--accent-color)'}; padding: 14px; position: relative; margin-bottom: 0;">
+            <div class="card" style="border-top: 5px solid ${cardBorderColor}; padding: 14px; position: relative; margin-bottom: 0;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <strong style="font-size: 1rem;">${item.author_name}</strong>
                 <span style="font-size: 0.72rem; color: var(--sub-text); background: var(--card-sub-bg); padding: 2px 6px; border-radius: 4px;">${authorBadge}</span>
               </div>
-
-              ${item.word_qt ? `
-                <div style="font-size: 0.83rem; margin-bottom: 8px;">
-                  <span style="color: var(--sub-text); font-weight: 700; display: block; margin-bottom: 2px;">📖 은혜의 말씀</span>
-                  <div style="line-height: 1.45;">${item.word_qt}</div>
-                </div>` : ''}
-
-              ${item.favorite_songs ? `
-                <div style="font-size: 0.83rem; margin-bottom: 8px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span>
-                    <a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 검색</a>
-                  </div>
-                  <div style="line-height: 1.45;">${item.favorite_songs}</div>
-                </div>` : ''}
-
-              ${item.recommended_song ? `
-                <div style="font-size: 0.83rem; margin-bottom: 4px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <span style="color: var(--sub-text); font-weight: 700;">🎧 요즘 추천곡</span>
-                    <a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 바로듣기</a>
-                  </div>
-                  <div style="line-height: 1.45;">${item.recommended_song}</div>
-                </div>` : ''}
-
+              ${wordHtml}
+              ${favHtml}
+              ${recHtml}
               <div style="font-size: 0.72rem; color: var(--sub-text); text-align: right; margin-top: 10px;">${dateStr}</div>
             </div>
           `;
