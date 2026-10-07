@@ -583,8 +583,8 @@
         SHIFT Worship
       </div>
       <button id="headerVersionBadge" class="version-bubble" onclick="goToUpdateNotes()" title="업데이트 노트 확인하기">
-        v2.0.0
-      </button>
+  v2.1.0
+</button>
     </div>
 
     <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
@@ -3770,6 +3770,7 @@ ${details}
     /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadCurrentConti();
+      loadNoticeData(); // ★ 페이지 접속 시 즉시 최신 버전명을 가져와 자동 동기화!
     });
   </script>
 </body>
