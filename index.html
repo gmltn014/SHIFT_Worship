@@ -1832,15 +1832,49 @@
     function getMembersByPart(partKeyword) {
       if (!allMembersList || allMembersList.length === 0) return [];
 
-      const keyword = (partKeyword || '').toLowerCase();
-      return allMembersList.filter(m => {
-        if ((m.active || '').trim() !== '활동 중') return false;
-        if (!keyword || keyword === 'all') return true;
+      const target = (partKeyword || '').toLowerCase().trim();
 
+      return allMembersList.filter(m => {
+        // 활동 중인 인원만 대상
+        if ((m.active || '').trim() !== '활동 중') return false;
+        if (!target || target === 'all') return true;
+
+        // 대분류, 주파트, 부파트, 태그 통합 텍스트
         const source = [m.main_category, m.main_part, m.part_b, m.part_tag]
           .filter(Boolean).join(' ').toLowerCase();
 
-        return source.includes(keyword);
+        switch (target) {
+          case 'leader':
+            return source.includes('leader') || source.includes('리더') || source.includes('인도');
+          case 'vocal':
+            return source.includes('vocal') || source.includes('보컬') || source.includes('싱어');
+          case 'keyboard':
+          case '건반':
+            return source.includes('keyboard') || source.includes('건반') || source.includes('피아노') || source.includes('신디');
+          case 'drum':
+          case '드럼':
+            return source.includes('drum') || source.includes('드럼');
+          case 'guitar':
+          case '기타':
+            return source.includes('guitar') || source.includes('기타') || source.includes('어쿠스틱') || source.includes('일렉');
+          case 'bass':
+          case '베이스':
+            return source.includes('bass') || source.includes('베이스');
+          case 'sound':
+          case '음향':
+            return source.includes('sound') || source.includes('음향') || source.includes('엔지니어') || source.includes('믹서');
+          case 'broadcast':
+          case '방송':
+            return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('카메라');
+          case 'subtitle':
+          case '자막':
+            return source.includes('subtitle') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션');
+          case 'video':
+          case '영상':
+            return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('미디어');
+          default:
+            return source.includes(target);
+        }
       }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     }
 
@@ -1868,30 +1902,44 @@
     }
 
     function populateAllLineupSelects(currentItem = {}) {
+      // 1. 인도자
       const leaderSel = document.getElementById('adminLeader');
-      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('all', currentItem.leader || '', false);
+      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('leader', currentItem.leader || '', false);
 
+      // 2. 보컬 (최대 4명)
       const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
       for (let i = 1; i <= 4; i++) {
         const sel = document.getElementById(`adminVocalSelect${i}`);
         if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
       }
 
+      // 3. 건반 (중복 감지 이벤트 부착)
+      const kb1Sel = document.getElementById('adminKeyboard1');
+      const kb2Sel = document.getElementById('adminKeyboard2');
+      if (kb1Sel) {
+        kb1Sel.innerHTML = generatePartOptionsHtml('keyboard', currentItem.keyboard1 || 'X', true);
+        kb1Sel.onchange = () => checkWeeklyKeyboardDuplicate('kb1');
+      }
+      if (kb2Sel) {
+        kb2Sel.innerHTML = generatePartOptionsHtml('keyboard', currentItem.keyboard2 || 'X', true);
+        kb2Sel.onchange = () => checkWeeklyKeyboardDuplicate('kb2');
+      }
+
+      // 4. 드럼, 기타, 베이스
       const setPart = (id, keyword, val) => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
       };
 
-      setPart('adminKeyboard1', '건반', currentItem.keyboard1 || 'X');
-      setPart('adminKeyboard2', '건반', currentItem.keyboard2 || 'X');
-      setPart('adminDrum', '드럼', currentItem.drum || 'X');
-      setPart('adminGuitar', '기타', currentItem.guitar || 'X');
-      setPart('adminBass', '베이스', currentItem.bass || 'X');
+      setPart('adminDrum', 'drum', currentItem.drum || 'X');
+      setPart('adminGuitar', 'guitar', currentItem.guitar || 'X');
+      setPart('adminBass', 'bass', currentItem.bass || 'X');
 
-      setPart('adminSound', '음향', currentItem.sound || 'X');
-      setPart('adminBroadcast', '방송', currentItem.broadcast || 'X');
-      setPart('adminSubtitle', '자막', currentItem.subtitle || 'X');
-      setPart('adminVideo', '영상', currentItem.video || 'X');
+      // 5. 엔지니어 & 방송
+      setPart('adminSound', 'sound', currentItem.sound || 'X');
+      setPart('adminBroadcast', 'broadcast', currentItem.broadcast || 'X');
+      setPart('adminSubtitle', 'subtitle', currentItem.subtitle || 'X');
+      setPart('adminVideo', 'video', currentItem.video || 'X');
     }
 
     function openContiAdminModal() {
@@ -2161,46 +2209,52 @@
               <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
               ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
             </td>
+            <!-- 인도자 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_leader_${dateStr}" style="width: 100%; min-width: 85px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-                ${generatePartOptionsHtml('all', item.leader || '', false)}
+                ${generatePartOptionsHtml('leader', item.leader || '', false)}
               </select>
             </td>
+            <!-- 보컬 -->
             <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
+            <!-- 건반 (메인 / 세컨 중복 검사 부착) -->
             <td style="padding: 6px; vertical-align: top;">
-              <select id="m_kb1_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('건반', item.keyboard1 || 'X', true)}
+              <select id="m_kb1_${dateStr}" onchange="checkMonthlyKeyboardDuplicate('${dateStr}', 'kb1')" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+                ${generatePartOptionsHtml('keyboard', item.keyboard1 || 'X', true)}
               </select>
-              <select id="m_kb2_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('건반', item.keyboard2 || 'X', true)}
+              <select id="m_kb2_${dateStr}" onchange="checkMonthlyKeyboardDuplicate('${dateStr}', 'kb2')" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+                ${generatePartOptionsHtml('keyboard', item.keyboard2 || 'X', true)}
               </select>
             </td>
+            <!-- 드럼 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_drum_${dateStr}" style="width: 100%; min-width: 80px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-                ${generatePartOptionsHtml('드럼', item.drum || 'X', true)}
+                ${generatePartOptionsHtml('drum', item.drum || 'X', true)}
               </select>
             </td>
+            <!-- 기타 / 베이스 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_guitar_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('기타', item.guitar || 'X', true)}
+                ${generatePartOptionsHtml('guitar', item.guitar || 'X', true)}
               </select>
               <select id="m_bass_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('베이스', item.bass || 'X', true)}
+                ${generatePartOptionsHtml('bass', item.bass || 'X', true)}
               </select>
             </td>
+            <!-- 방송 / 엔지니어 -->
             <td style="padding: 6px; vertical-align: top;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                 <select id="m_sound_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('음향', item.sound || 'X', true)}
+                  ${generatePartOptionsHtml('sound', item.sound || 'X', true)}
                 </select>
                 <select id="m_broadcast_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('방송', item.broadcast || 'X', true)}
+                  ${generatePartOptionsHtml('broadcast', item.broadcast || 'X', true)}
                 </select>
                 <select id="m_subtitle_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('자막', item.subtitle || 'X', true)}
+                  ${generatePartOptionsHtml('subtitle', item.subtitle || 'X', true)}
                 </select>
                 <select id="m_video_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('영상', item.video || 'X', true)}
+                  ${generatePartOptionsHtml('video', item.video || 'X', true)}
                 </select>
               </div>
             </td>
@@ -3491,6 +3545,39 @@ ${details}
             alert('알림 권한이 허용되어 있지 않습니다.');
           }
         });
+      }
+    }
+
+    function checkWeeklyKeyboardDuplicate(changedTarget) {
+      const kb1 = document.getElementById('adminKeyboard1')?.value;
+      const kb2 = document.getElementById('adminKeyboard2')?.value;
+
+      if (kb1 && kb2 && kb1 !== 'X' && kb2 !== 'X' && kb1 === kb2) {
+        alert(`⚠️ [건반 중복 배정 경고]\n'${kb1}' 님이 메인 건반과 세컨 건반에 동시에 선택되었습니다.\n각각 다른 연주자를 배정해 주세요.`);
+        if (changedTarget === 'kb1') {
+          document.getElementById('adminKeyboard1').value = 'X';
+        } else {
+          document.getElementById('adminKeyboard2').value = 'X';
+        }
+      }
+    }
+
+    /* 월간 라인업 테이블 건반 중복 검사 */
+    function checkMonthlyKeyboardDuplicate(dateStr, changedTarget) {
+      const kb1El = document.getElementById(`m_kb1_${dateStr}`);
+      const kb2El = document.getElementById(`m_kb2_${dateStr}`);
+      if (!kb1El || !kb2El) return;
+
+      const kb1 = kb1El.value;
+      const kb2 = kb2El.value;
+
+      if (kb1 && kb2 && kb1 !== 'X' && kb2 !== 'X' && kb1 === kb2) {
+        alert(`⚠️ [${dateStr} 건반 중복 배정 경고]\n'${kb1}' 님이 메인 건반과 세컨 건반에 동시에 배정되었습니다.\n한쪽을 변경해 주세요.`);
+        if (changedTarget === 'kb1') {
+          kb1El.value = 'X';
+        } else {
+          kb2El.value = 'X';
+        }
       }
     }
 
