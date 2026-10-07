@@ -4971,93 +4971,94 @@ ${details}
 
     /* 1. 세션 악보 모달 열기 */
     async function openSessionScoreModal() {
-      console.log('세션 악보 버튼 클릭됨');
-
+      console.log('세션 악보 모달 호출 시작');
       const modal = document.getElementById('sessionScoreModal');
       const titleEl = document.getElementById('sessionModalTitle');
       const bodyEl = document.getElementById('sessionScoreBody');
 
       if (!modal) {
-        alert('HTML에 sessionScoreModal 요소가 존재하지 않습니다. ID를 확인해 주세요.');
-        console.error('sessionScoreModal not found');
+        alert('sessionScoreModal 요소를 찾을 수 없습니다.');
         return;
       }
 
-      // 로딩 중 표시를 먼저 띄우고 모달을 엽니다.
+      // 모달 표시
       modal.style.display = 'flex';
-      if (bodyEl) {
-        bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">콘티 정보를 확인하는 중입니다... ⏳</div>';
+
+      let targetSchedule = null;
+
+      // [1단계] 사이트 내에 이미 정의된 전역 콘티 객체가 있는지 즉시 확인
+      if (typeof currentSchedule !== 'undefined' && currentSchedule && currentSchedule.date) {
+        targetSchedule = { ...currentSchedule };
+      } else if (typeof currentWeekSchedule !== 'undefined' && currentWeekSchedule && currentWeekSchedule.date) {
+        targetSchedule = { ...currentWeekSchedule };
       }
 
-      // 1순위: 전역 객체 체크
-      let schedule = (typeof currentSchedule !== 'undefined' && currentSchedule) 
-                     ? currentSchedule 
-                     : currentWeekSchedule;
-
-      // 2순위: Supabase 클라이언트에서 최신 일정 조회
-      if (!schedule || !schedule.date) {
-        try {
-          const client = typeof supabaseClient !== 'undefined' ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-          
-          if (client) {
-            // 오늘 날짜 기준
-            const todayStr = new Date().toISOString().split('T')[0];
-            let { data, error } = await client
-              .from('schedules')
-              .select('*')
-              .gte('date', todayStr)
-              .order('date', { ascending: true })
-              .limit(1);
-
-            if (!data || data.length === 0) {
-              const fallbackRes = await client
-                .from('schedules')
-                .select('*')
-                .order('date', { ascending: false })
-                .limit(1);
-              data = fallbackRes.data;
-            }
-
-            if (data && data.length > 0) {
-              schedule = data[0];
-            }
-          }
-        } catch (err) {
-          console.warn('DB 직접 조회 실패, 화면 텍스트 폴백 진행:', err);
-        }
-      }
-
-      // 3순위: 화면(DOM)에 이미 찍혀있는 날짜 배지에서 날짜 추출
-      if (!schedule || !schedule.date) {
-        const pageDateBadge = document.querySelector('#tab-thisweek .worship-date-badge, .worship-date-badge');
-        if (pageDateBadge && pageDateBadge.innerText.trim()) {
-          const scrapedDate = pageDateBadge.innerText.trim();
-          schedule = {
+      // [2단계] 화면(HTML DOM)에 이미 렌더링된 배지와 텍스트에서 즉시 추출 (가장 빠르고 확실함)
+      if (!targetSchedule) {
+        const dateBadge = document.querySelector('#tab-thisweek .worship-date-badge, .worship-date-badge');
+        if (dateBadge && dateBadge.innerText.trim()) {
+          const scrapedDate = dateBadge.innerText.trim();
+          targetSchedule = {
             date: scrapedDate,
-            worship_title: '예배',
+            worship_title: '주일예배',
             session_score_url: ''
           };
-          console.log('화면 뱃지에서 날짜 추출 성공:', scrapedDate);
+          console.log('화면 텍스트에서 날짜 즉시 감지:', scrapedDate);
         }
       }
 
-      // 그래도 없으면 기본 날짜로 세팅
-      if (!schedule || !schedule.date) {
-        schedule = {
-          date: new Date().toISOString().split('T')[0],
-          worship_title: '예배',
+      // [3단계] 그래도 없다면 Supabase 조회를 시도하되 2.5초 타임아웃 설정 (멈춤 방지)
+      if (!targetSchedule) {
+        if (bodyEl) {
+          bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">콘티 정보를 확인하는 중입니다... ⏳</div>';
+        }
+
+        try {
+          const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+          
+          if (client) {
+            // 2.5초 이상 지연되면 강제 탈출하는 프로미스 레이스
+            const fetchPromise = client
+              .from('schedules')
+              .select('*')
+              .order('date', { ascending: false })
+              .limit(1);
+
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('조회 시간 초과')), 2500)
+            );
+
+            const res = await Promise.race([fetchPromise, timeoutPromise]);
+            if (res && res.data && res.data.length > 0) {
+              targetSchedule = res.data[0];
+            }
+          }
+        } catch (dbErr) {
+          console.warn('Supabase 실시간 조회 생략 또는 타임아웃:', dbErr);
+        }
+      }
+
+      // [4단계] 최후의 보루: 오늘 날짜 기본 객체 생성
+      if (!targetSchedule || !targetSchedule.date) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        targetSchedule = {
+          date: todayStr,
+          worship_title: '주일예배',
           session_score_url: ''
         };
       }
 
-      currentWeekSchedule = schedule;
+      // 전역 변수 저장
+      currentWeekSchedule = targetSchedule;
 
+      // 제목 업데이트
       if (titleEl) {
-        titleEl.innerText = `${schedule.date} 세션 악보`;
+        titleEl.innerText = `${targetSchedule.date} 세션 악보`;
       }
-      
-      // 세션 악보 내용 렌더링
-      renderSessionScoreContent(schedule.session_score_url);
+
+      // ★ 로딩 문구를 지우고 본문(뷰어 또는 업로드창)을 즉시 렌더링!
+      console.log('최종 렌더링 타깃 스케줄:', targetSchedule);
+      renderSessionScoreContent(targetSchedule.session_score_url || '');
     }
 
     function closeSessionScoreModal() {
