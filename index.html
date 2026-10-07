@@ -1233,17 +1233,21 @@
 
   <!-- 5. 환경설정 모달 -->
   <div id="settingsModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card" style="max-width: 480px;">
+    <div class="modal-card" style="max-width: 490px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-        <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 포털 환경설정</h3>
+        <h3 style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+          <span>⚙️ 포털 환경설정</span>
+        </h3>
         <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 14px;">
+
+        <!-- 1. 화면 스타일 & 글꼴 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🎨 화면 스타일 & 글꼴</h4>
           
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <label style="font-size: 0.82rem; font-weight: 600;">테마 모드</label>
             <select id="settingThemeSelect" onchange="changeThemeFromSetting(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
               <option value="light">☀️ 라이트 모드</option>
@@ -1261,30 +1265,65 @@
           </div>
         </div>
 
+        <!-- 2. 연습 & 예배 편의 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">📱 연습 & 예배 편의</h4>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
               <label style="font-size: 0.82rem; font-weight: 600; display: block;">화면 켜짐 유지 (Wake Lock)</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면이 절전 모드로 꺼지지 않습니다.</span>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면 절전 꺼짐을 방지합니다.</span>
             </div>
             <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
           </div>
         </div>
 
+        <!-- 3. [NEW] 내 기기 기억하기 & 기기 간 동기화 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🔔 알림</h4>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h4 style="font-size: 0.88rem; font-weight: 700;">🔄 내 기기 기억 & 동기화</h4>
+            <span style="font-size: 0.72rem; color: var(--accent-color); font-weight: 600;">100% 익명 유지</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--sub-text); line-height: 1.5; margin-bottom: 12px;">
+            휴대폰, PC, 노트북을 번갈아 접속해도 <strong>작성한 익명의견 처리현황</strong>과 <strong>개인 설정</strong>을 그대로 불러올 수 있습니다.
+          </p>
+
+          <!-- 현재 기기 연동 코드 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px;">
             <div>
-              <label style="font-size: 0.82rem; font-weight: 600; display: block;">새 공지 & 콘티 알림</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">소식이 등록되면 브라우저 알림을 받습니다.</span>
+              <span style="font-size: 0.72rem; color: var(--sub-text); display: block;">내 고유 연동 코드</span>
+              <strong id="mySyncKeyDisplay" style="font-size: 0.95rem; letter-spacing: 1px; color: var(--accent-color); font-family: monospace;">-</strong>
             </div>
-            <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+            <button type="button" class="btn-action btn-secondary" onclick="copyMySyncKey()" style="padding: 5px 10px; font-size: 0.75rem;">
+              📋 코드 복사
+            </button>
+          </div>
+
+          <!-- 다른 기기 코드 입력 -->
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="inputSyncKey" placeholder="다른 기기의 연동 코드 입력 (예: SHIFT-1234)" style="flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.8rem; font-family: monospace;">
+            <button type="button" class="btn-action btn-primary" onclick="applySyncKeyFromInput()" style="padding: 7px 12px; font-size: 0.8rem; flex-shrink: 0;">
+              동기화 불러오기
+            </button>
           </div>
         </div>
 
+        <!-- 4. [NEW] 홈 화면에 앱 설치 (PWA) -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 2px;">📲 홈 화면에 앱 설치</h4>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">스마트폰 홈 화면에 아이콘을 추가해 바로 접속하세요.</span>
+            </div>
+            <button type="button" class="btn-action btn-secondary" onclick="triggerPWAInstall()" style="padding: 6px 12px; font-size: 0.8rem; flex-shrink: 0; border-color: var(--accent-color); color: var(--accent-color);">
+              ➕ 앱 추가
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. 앱 동기화 & 보안 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">⚡ 동기화 & 보안</h4>
+          
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span style="font-size: 0.82rem;">최신 코드 새로고침 (캐시 삭제)</span>
             <button type="button" class="btn-action btn-secondary" onclick="forceAppRefresh()" style="padding: 5px 10px; font-size: 0.75rem;">
@@ -1299,6 +1338,7 @@
             </button>
           </div>
         </div>
+
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
@@ -3158,6 +3198,11 @@
         if (error) throw error;
 
         if (data && data.length > 0) saveMySuggestionId(data[0].id);
+        
+        if (data && data.length > 0) {
+        saveMySuggestionId(data[0].id);
+        pushSyncDataToCloud(); // ★ 작성한 글 ID를 클라우드 연동 정보에 즉시 자동 백업
+      }
 
         alert('소중한 의견이 익명으로 안전하게 접수되었습니다! 🙏');
         contentEl.value = '';
@@ -3332,6 +3377,7 @@
     let wakeLockSentinel = null;
 
     function openSettingsModal() {
+      // 1. 현재 테마 & 폰트 옵션 반영
       const currentTheme = localStorage.getItem('shift_theme') || 'light';
       const themeSelect = document.getElementById('settingThemeSelect');
       if (themeSelect) themeSelect.value = currentTheme;
@@ -3340,11 +3386,11 @@
       const fontSelect = document.getElementById('settingFontSelect');
       if (fontSelect) fontSelect.value = currentFont;
 
-      const notiToggle = document.getElementById('settingNotificationToggle');
-      if (notiToggle) {
-        notiToggle.checked = ('Notification' in window && Notification.permission === 'granted');
-      }
+      // 2. 내 연동 코드 표시
+      const keyDisplay = document.getElementById('mySyncKeyDisplay');
+      if (keyDisplay) keyDisplay.innerText = getOrCreateSyncKey();
 
+      // 3. 관리자 상태 반영
       const isAuth = isAdminAuthenticated();
       const statusText = document.getElementById('settingAdminStatusText');
       const logoutBtn = document.getElementById('settingAdminLogoutBtn');
@@ -3369,6 +3415,7 @@
 
     function changeThemeFromSetting(theme) {
       applyTheme(theme);
+      pushSyncDataToCloud();
     }
 
     function changeAppFont(fontKey) {
@@ -3387,6 +3434,7 @@
       }
       document.documentElement.style.setProperty('--app-font', fontStack);
       localStorage.setItem('shift_font', fontKey);
+      pushSyncDataToCloud();
     }
 
     function initAppFont() {
@@ -3577,6 +3625,144 @@ ${details}
           kb1El.value = 'X';
         } else {
           kb2El.value = 'X';
+        }
+      }
+    }
+
+    /* ===================================================
+       기기 동기화 모듈 (User Sync Engine)
+    =================================================== */
+    const SYNC_KEY_STORAGE = 'shift_user_sync_key';
+
+    // 1. 고유 연동 키 가져오기 (없으면 랜덤 발급: 예 SHIFT-7492)
+    function getOrCreateSyncKey() {
+      let key = localStorage.getItem(SYNC_KEY_STORAGE);
+      if (!key) {
+        const randNum = Math.floor(1000 + Math.random() * 9000);
+        const randAlpha = Math.random().toString(36).substring(2, 5).toUpperCase();
+        key = `SHIFT-${randNum}${randAlpha}`;
+        localStorage.setItem(SYNC_KEY_STORAGE, key);
+      }
+      return key;
+    }
+
+    // 2. 현재 기기 설정을 Supabase 클라우드에 자동 백업
+    async function pushSyncDataToCloud() {
+      if (!supabaseClient) return;
+      const key = getOrCreateSyncKey();
+      const currentTheme = localStorage.getItem('shift_theme') || 'light';
+      const currentFont = localStorage.getItem('shift_font') || 'system';
+      const mySuggestionIds = getMySuggestionIds();
+
+      const payload = {
+        sync_key: key,
+        settings: {
+          theme: currentTheme,
+          font: currentFont
+        },
+        my_suggestion_ids: mySuggestionIds,
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        await supabaseClient.from('user_sync').upsert(payload);
+      } catch (e) {
+        console.warn('동기화 데이터 백업 실패(무시):', e);
+      }
+    }
+
+    // 3. 다른 기기의 연동 코드를 입력하여 데이터 가져오기
+    async function applySyncKeyFromInput() {
+      const inputEl = document.getElementById('inputSyncKey');
+      const targetKey = inputEl ? inputEl.value.trim().toUpperCase() : '';
+
+      if (!targetKey) {
+        alert('연동 코드를 입력해 주세요.');
+        return;
+      }
+
+      if (!supabaseClient) {
+        alert('서버 연결 상태를 확인해 주세요.');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_sync')
+          .select('*')
+          .eq('sync_key', targetKey)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) {
+          alert('해당 연동 코드를 찾을 수 없습니다. 코드를 다시 확인해 주세요.');
+          return;
+        }
+
+        // 기존 키를 입력된 키로 교체
+        localStorage.setItem(SYNC_KEY_STORAGE, targetKey);
+
+        // 1) 내가 쓴 의견 ID 병합
+        const remoteIds = Array.isArray(data.my_suggestion_ids) ? data.my_suggestion_ids : [];
+        const localIds = getMySuggestionIds();
+        const mergedIds = Array.from(new Set([...localIds, ...remoteIds]));
+        localStorage.setItem(MY_SUGGESTIONS_KEY, JSON.stringify(mergedIds));
+
+        // 2) 테마 & 글꼴 설정 적용
+        if (data.settings) {
+          if (data.settings.theme) applyTheme(data.settings.theme);
+          if (data.settings.font) changeAppFont(data.settings.font);
+        }
+
+        alert('🎉 기기 동기화가 완료되었습니다!\n이전 기기의 개인 설정과 작성한 의견함 내역을 성공적으로 불러왔습니다.');
+        if (inputEl) inputEl.value = '';
+        openSettingsModal(); // UI 갱신
+        loadSuggestionBoxData(); // 의견함 목록 즉시 새로고침
+      } catch (err) {
+        console.error('동기화 적용 실패:', err);
+        alert('동기화 중 오류가 발생했습니다: ' + err.message);
+      }
+    }
+
+    // 내 코드 복사 헬퍼
+    function copyMySyncKey() {
+      const key = getOrCreateSyncKey();
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(key).then(() => {
+          alert(`내 연동 코드 [${key}]가 복사되었습니다!\n다른 기기(PC/태블릿) 설정창에 입력해 보세요.`);
+        });
+      } else {
+        fallbackCopy(key);
+      }
+    }
+
+    /* ===================================================
+       홈 화면 앱 설치 (PWA) 모듈
+    =================================================== */
+    let deferredPrompt = null;
+
+    // 안드로이드/PC 크롬 설치 프롬프트 캡처
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    function triggerPWAInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('앱이 홈 화면에 설치되었습니다.');
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        // 아이폰/사파리 및 수동 설치 기기 브라우저 안내
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          alert('📱 [아이폰 홈 화면 추가 안내]\n\n1. 사파리 브라우저 하단의 [공유(네모+화살표)] 아이콘을 누릅니다.\n2. 아래 메뉴에서 [홈 화면에 추가]를 선택해 주세요.');
+        } else {
+          alert('📱 [안드로이드/PC 앱 추가 안내]\n\n브라우저 우측 상단 [더보기(점 3개)] 메뉴를 누른 후\n[홈 화면에 추가] 또는 [앱 설치]를 선택해 주세요.');
         }
       }
     }
