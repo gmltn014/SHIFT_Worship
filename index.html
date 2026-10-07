@@ -4971,55 +4971,98 @@ ${details}
 
     /* 1. 세션 악보 모달 열기 */
     async function openSessionScoreModal() {
-      // 1. 이미 전역에 저장된 콘티 객체가 있는지 확인
+      console.log('세션 악보 버튼 클릭됨');
+
+      const modal = document.getElementById('sessionScoreModal');
+      const titleEl = document.getElementById('sessionModalTitle');
+      const bodyEl = document.getElementById('sessionScoreBody');
+
+      if (!modal) {
+        alert('HTML에 sessionScoreModal 요소가 존재하지 않습니다. ID를 확인해 주세요.');
+        console.error('sessionScoreModal not found');
+        return;
+      }
+
+      // 로딩 중 표시를 먼저 띄우고 모달을 엽니다.
+      modal.style.display = 'flex';
+      if (bodyEl) {
+        bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">콘티 정보를 확인하는 중입니다... ⏳</div>';
+      }
+
+      // 1순위: 전역 객체 체크
       let schedule = (typeof currentSchedule !== 'undefined' && currentSchedule) 
                      ? currentSchedule 
                      : currentWeekSchedule;
 
-      // 2. 만약 없다면, Supabase에서 직접 가장 최신 콘티 1건을 조회
+      // 2순위: Supabase 클라이언트에서 최신 일정 조회
       if (!schedule || !schedule.date) {
         try {
-          // 오늘 기준 이후 가장 가까운 주일 또는 최신 스케줄 1건 조회
-          const todayStr = new Date().toISOString().split('T')[0];
+          const client = typeof supabaseClient !== 'undefined' ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
           
-          let { data, error } = await supabaseClient
-            .from('schedules')
-            .select('*')
-            .gte('date', todayStr)
-            .order('date', { ascending: true })
-            .limit(1);
-
-          // 만약 오늘 이후 등록된 게 없다면 가장 마지막에 등록된 스케줄 가져오기
-          if (!data || data.length === 0) {
-            const fallback = await supabaseClient
+          if (client) {
+            // 오늘 날짜 기준
+            const todayStr = new Date().toISOString().split('T')[0];
+            let { data, error } = await client
               .from('schedules')
               .select('*')
-              .order('date', { ascending: false })
+              .gte('date', todayStr)
+              .order('date', { ascending: true })
               .limit(1);
-            data = fallback.data;
-          }
 
-          if (data && data.length > 0) {
-            schedule = data[0];
+            if (!data || data.length === 0) {
+              const fallbackRes = await client
+                .from('schedules')
+                .select('*')
+                .order('date', { ascending: false })
+                .limit(1);
+              data = fallbackRes.data;
+            }
+
+            if (data && data.length > 0) {
+              schedule = data[0];
+            }
           }
         } catch (err) {
-          console.error('콘티 데이터 자동 조회 실패:', err);
+          console.warn('DB 직접 조회 실패, 화면 텍스트 폴백 진행:', err);
         }
       }
 
-      // 3. 그래도 데이터가 아예 없다면 알림
+      // 3순위: 화면(DOM)에 이미 찍혀있는 날짜 배지에서 날짜 추출
       if (!schedule || !schedule.date) {
-        alert('등록된 예배 콘티 일정이 없습니다. 콘티를 먼저 등록해 주세요.');
-        return;
+        const pageDateBadge = document.querySelector('#tab-thisweek .worship-date-badge, .worship-date-badge');
+        if (pageDateBadge && pageDateBadge.innerText.trim()) {
+          const scrapedDate = pageDateBadge.innerText.trim();
+          schedule = {
+            date: scrapedDate,
+            worship_title: '예배',
+            session_score_url: ''
+          };
+          console.log('화면 뱃지에서 날짜 추출 성공:', scrapedDate);
+        }
       }
 
-      // 전역 변수에 세팅
+      // 그래도 없으면 기본 날짜로 세팅
+      if (!schedule || !schedule.date) {
+        schedule = {
+          date: new Date().toISOString().split('T')[0],
+          worship_title: '예배',
+          session_score_url: ''
+        };
+      }
+
       currentWeekSchedule = schedule;
 
-      // 모달 제목 및 본문 렌더링
-      document.getElementById('sessionModalTitle').innerText = `${schedule.date} 세션 악보`;
+      if (titleEl) {
+        titleEl.innerText = `${schedule.date} 세션 악보`;
+      }
+      
+      // 세션 악보 내용 렌더링
       renderSessionScoreContent(schedule.session_score_url);
-      document.getElementById('sessionScoreModal').style.display = 'flex';
+    }
+
+    function closeSessionScoreModal() {
+      const modal = document.getElementById('sessionScoreModal');
+      if (modal) modal.style.display = 'none';
     }
 
     /* 업로드 입력 폼 템플릿 */
