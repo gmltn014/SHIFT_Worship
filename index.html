@@ -1895,6 +1895,11 @@
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
 
       try {
+        // 보컬 명단 세팅을 위해 멤버 데이터 로드 확인
+        if (typeof allMembersList === 'undefined' || allMembersList.length === 0) {
+          if (typeof loadMembersData === 'function') await loadMembersData();
+        }
+
         const { data, error } = await supabaseClient
           .from('schedules')
           .select('*')
@@ -1913,14 +1918,35 @@
         if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 20px;">오류: ${err.message}</td></tr>`;
       }
     }
-
+    
     function renderMonthLineupTable() {
       const tbody = document.getElementById('monthLineupTableBody');
       if (!tbody) return;
 
+      // 보컬 가능한 멤버 목록 가져오기
+      const vocalMembers = typeof getVocalMemberList === 'function' ? getVocalMemberList() : [];
+
       tbody.innerHTML = currentMonthSundays.map(dateStr => {
         const item = currentMonthSchedulesMap[dateStr] || {};
         const isCanceled = /^x_/i.test((item.worship_title || '').trim());
+
+        // 기존 보컬 텍스트를 쪼개어 각 드롭다운의 기본값으로 매칭
+        const rawVocals = (item.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+
+        // 보컬 드롭다운 4개 생성 헬퍼
+        let vocalSelectsHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; min-width: 190px;">';
+        for (let i = 1; i <= 4; i++) {
+          const selectedVal = rawVocals[i - 1] || '';
+          vocalSelectsHtml += `
+            <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <option value="">(싱어 ${i})</option>
+              ${vocalMembers.map(m => `
+                <option value="${m.name}" ${m.name === selectedVal ? 'selected' : ''}>${m.name}</option>
+              `).join('')}
+            </select>
+          `;
+        }
+        vocalSelectsHtml += '</div>';
 
         return `
           <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
@@ -1932,7 +1958,7 @@
               <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
             </td>
             <td style="padding: 6px; vertical-align: top;">
-              <textarea id="m_vocal_${dateStr}" rows="2" placeholder="보컬" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; resize: none;">${item.vocal || ''}</textarea>
+              ${vocalSelectsHtml}
             </td>
             <td style="padding: 6px; vertical-align: top;">
               <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
@@ -1966,7 +1992,17 @@
       try {
         for (const dateStr of currentMonthSundays) {
           const leader = document.getElementById(`m_leader_${dateStr}`)?.value.trim() || null;
-          const vocal = document.getElementById(`m_vocal_${dateStr}`)?.value.trim() || null;
+
+          // 4개의 보컬 드롭다운에서 선택된 값들을 쉼표로 조합
+          const vocalArr = [];
+          for (let i = 1; i <= 4; i++) {
+            const val = document.getElementById(`m_vocal_${dateStr}_${i}`)?.value.trim();
+            if (val && !vocalArr.includes(val)) {
+              vocalArr.push(val);
+            }
+          }
+          const vocal = vocalArr.length > 0 ? vocalArr.join(', ') : null;
+
           const keyboard1 = document.getElementById(`m_kb1_${dateStr}`)?.value.trim() || null;
           const keyboard2 = document.getElementById(`m_kb2_${dateStr}`)?.value.trim() || null;
           const drum = document.getElementById(`m_drum_${dateStr}`)?.value.trim() || null;
