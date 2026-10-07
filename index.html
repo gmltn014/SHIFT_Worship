@@ -3932,46 +3932,78 @@ ${details}
     }
 
     /* ===================================================
-       기기 동기화 기본 상수 & 키 생성기 (최상단으로 위치 이동)
+       기기 동기화 엔진 (변수 순서 꼬임 완전 방지 버전)
     =================================================== */
-    const SYNC_KEY_STORAGE = 'shift_user_sync_key';
 
-    // 1. 고유 연동 키 가져오기 (없으면 발급)
+    // 1. 고유 연동 키 발급/조회 (외부 const에 의존하지 않고 직접 처리)
     function getOrCreateSyncKey() {
-      let key = localStorage.getItem(SYNC_KEY_STORAGE);
+      var key = localStorage.getItem('shift_user_sync_key');
       if (!key) {
-        const randNum = Math.floor(1000 + Math.random() * 9000);
-        const randAlpha = Math.random().toString(36).substring(2, 5).toUpperCase();
-        key = `SHIFT-${randNum}${randAlpha}`;
-        localStorage.setItem(SYNC_KEY_STORAGE, key);
+        var randNum = Math.floor(1000 + Math.random() * 9000);
+        var randAlpha = Math.random().toString(36).substring(2, 5).toUpperCase();
+        key = 'SHIFT-' + randNum + randAlpha;
+        localStorage.setItem('shift_user_sync_key', key);
       }
       return key;
     }
 
-    // 2. 클라우드 동기화 백업 함수
+    // 2. 클라우드 백업 함수
     async function pushSyncDataToCloud() {
-      if (!supabaseClient) return;
-      const key = getOrCreateSyncKey();
-      const currentTheme = localStorage.getItem('shift_theme') || 'light';
-      const currentFont = localStorage.getItem('shift_font') || 'system';
-      const mySuggestionIds = typeof getMySuggestionIds === 'function' ? getMySuggestionIds() : [];
-
-      const payload = {
-        sync_key: key,
-        settings: {
-          theme: currentTheme,
-          font: currentFont
-        },
-        my_suggestion_ids: mySuggestionIds,
-        updated_at: new Date().toISOString()
-      };
+      // Supabase 클라이언트가 아직 없으면 조용히 종료
+      if (!window.supabaseClient) return;
 
       try {
+        var key = getOrCreateSyncKey();
+        var currentTheme = localStorage.getItem('shift_theme') || 'light';
+        var currentFont = localStorage.getItem('shift_font') || 'system';
+        var mySuggestionIds = typeof getMySuggestionIds === 'function' ? getMySuggestionIds() : [];
+
+        var payload = {
+          sync_key: key,
+          settings: {
+            theme: currentTheme,
+            font: currentFont
+          },
+          my_suggestion_ids: mySuggestionIds,
+          updated_at: new Date().toISOString()
+        };
+
         await supabaseClient.from('user_sync').upsert(payload);
       } catch (e) {
-        console.warn('동기화 백업 무시:', e);
+        // 백그라운드 동기화 실패는 조용히 무시
       }
     }
+
+    /* 3. 폰트 변경 함수 */
+    function changeAppFont(fontKey, skipCloudSync) {
+      var fontStack = '';
+      switch (fontKey) {
+        case 'score':
+          fontStack = '"S-CoreDream-3Light", -apple-system, sans-serif';
+          break;
+        case 'serif':
+          fontStack = '"Noto Serif KR", serif';
+          break;
+        case 'system':
+        default:
+          fontStack = '-apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+          break;
+      }
+      document.documentElement.style.setProperty('--app-font', fontStack);
+      localStorage.setItem('shift_font', fontKey);
+
+      // 사용자가 직접 설정을 바꿀 때만 클라우드에 백업 (첫 로드 시 실행 방지)
+      if (!skipCloudSync) {
+        pushSyncDataToCloud();
+      }
+    }
+
+    // 첫 페이지 로드 시에는 두 번째 인자로 true를 넘겨 백업 요청을 건너뜁니다.
+    function initAppFont() {
+      var savedFont = localStorage.getItem('shift_font') || 'system';
+      changeAppFont(savedFont, true);
+    }
+    initAppFont();
     
     // 3. 다른 기기의 연동 코드를 입력하여 데이터 가져오기
     async function applySyncKeyFromInput() {
