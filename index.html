@@ -2189,11 +2189,9 @@
       const target = (partKeyword || '').toLowerCase().trim();
 
       return allMembersList.filter(m => {
-        // 활동 중인 인원만 대상
         if ((m.active || '').trim() !== '활동 중') return false;
         if (!target || target === 'all') return true;
 
-        // 대분류, 주파트, 부파트, 태그 통합 텍스트
         const source = [m.main_category, m.main_part, m.part_b, m.part_tag]
           .filter(Boolean).join(' ').toLowerCase();
 
@@ -2220,12 +2218,13 @@
           case 'broadcast':
           case '방송':
             return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('카메라');
-          case 'subtitle':
+          case 'Prompter':
           case '자막':
-            return source.includes('subtitle') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션');
-          case 'video':
+            // 자막, subtitle, ppt 외에도 방송/라이브옵스 파트 인원들이 자막을 겸하는 경우까지 안전하게 포함
+            return source.includes('Prompter') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션') || source.includes('live ops');
+          case 'Video Editor':
           case '영상':
-            return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('미디어');
+            return source.includes('Video Editor') || source.includes('영상') || source.includes('편집') || source.includes('미디어') || source.includes('post prod');
           default:
             return source.includes(target);
         }
@@ -2267,33 +2266,28 @@
         if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
       }
 
-      // 3. 건반 (중복 감지 이벤트 부착)
-      const kb1Sel = document.getElementById('adminKeyboard1');
-      const kb2Sel = document.getElementById('adminKeyboard2');
-      if (kb1Sel) {
-        kb1Sel.innerHTML = generatePartOptionsHtml('keyboard', currentItem.keyboard1 || 'X', true);
-        kb1Sel.onchange = () => checkWeeklyKeyboardDuplicate('kb1');
-      }
-      if (kb2Sel) {
-        kb2Sel.innerHTML = generatePartOptionsHtml('keyboard', currentItem.keyboard2 || 'X', true);
-        kb2Sel.onchange = () => checkWeeklyKeyboardDuplicate('kb2');
-      }
-
-      // 4. 드럼, 기타, 베이스
-      const setPart = (id, keyword, val) => {
+      // 3. 악기 세션 (미배치 가능 -> X 허용 true)
+      const setSession = (id, keyword, val) => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
       };
 
-      setPart('adminDrum', 'drum', currentItem.drum || 'X');
-      setPart('adminGuitar', 'guitar', currentItem.guitar || 'X');
-      setPart('adminBass', 'bass', currentItem.bass || 'X');
+      setSession('adminKeyboard1', 'keyboard', currentItem.keyboard1 || 'X');
+      setSession('adminKeyboard2', 'keyboard', currentItem.keyboard2 || 'X');
+      setSession('adminDrum', 'drum', currentItem.drum || 'X');
+      setSession('adminGuitar', 'guitar', currentItem.guitar || 'X');
+      setSession('adminBass', 'bass', currentItem.bass || 'X');
 
-      // 5. 엔지니어 & 방송
-      setPart('adminSound', 'sound', currentItem.sound || 'X');
-      setPart('adminBroadcast', 'broadcast', currentItem.broadcast || 'X');
-      setPart('adminSubtitle', 'subtitle', currentItem.subtitle || 'X');
-      setPart('adminVideo', 'video', currentItem.video || 'X');
+      // 4. ★ 방송/엔지니어 (필수 배치 -> X 제거 false)
+      const setMedia = (id, keyword, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || '', false);
+      };
+
+      setMedia('adminSound', 'sound', currentItem.sound || '');
+      setMedia('adminBroadcast', 'broadcast', currentItem.broadcast || '');
+      setMedia('adminSubtitle', 'Prompter', currentItem.Prompter || '');
+      setMedia('adminVideo', 'Video Editor', currentItem.Video Editor || '');
     }
 
     function openContiAdminModal() {
@@ -2515,8 +2509,11 @@
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
 
       try {
-        if (typeof allMembersList === 'undefined' || allMembersList.length === 0) {
-          if (typeof loadMembersData === 'function') await loadMembersData();
+        // ★ 핵심: 팀원 명단이 로드되지 않았다면 명단 로드가 끝날 때까지 반드시 대기!
+        if (!allMembersList || allMembersList.length === 0) {
+          if (typeof loadMembersData === 'function') {
+            await loadMembersData();
+          }
         }
 
         const { data, error } = await supabaseClient
@@ -2531,6 +2528,7 @@
           currentMonthSchedulesMap[row.date] = row;
         });
 
+        // 명단 데이터가 100% 준비된 상태에서 테이블 렌더링 실행
         renderMonthLineupTable();
       } catch (err) {
         console.error('월간 라인업 로드 오류:', err);
@@ -2571,7 +2569,7 @@
             </td>
             <!-- 보컬 -->
             <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
-            <!-- 건반 (메인 / 세컨 중복 검사 부착) -->
+            <!-- 건반 (세션 파트는 X 허용 true) -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_kb1_${dateStr}" onchange="checkMonthlyKeyboardDuplicate('${dateStr}', 'kb1')" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
                 ${generatePartOptionsHtml('keyboard', item.keyboard1 || 'X', true)}
@@ -2595,20 +2593,20 @@
                 ${generatePartOptionsHtml('bass', item.bass || 'X', true)}
               </select>
             </td>
-            <!-- 방송 / 엔지니어 -->
+            <!-- ★ 방송/엔지니어 (X배치없음 제거: 세 번째 인자 false 적용) -->
             <td style="padding: 6px; vertical-align: top;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                <select id="m_sound_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('sound', item.sound || 'X', true)}
+                <select id="m_sound_${dateStr}" title="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('sound', item.sound || '', false)}
                 </select>
-                <select id="m_broadcast_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('broadcast', item.broadcast || 'X', true)}
+                <select id="m_broadcast_${dateStr}" title="방송/중계" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('broadcast', item.broadcast || '', false)}
                 </select>
-                <select id="m_subtitle_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('subtitle', item.subtitle || 'X', true)}
+                <select id="m_subtitle_${dateStr}" title="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('Prompter', item.Prompter || '', false)}
                 </select>
-                <select id="m_video_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('video', item.video || 'X', true)}
+                <select id="m_video_${dateStr}" title="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('Video Editor', item.Video Editor || '', false)}
                 </select>
               </div>
             </td>
@@ -2616,7 +2614,7 @@
         `;
       }).join('');
     }
-
+    
     async function saveAllMonthLineup() {
       const saveBtn = document.getElementById('btnSaveMonthLineup');
       saveBtn.disabled = true;
@@ -2926,10 +2924,20 @@
           `;
         }
 
-        const kbParts = [];
-        if (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) kbParts.push(`${item.keyboard1}(메인)`);
-        if (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) kbParts.push(`${item.keyboard2}(세컨)`);
-        const kbText = kbParts.length > 0 ? kbParts.join(', ') : '-';
+        // ★ 건반: 메인과 세컨을 깔끔하게 줄바꿈 분리
+        const kb1 = (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) ? item.keyboard1.trim() : null;
+        const kb2 = (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) ? item.keyboard2.trim() : null;
+
+        let kbHtml = '-';
+        if (kb1 || kb2) {
+          const lines = [];
+          if (kb1) lines.push(`<div>${kb1} <span style="font-size:0.75rem; color:var(--sub-text);">(메인)</span></div>`);
+          if (kb2) lines.push(`<div>${kb2} <span style="font-size:0.75rem; color:var(--sub-text);">(세컨)</span></div>`);
+          kbHtml = lines.join('');
+        }
+
+        // 자막/프롬프터는 Prompter 키 우선 참조
+        const prompterVal = item.prompter || item.subtitle || '-';
 
         return `
           <div class="card" style="margin-bottom: 12px; padding: 16px;">
@@ -2942,13 +2950,13 @@
                 <span>인도자 / 보컬</span>
                 <strong>🎤 ${item.leader || '-'} / 👥 ${item.vocal || '-'}</strong>
               </div>
-              <div class="members-history-item"><span>건반</span>${kbText}</div>
+              <div class="members-history-item"><span>건반</span>${kbHtml}</div>
               <div class="members-history-item"><span>드럼</span>${item.drum || '-'}</div>
               <div class="members-history-item"><span>기타</span>${item.guitar || '-'}</div>
               <div class="members-history-item"><span>베이스</span>${item.bass || '-'}</div>
               <div class="members-history-item"><span>음향</span>${item.sound || '-'}</div>
               <div class="members-history-item"><span>방송</span>${item.broadcast || '-'}</div>
-              <div class="members-history-item"><span>자막</span>${item.subtitle || '-'}</div>
+              <div class="members-history-item"><span>프롬프터</span>${prompterVal}</div>
               <div class="members-history-item"><span>영상</span>${item.video || '-'}</div>
             </div>
           </div>
