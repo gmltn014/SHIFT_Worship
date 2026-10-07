@@ -868,7 +868,7 @@
 
     <!-- 6. SHIFT 놀이터 탭 -->
     <section id="tab-playground" class="tab-content">
-      <!-- 놀이터 서브탭 네비게이션 -->
+      <!-- 서브탭 네비게이션 -->
       <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; overflow-x: auto; white-space: nowrap;">
         <button id="pg-subtab-game" class="btn-action btn-primary" onclick="switchPlaygroundSubTab('game')" style="font-size: 0.88rem; padding: 7px 14px;">
           🎲 게임 놀이터
@@ -883,36 +883,65 @@
 
       <!-- ================= 1. 게임 놀이터 ================= -->
       <div id="pg-content-game" style="display: block;">
-        <div style="display: flex; gap: 6px; margin-bottom: 14px;">
-          <button class="member-cat-btn active" onclick="switchGameMode('roulette', this)">🎡 벌칙 룰렛</button>
+        <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; white-space: nowrap;">
+          <button class="member-cat-btn active" onclick="switchGameMode('roulette', this)">🎡 룰렛 게임</button>
           <button class="member-cat-btn" onclick="switchGameMode('draw', this)">📦 제비뽑기</button>
           <button class="member-cat-btn" onclick="switchGameMode('ladder', this)">🪜 사다리타기</button>
         </div>
 
         <!-- 룰렛 게임 카드 -->
         <div id="game-panel-roulette" class="card" style="text-align: center;">
-          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🎡 돌려돌려 벌칙/당번 룰렛</h3>
-          <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 14px;">간식 쏘기, 연습실 마이크 정리 당번을 공정하게 정해보세요!</p>
+          <!-- 룰렛 모드 전환 탭 (벌칙 룰렛 vs 랜덤 멤버 룰렛) -->
+          <div style="display: inline-flex; background: var(--card-sub-bg); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+            <button id="btnModePenalty" type="button" class="btn-action btn-primary" onclick="setRouletteType('penalty')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
+              🎯 1. 벌칙 룰렛 (1인 벌칙 뽑기)
+            </button>
+            <button id="btnModeMember" type="button" class="btn-action btn-secondary" onclick="setRouletteType('member')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
+              👥 2. 랜덤 룰렛 (벌칙 수행자 뽑기)
+            </button>
+          </div>
 
+          <!-- 룰렛 캔버스 뷰 -->
           <div style="position: relative; display: inline-block; margin-bottom: 16px;">
             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 22px solid #ef4444; z-index: 5;"></div>
             <canvas id="rouletteCanvas" width="320" height="320" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 4px solid var(--border-color);"></canvas>
           </div>
 
-          <div style="margin-bottom: 14px;">
+          <div style="margin-bottom: 16px;">
             <button type="button" class="btn-action btn-primary" id="btnSpinRoulette" onclick="spinRoulette()" style="font-size: 1.05rem; padding: 10px 32px; border-radius: 30px;">
               🚀 룰렛 돌리기!
             </button>
           </div>
 
-          <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 480px; margin: 0 auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-size: 0.8rem; font-weight: 700;">항목 리스트 (쉼표로 구분)</span>
-              <button type="button" class="btn-action btn-secondary" onclick="loadActiveMembersToRoulette()" style="padding: 4px 8px; font-size: 0.75rem;">
-                👥 활동 팀원 명단 불러오기
-              </button>
+          <!-- [설정 구역 A] 벌칙 룰렛 설정 (대상자 1명 + 벌칙 항목들) -->
+          <div id="rouletteSetupPenalty" style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 벌칙을 받을 대상 멤버</label>
+              <select id="rouletteTargetMemberSelect" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
-            <textarea id="rouletteItemsInput" rows="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;" oninput="updateRouletteFromInput()">커피 쏘기, 마이크 정리, 간식 사오기, 자유, 다음 주 기도, 설거지</textarea>
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">📝 벌칙 후보 목록 (쉼표 구분)</label>
+              <textarea id="roulettePenaltiesInput" rows="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;" oninput="updateRouletteWheel()">커피 쏘기, 마이크 정리, 간식 사오기, 자유, 다음 주 기도, 본당 정리</textarea>
+            </div>
+          </div>
+
+          <!-- [설정 구역 B] 랜덤 멤버 룰렛 설정 (벌칙 1개 + 참여 멤버 체크박스) -->
+          <div id="rouletteSetupMember" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">⚡ 적용할 벌칙/역할</label>
+              <input type="text" id="rouletteFixedPenaltyInput" value="오늘의 간식 쏘기 ☕" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 룰렛 참가 멤버 선택</label>
+                <div style="display: flex; gap: 6px;">
+                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllRouletteMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
+                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllRouletteMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
+                </div>
+              </div>
+              <div id="rouletteMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 150px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
+            </div>
           </div>
         </div>
 
@@ -938,45 +967,59 @@
           <div id="drawCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-width: 500px; margin: 0 auto;"></div>
         </div>
 
-        <!-- 사다리타기 카드 -->
-        <div id="game-panel-ladder" class="card" style="display: none; text-align: center;">
-          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🪜 미니 사다리타기</h3>
-          <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 14px;">참가자와 역할을 입력하고 사다리를 타보세요.</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; max-width: 480px; margin: 0 auto 14px auto;">
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">참가자 (쉼표 구분)</label>
-              <input type="text" id="ladderMembersInput" value="지수, 민호, 예은, 현우" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">결과/벌칙 (쉼표 구분)</label>
-              <input type="text" id="ladderResultsInput" value="당첨, 통과, 통과, 간식" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-            </div>
+        <!-- 사다리타기 카드 (체크박스 명단 연동) -->
+        <div id="game-panel-ladder" class="card" style="display: none;">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🪜 미니 사다리타기</h3>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">참가 팀원을 체크하고 결과 항목을 지정해 사다리를 타보세요.</p>
           </div>
-          <button type="button" class="btn-action btn-primary" onclick="buildAndStartLadder()" style="padding: 8px 24px; font-size: 0.88rem; margin-bottom: 14px;">🪜 사다리 생성 및 결과 보기</button>
-          <div id="ladderResultBox" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); max-width: 480px; margin: 0 auto; text-align: left;"></div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
+            <!-- 팀원 체크박스 선택 -->
+            <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 사다리 참가자 선택</label>
+                <div style="display: flex; gap: 6px;">
+                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
+                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
+                </div>
+              </div>
+              <div id="ladderMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 130px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
+            </div>
+
+            <!-- 결과 항목 -->
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 결과/벌칙 목록 (쉼표 구분 - 참가자 수와 동일하게 자동 배정)</label>
+              <input type="text" id="ladderResultsInput" value="당첨, 통과, 간식, 통과, 청소, 통과" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+
+            <button type="button" class="btn-action btn-primary" onclick="buildAndStartLadder()" style="justify-content: center; padding: 10px; font-size: 0.95rem;">
+              🪜 사다리 생성 및 매칭 시작
+            </button>
+
+            <div id="ladderResultBox" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+          </div>
         </div>
       </div>
 
-      <!-- ================= 2. SNS 놀이터 (취향표) ================= -->
+      <!-- ================= 2. SNS 놀이터 ================= -->
       <div id="pg-content-sns" style="display: none;">
         <!-- 작성 카드 -->
         <div class="card" style="margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div>
-              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📸 나의 SHIFT 찬양 취향표 작성</h3>
-              <p style="font-size: 0.82rem; color: var(--sub-text);">작성한 취향표는 인스타 스토리 카드 이미지로 저장하거나 피드에 포스트잇처럼 게시할 수 있습니다.</p>
-            </div>
+          <div style="margin-bottom: 12px;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📸 나의 SHIFT 찬양 취향표 작성</h3>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">3가지 항목 중 원하는 항목만 자유롭게 작성해 보세요. 입력한 항목만 깔끔하게 카드에 렌더링됩니다.</p>
           </div>
 
           <form onsubmit="handlePublishSnsCard(event)">
-            <!-- 이름 및 익명 여부 -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <!-- 작성자 & 표기 방식 -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
               <div>
                 <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">작성자 이름 / 닉네임</label>
-                <input type="text" id="snsAuthorName" required placeholder="예: 건반요정, 희수" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+                <input type="text" id="snsAuthorName" required placeholder="예: 희수, 드럼치는청년" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
               </div>
               <div>
-                <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">표기 방식</label>
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">공유 방식</label>
                 <select id="snsIsAnonymous" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
                   <option value="false">👤 실명으로 당당하게 공유</option>
                   <option value="true">🎭 비밀 닉네임(익명)으로 공유</option>
@@ -984,30 +1027,45 @@
               </div>
             </div>
 
-            <!-- 내용 입력 -->
+            <!-- 내용 입력 3종 (선택적) -->
             <div style="margin-bottom: 10px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📖 오늘 묵상한 은혜의 말씀 한 구절</label>
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📖 오늘 묵상한 은혜의 말씀 (선택)</label>
               <input type="text" id="snsWordQt" placeholder="예: 시편 23:1 - 여호와는 나의 목자시니 내게 부족함이 없으리로다" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
 
             <div style="margin-bottom: 10px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 내 인생 가장 좋아하는 찬양 3곡</label>
-              <input type="text" id="snsFavSongs" placeholder="예: 1. 주의 친절한 팔에 / 2. 은혜 / 3. 밤이나 낮이나" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 내 인생 가장 좋아하는 찬양 (선택)</label>
+              <input type="text" id="snsFavSongs" placeholder="예: 주의 친절한 팔에, 은혜, 꽃들도" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
 
-            <div style="margin-bottom: 14px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎧 최근 무한반복 중인 추천 찬양 & 아티스트</label>
-              <input type="text" id="snsRecSong" placeholder="예: 나의 하나님 - 위러브 (브릿지 연주가 너무 은혜로워요)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎧 최근 푹 빠진 추천 찬양 (선택)</label>
+              <input type="text" id="snsRecSong" placeholder="예: 나의 하나님 - 위러브" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
 
-            <!-- 카드 테마 색상 선택 -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+            <!-- 인스타 카드 배경 이미지 첨부 설정 -->
+            <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 14px;">
+              <label style="font-size: 0.8rem; font-weight: 700; display: block; margin-bottom: 6px;">🖼️ 인스타 스토리 배경 사진 커스텀 (선택)</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                  <span style="font-size: 0.72rem; color: var(--sub-text); display: block; margin-bottom: 2px;">📁 갤러리/파일에서 첨부</span>
+                  <input type="file" id="snsBgFileInput" accept="image/*" onchange="handleSnsBgFile(this)" style="font-size: 0.75rem; width: 100%;">
+                </div>
+                <div>
+                  <span style="font-size: 0.72rem; color: var(--sub-text); display: block; margin-bottom: 2px;">🌐 이미지 URL 입력</span>
+                  <input type="url" id="snsBgUrlInput" placeholder="https://..." oninput="handleSnsBgUrl(this.value)" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.78rem;">
+                </div>
+              </div>
+            </div>
+
+            <!-- 색상 및 액션 버튼 -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포스트잇 배경색:</span>
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포스트잇 포인트 색:</span>
                 <input type="color" id="snsCardColor" value="#3b82f6" style="border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent;">
               </div>
               <div style="display: flex; gap: 6px;">
-                <button type="button" class="btn-action btn-secondary" onclick="previewAndDownloadInstaCard()" style="font-size: 0.82rem; padding: 7px 12px;">
+                <button type="button" class="btn-action btn-secondary" onclick="previewAndDownloadInstaCard()" style="font-size: 0.82rem; padding: 7px 14px;">
                   🖼️ 인스타 스토리 이미지 생성
                 </button>
                 <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px;">
@@ -1018,59 +1076,65 @@
           </form>
         </div>
 
-        <!-- 인스타 스토리 캡처 캔버스 (숨김 영역) -->
+        <!-- 인스타 스토리 캡처 템플릿 (9:16 비율) -->
         <div id="instaCardCaptureWrap" style="position: fixed; left: -9999px; top: 0;">
-          <div id="instaStoryCard" style="width: 420px; min-height: 680px; padding: 36px 30px; border-radius: 20px; background: linear-gradient(145deg, #1e293b, #0f172a); color: #ffffff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div>
+          <div id="instaStoryCard" style="width: 420px; min-height: 700px; padding: 40px 30px; border-radius: 24px; position: relative; overflow: hidden; background-color: #0f172a; color: #ffffff; display: flex; flex-direction: column; justify-content: space-between; background-size: cover; background-position: center;">
+            <!-- 반투명 다크 오버레이 (배경 이미지 위 가독성 보장) -->
+            <div id="instaCardOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.92) 100%); z-index: 1;"></div>
+
+            <!-- 카드 실 내용 -->
+            <div style="position: relative; z-index: 2;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 14px; margin-bottom: 24px;">
-                <span style="font-size: 0.9rem; font-weight: 700; letter-spacing: 1px; color: #38bdf8;">SHIFT WORSHIP</span>
-                <span style="font-size: 0.8rem; opacity: 0.8;">찬양 취향표</span>
+                <span style="font-size: 0.95rem; font-weight: 800; letter-spacing: 1.5px; color: #38bdf8;">SHIFT WORSHIP</span>
+                <span style="font-size: 0.8rem; opacity: 0.8; font-weight: 600;">찬양 취향표</span>
               </div>
-              <h2 id="cardPreviewAuthor" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 24px; color: #f8fafc;">OOO의 찬양 노트</h2>
+              <h2 id="cardPreviewAuthor" style="font-size: 1.6rem; font-weight: 800; margin-bottom: 26px; color: #f8fafc;">OOO의 찬양 노트</h2>
               
-              <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div style="background: rgba(255,255,255,0.06); padding: 16px; border-radius: 12px; border-left: 4px solid #38bdf8;">
-                  <span style="font-size: 0.75rem; text-transform: uppercase; color: #7dd3fc; font-weight: 700; display: block; margin-bottom: 4px;">📖 오늘 마음에 품은 말씀</span>
-                  <p id="cardPreviewWord" style="font-size: 0.95rem; line-height: 1.5; font-weight: 500;"></p>
+              <div id="cardPreviewItemsGroup" style="display: flex; flex-direction: column; gap: 18px;">
+                <!-- 1. 말씀 -->
+                <div id="cardWrapWord" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 18px; border-radius: 14px; border-left: 4px solid #38bdf8;">
+                  <span style="font-size: 0.78rem; text-transform: uppercase; color: #7dd3fc; font-weight: 700; display: block; margin-bottom: 6px;">📖 오늘 품은 말씀</span>
+                  <p id="cardPreviewWord" style="font-size: 0.98rem; line-height: 1.55; font-weight: 500;"></p>
                 </div>
 
-                <div style="background: rgba(255,255,255,0.06); padding: 16px; border-radius: 12px; border-left: 4px solid #f43f5e;">
-                  <span style="font-size: 0.75rem; text-transform: uppercase; color: #fda4af; font-weight: 700; display: block; margin-bottom: 4px;">🕊️ 내 인생 찬양 BEST 3</span>
-                  <p id="cardPreviewFav" style="font-size: 0.95rem; line-height: 1.6; font-weight: 500;"></p>
+                <!-- 2. 인생 찬양 -->
+                <div id="cardWrapFav" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 18px; border-radius: 14px; border-left: 4px solid #f43f5e;">
+                  <span style="font-size: 0.78rem; text-transform: uppercase; color: #fda4af; font-weight: 700; display: block; margin-bottom: 6px;">🕊️ 내 인생의 찬양</span>
+                  <p id="cardPreviewFav" style="font-size: 0.98rem; line-height: 1.6; font-weight: 500;"></p>
                 </div>
 
-                <div style="background: rgba(255,255,255,0.06); padding: 16px; border-radius: 12px; border-left: 4px solid #f59e0b;">
-                  <span style="font-size: 0.75rem; text-transform: uppercase; color: #fcd34d; font-weight: 700; display: block; margin-bottom: 4px;">🎧 요즘 빠져있는 추천곡</span>
-                  <p id="cardPreviewRec" style="font-size: 0.95rem; line-height: 1.5; font-weight: 500;"></p>
+                <!-- 3. 추천곡 -->
+                <div id="cardWrapRec" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 18px; border-radius: 14px; border-left: 4px solid #f59e0b;">
+                  <span style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 700; display: block; margin-bottom: 6px;">🎧 요즘 빠져있는 추천 찬양</span>
+                  <p id="cardPreviewRec" style="font-size: 0.98rem; line-height: 1.55; font-weight: 500;"></p>
                 </div>
               </div>
             </div>
 
-            <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 18px; margin-top: 24px; font-size: 0.78rem; opacity: 0.7;">
+            <div style="position: relative; z-index: 2; text-align: center; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 18px; margin-top: 24px; font-size: 0.8rem; opacity: 0.75; letter-spacing: 0.5px;">
               Sing Higher and Imagine Forever. Thanks God.
             </div>
           </div>
         </div>
 
-        <!-- 팀원들의 공유 보드 (포스트잇 피드) -->
+        <!-- 팀원 공유 포스트잇 피드 -->
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h4 style="font-size: 1.05rem; font-weight: 700;">📌 팀원들이 공유한 찬양 취향표 피드</h4>
             <button type="button" class="btn-action btn-secondary" onclick="loadSnsFeedData()" style="padding: 4px 10px; font-size: 0.75rem;">🔄 새로고침</button>
           </div>
-          <div id="snsFeedList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+          <div id="snsFeedList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
             <div class="loading-spinner">취향표 피드를 불러오는 중입니다...</div>
           </div>
         </div>
       </div>
 
-      <!-- ================= 3. 찬양팀 놀이터 (비주얼 메트로놈) ================= -->
+      <!-- ================= 3. 찬양팀 놀이터 ================= -->
       <div id="pg-content-music" style="display: none;">
         <div class="card" style="text-align: center; max-width: 520px; margin: 0 auto; padding: 28px 20px;">
           <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">🥁 비주얼 탭 메트로놈</h3>
           <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 24px;">빛나는 비주얼 링과 탭 템포로 연습실 박자를 직관적으로 맞춰보세요.</p>
 
-          <!-- 깜빡이는 비주얼 링 -->
           <div style="position: relative; width: 140px; height: 140px; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: center;">
             <div id="metronomePulseRing" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--accent-color); transition: transform 0.08s ease, opacity 0.08s ease; opacity: 0.2; transform: scale(0.9);"></div>
             <div style="display: flex; flex-direction: column; align-items: center;">
@@ -1079,7 +1143,6 @@
             </div>
           </div>
 
-          <!-- 템포 조절 슬라이더 및 버튼 -->
           <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px;">
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(-5)" style="padding: 6px 14px; font-weight: 700;">-5</button>
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(-1)" style="padding: 6px 12px; font-weight: 700;">-1</button>
@@ -1088,7 +1151,6 @@
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(5)" style="padding: 6px 14px; font-weight: 700;">+5</button>
           </div>
 
-          <!-- 컨트롤 버튼 -->
           <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 24px;">
             <button type="button" id="btnToggleMetro" class="btn-action btn-primary" onclick="toggleMetronome()" style="padding: 10px 32px; font-size: 1rem; border-radius: 30px;">
               ▶️ 시작하기
@@ -1098,7 +1160,6 @@
             </button>
           </div>
 
-          <!-- 사운드 토글 -->
           <div style="display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--sub-text);">
             <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
               <input type="checkbox" id="metroSoundToggle" checked style="accent-color: var(--accent-color);">
@@ -1689,6 +1750,9 @@
       }
       if (tabId === 'playground') {
         drawRouletteWheel();
+      }
+      if (tabId === 'playground') {
+        initGameModule();
       }
     }
 
@@ -4006,10 +4070,16 @@ ${details}
     }
 
     /* ===================================================
-       SHIFT 놀이터 전체 모듈 (게임 / SNS / 메트로놈)
+       SHIFT 놀이터 전체 모듈 (룰렛 모드 2종 / SNS / 메트로놈)
     =================================================== */
 
-    // 서브탭 전환
+    let currentRouletteType = 'penalty'; // 'penalty' (벌칙룰렛) vs 'member' (멤버룰렛)
+    let rouletteItems = [];
+    let rouletteAngle = 0;
+    let isSpinning = false;
+    const rouletteColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
+
+    // 1) 서브탭 전환
     function switchPlaygroundSubTab(subTab) {
       ['game', 'sns', 'music'].forEach(tab => {
         const btn = document.getElementById(`pg-subtab-${tab}`);
@@ -4018,14 +4088,30 @@ ${details}
         if (content) content.style.display = (tab === subTab) ? 'block' : 'none';
       });
 
-      if (subTab === 'game') drawRouletteWheel();
-      if (subTab === 'sns') loadSnsFeedData();
-      if (subTab !== 'music' && isMetroPlaying) toggleMetronome(); // 메트로놈 자동 정지
+      if (subTab === 'game') {
+        initGameModule();
+      }
+      if (subTab === 'sns') {
+        loadSnsFeedData();
+      }
+      if (subTab !== 'music' && isMetroPlaying) {
+        toggleMetronome(); // 탭 이동 시 메트로놈 정지
+      }
     }
 
     /* -----------------------------------------
-       1. 게임 놀이터 (룰렛, 제비뽑기, 사다리)
+       1. 게임 놀이터 로직
     ----------------------------------------- */
+    async function initGameModule() {
+      if (!allMembersList || allMembersList.length === 0) {
+        if (typeof loadMembersData === 'function') await loadMembersData();
+      }
+      populateRouletteTargetSelect();
+      populateRouletteMemberCheckboxes();
+      populateLadderMemberCheckboxes();
+      updateRouletteWheel();
+    }
+
     function switchGameMode(mode, btn) {
       document.querySelectorAll('#pg-content-game .member-cat-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
@@ -4035,39 +4121,76 @@ ${details}
         if (panel) panel.style.display = (m === mode) ? 'block' : 'none';
       });
 
-      if (mode === 'roulette') drawRouletteWheel();
+      if (mode === 'roulette') updateRouletteWheel();
       if (mode === 'draw') initDrawCards();
     }
 
-    // 1) 룰렛 구현
-    let rouletteItems = ['커피 쏘기', '마이크 정리', '간식 사오기', '자유', '다음 주 기도', '설거지'];
-    let rouletteAngle = 0;
-    let isSpinning = false;
-    const rouletteColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
+    // 1-1 & 1-2. 룰렛 모드 설정
+    function setRouletteType(type) {
+      currentRouletteType = type;
+      const btnPen = document.getElementById('btnModePenalty');
+      const btnMem = document.getElementById('btnModeMember');
+      const boxPen = document.getElementById('rouletteSetupPenalty');
+      const boxMem = document.getElementById('rouletteSetupMember');
 
-    function updateRouletteFromInput() {
-      const input = document.getElementById('rouletteItemsInput');
-      if (!input) return;
-      const parsed = input.value.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
-      if (parsed.length > 0) rouletteItems = parsed;
-      drawRouletteWheel();
+      if (type === 'penalty') {
+        btnPen.className = 'btn-action btn-primary';
+        btnMem.className = 'btn-action btn-secondary';
+        boxPen.style.display = 'block';
+        boxMem.style.display = 'none';
+      } else {
+        btnPen.className = 'btn-action btn-secondary';
+        btnMem.className = 'btn-action btn-primary';
+        boxPen.style.display = 'none';
+        boxMem.style.display = 'block';
+      }
+      updateRouletteWheel();
     }
 
-    function loadActiveMembersToRoulette() {
-      if (!allMembersList || allMembersList.length === 0) {
-        alert('팀원 명단이 로드되지 않았습니다.');
-        return;
-      }
-      const activeNames = allMembersList
-        .filter(m => (m.active || '').trim() === '활동 중')
-        .map(m => m.name);
+    // 활동 중인 멤버 필터
+    function getActiveMembers() {
+      if (!allMembersList) return [];
+      return allMembersList.filter(m => (m.active || '').trim() === '활동 중');
+    }
 
-      if (activeNames.length > 0) {
-        rouletteItems = activeNames;
-        document.getElementById('rouletteItemsInput').value = activeNames.join(', ');
-        drawRouletteWheel();
-        alert(`활동 중인 팀원 ${activeNames.length}명의 이름으로 룰렛을 구성했습니다!`);
+    // 1-1. 벌칙 룰렛 대상 멤버 채우기
+    function populateRouletteTargetSelect() {
+      const select = document.getElementById('rouletteTargetMemberSelect');
+      if (!select) return;
+      const actives = getActiveMembers();
+      select.innerHTML = actives.map(m => `<option value="${m.name}">${m.name} (${m.main_part || '팀원'})</option>`).join('');
+    }
+
+    // 1-2. 랜덤 멤버 룰렛 체크박스 목록 채우기
+    function populateRouletteMemberCheckboxes() {
+      const container = document.getElementById('rouletteMemberCheckboxList');
+      if (!container) return;
+      const actives = getActiveMembers();
+      container.innerHTML = actives.map((m, idx) => `
+        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer; user-select: none;">
+          <input type="checkbox" class="roulette-member-cb" value="${m.name}" checked onchange="updateRouletteWheel()">
+          ${m.name}
+        </label>
+      `).join('');
+    }
+
+    function toggleAllRouletteMembers(checked) {
+      document.querySelectorAll('.roulette-member-cb').forEach(cb => cb.checked = checked);
+      updateRouletteWheel();
+    }
+
+    // 룰렛 데이터 계산 및 렌더링
+    function updateRouletteWheel() {
+      if (currentRouletteType === 'penalty') {
+        const input = document.getElementById('roulettePenaltiesInput')?.value || '';
+        rouletteItems = input.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+        if (rouletteItems.length === 0) rouletteItems = ['벌칙 없음'];
+      } else {
+        const cbs = document.querySelectorAll('.roulette-member-cb:checked');
+        rouletteItems = Array.from(cbs).map(cb => cb.value);
+        if (rouletteItems.length === 0) rouletteItems = ['선택된 멤버 없음'];
       }
+      drawRouletteWheel();
     }
 
     function drawRouletteWheel() {
@@ -4095,7 +4218,7 @@ ${details}
         ctx.rotate(segAngle + anglePerSegment / 2);
         ctx.textAlign = 'right';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 14px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         ctx.fillText(rouletteItems[i], radius - 20, 5);
         ctx.restore();
       }
@@ -4103,6 +4226,11 @@ ${details}
 
     function spinRoulette() {
       if (isSpinning) return;
+      if (rouletteItems.length < 2) {
+        alert('룰렛 항목이 최소 2개 이상이어야 합니다.');
+        return;
+      }
+
       isSpinning = true;
       const spinBtn = document.getElementById('btnSpinRoulette');
       spinBtn.disabled = true;
@@ -4126,18 +4254,80 @@ ${details}
         } else {
           isSpinning = false;
           spinBtn.disabled = false;
-          // 당첨 항목 계산
+
           const num = rouletteItems.length;
           const arc = (2 * Math.PI) / num;
           const normalized = (3 * Math.PI / 2 - (rouletteAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
           const winIndex = Math.floor(normalized / arc);
-          alert(`🎉 당첨 결과: [ ${rouletteItems[winIndex]} ] 당첨! 축하합니다! 👏`);
+          const winner = rouletteItems[winIndex];
+
+          if (currentRouletteType === 'penalty') {
+            const targetMember = document.getElementById('rouletteTargetMemberSelect')?.value || '선택된 멤버';
+            alert(`🎉 [벌칙 룰렛 결과]\n\n'${targetMember}' 님의 벌칙:\n▶ [ ${winner} ] 당첨! 👏`);
+          } else {
+            const fixedPenalty = document.getElementById('rouletteFixedPenaltyInput')?.value || '벌칙';
+            alert(`🎉 [랜덤 룰렛 결과]\n\n${fixedPenalty} 수행자:\n▶ [ ${winner} ] 님 당첨! 축하합니다! 👏`);
+          }
         }
       }
       requestAnimationFrame(animate);
     }
 
-    // 2) 제비뽑기 구현
+    // 1-3. 사다리타기 체크박스 연동
+    function populateLadderMemberCheckboxes() {
+      const container = document.getElementById('ladderMemberCheckboxList');
+      if (!container) return;
+      const actives = getActiveMembers();
+      container.innerHTML = actives.map(m => `
+        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer; user-select: none;">
+          <input type="checkbox" class="ladder-member-cb" value="${m.name}" checked>
+          ${m.name}
+        </label>
+      `).join('');
+    }
+
+    function toggleAllLadderMembers(checked) {
+      document.querySelectorAll('.ladder-member-cb').forEach(cb => cb.checked = checked);
+    }
+
+    function buildAndStartLadder() {
+      const cbs = document.querySelectorAll('.ladder-member-cb:checked');
+      const selectedMembers = Array.from(cbs).map(cb => cb.value);
+      const rawResults = document.getElementById('ladderResultsInput').value.split(',').map(v => v.trim()).filter(Boolean);
+      const box = document.getElementById('ladderResultBox');
+
+      if (selectedMembers.length < 2) {
+        alert('사다리에 참가할 멤버를 최소 2명 이상 선택해 주세요.');
+        return;
+      }
+
+      // 결과 항목 수 맞추기
+      let finalResults = [...rawResults];
+      while (finalResults.length < selectedMembers.length) {
+        finalResults.push('통과 🍀');
+      }
+      if (finalResults.length > selectedMembers.length) {
+        finalResults = finalResults.slice(0, selectedMembers.length);
+      }
+
+      const shuffledResults = [...finalResults].sort(() => Math.random() - 0.5);
+
+      box.style.display = 'block';
+      box.innerHTML = `
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 8px;">🪜 사다리 매칭 결과</h4>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          ${selectedMembers.map((m, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-bottom: 1px dashed var(--border-color); padding: 5px 0;">
+              <span><strong>${m}</strong></span>
+              <span>➔</span>
+              <span style="color: ${shuffledResults[idx].includes('당첨') \vert{}\vert{} shuffledResults[idx].includes('청소') ? '#ef4444' : 'var(--accent-color)'}; font-weight: 700;">${shuffledResults[idx]}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 제비뽑기 초기화
     let drawCards = [];
     function initDrawCards() {
       const total = parseInt(document.getElementById('drawTotalCount').value, 10) || 6;
@@ -4152,7 +4342,7 @@ ${details}
       drawCards.sort(() => Math.random() - 0.5);
 
       grid.innerHTML = drawCards.map((res, idx) => `
-        <div id="draw-card-${idx}" onclick="revealDrawCard(${idx}, '${res}')" style="aspect-ratio: 1; background: var(--accent-color); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; cursor: pointer; user-select: none; transition: transform 0.2s;">
+        <div id="draw-card-${idx}" onclick="revealDrawCard(${idx}, '${res}')" style="aspect-ratio: 1; background: var(--accent-color); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.05rem; cursor: pointer; user-select: none;">
           ?
         </div>
       `).join('');
@@ -4169,36 +4359,35 @@ ${details}
       el.innerText = text;
     }
 
-    // 3) 사다리타기 구현
-    function buildAndStartLadder() {
-      const members = document.getElementById('ladderMembersInput').value.split(',').map(v => v.trim()).filter(Boolean);
-      const results = document.getElementById('ladderResultsInput').value.split(',').map(v => v.trim()).filter(Boolean);
-      const box = document.getElementById('ladderResultBox');
+    /* -----------------------------------------
+       2. SNS 놀이터 (선택적 렌더링 & 배경 사진 & 유튜브 검색)
+    ----------------------------------------- */
+    let customInstaBgImage = '';
 
-      if (members.length !== results.length) {
-        alert('참가자 수와 결과 항목 수가 같아야 합니다.');
-        return;
+    // 2-1. 갤러리/파일 이미지 리더
+    function handleSnsBgFile(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          customInstaBgImage = e.target.result;
+          document.getElementById('snsBgUrlInput').value = '';
+        };
+        reader.readAsDataURL(input.files[0]);
       }
-
-      const shuffled = [...results].sort(() => Math.random() - 0.5);
-      box.style.display = 'block';
-      box.innerHTML = `
-        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 8px;">🪜 사다리 결과 매칭</h4>
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          ${members.map((m, idx) => `
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
-              <span><strong>${m}</strong></span>
-              <span>➔</span>
-              <span style="color: var(--accent-color); font-weight: 700;">${shuffled[idx]}</span>
-            </div>
-          `).join('')}
-        </div>
-      `;
     }
 
-    /* -----------------------------------------
-       2. SNS 놀이터 (취향표 & 인스타 카드)
-    ----------------------------------------- */
+    // 2-1. 웹 이미지 URL 입력
+    function handleSnsBgUrl(url) {
+      customInstaBgImage = url.trim();
+      document.getElementById('snsBgFileInput').value = '';
+    }
+
+    // 유튜브 검색 링크 생성기 헬퍼
+    function getYoutubeSearchUrl(query) {
+      return `https://www.youtube.com/results?search_query=${encodeURIComponent(query + ' 찬양')}`;
+    }
+
+    // SNS 피드 불러오기 (유튜브 바로듣기 링크 및 단일 항목 선택적 렌더링)
     async function loadSnsFeedData() {
       const listEl = document.getElementById('snsFeedList');
       if (!listEl) return;
@@ -4212,7 +4401,7 @@ ${details}
         if (error) throw error;
 
         if (!data || data.length === 0) {
-          listEl.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--sub-text);">아직 공유된 찬양 취향표가 없습니다. 첫 취향표를 남겨보세요!</div>';
+          listEl.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--sub-text);">공유된 찬양 취향표가 없습니다. 첫 카드를 남겨보세요!</div>';
           return;
         }
 
@@ -4221,23 +4410,36 @@ ${details}
           const authorBadge = item.is_anonymous ? '🎭 익명' : '👤 실명';
 
           return `
-            <div class="card" style="border-top: 5px solid ${item.card_color || 'var(--accent-color)'}; padding: 14px; position: relative;">
+            <div class="card" style="border-top: 5px solid ${item.card_color || 'var(--accent-color)'}; padding: 14px; position: relative; margin-bottom: 0;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <strong style="font-size: 1rem;">${item.author_name}</strong>
                 <span style="font-size: 0.72rem; color: var(--sub-text); background: var(--card-sub-bg); padding: 2px 6px; border-radius: 4px;">${authorBadge}</span>
               </div>
+
               ${item.word_qt ? `
-                <div style="font-size: 0.82rem; margin-bottom: 6px;">
-                  <span style="color: var(--sub-text); font-weight: 600;">📖 말씀:</span> ${item.word_qt}
+                <div style="font-size: 0.83rem; margin-bottom: 8px;">
+                  <span style="color: var(--sub-text); font-weight: 700; display: block; margin-bottom: 2px;">📖 은혜의 말씀</span>
+                  <div style="line-height: 1.45;">${item.word_qt}</div>
                 </div>` : ''}
+
               ${item.favorite_songs ? `
-                <div style="font-size: 0.82rem; margin-bottom: 6px;">
-                  <span style="color: var(--sub-text); font-weight: 600;">🕊️ 인생 찬양:</span> ${item.favorite_songs}
+                <div style="font-size: 0.83rem; margin-bottom: 8px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span>
+                    <a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 검색</a>
+                  </div>
+                  <div style="line-height: 1.45;">${item.favorite_songs}</div>
                 </div>` : ''}
+
               ${item.recommended_song ? `
-                <div style="font-size: 0.82rem;">
-                  <span style="color: var(--sub-text); font-weight: 600;">🎧 추천곡:</span> ${item.recommended_song}
+                <div style="font-size: 0.83rem; margin-bottom: 4px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <span style="color: var(--sub-text); font-weight: 700;">🎧 요즘 추천곡</span>
+                    <a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 바로듣기</a>
+                  </div>
+                  <div style="line-height: 1.45;">${item.recommended_song}</div>
                 </div>` : ''}
+
               <div style="font-size: 0.72rem; color: var(--sub-text); text-align: right; margin-top: 10px;">${dateStr}</div>
             </div>
           `;
@@ -4247,6 +4449,7 @@ ${details}
       }
     }
 
+    // 포스트잇 저장
     async function handlePublishSnsCard(e) {
       e.preventDefault();
       const author_name = document.getElementById('snsAuthorName').value.trim();
@@ -4257,43 +4460,80 @@ ${details}
       const card_color = document.getElementById('snsCardColor').value;
       const btn = document.getElementById('btnPublishSns');
 
+      if (!word_qt && !favorite_songs && !recommended_song) {
+        alert('말씀, 인생 찬양, 추천곡 중 최소 1개 항목은 작성해 주세요!');
+        return;
+      }
+
       btn.disabled = true;
       btn.innerText = '게시 중...';
 
       try {
         const { error } = await supabaseClient.from('playground_sns').insert([{
-          author_name, is_anonymous, word_qt, favorite_songs, recommended_song, card_color
+          author_name,
+          is_anonymous,
+          word_qt: word_qt || null,
+          favorite_songs: favorite_songs || null,
+          recommended_song: recommended_song || null,
+          card_color
         }]);
 
         if (error) throw error;
-        alert('🎉 나의 찬양 취향표가 놀이터 보드에 포스트잇처럼 게시되었습니다!');
+        alert('🎉 나의 찬양 취향표가 보드에 성공적으로 게시되었습니다!');
         await loadSnsFeedData();
       } catch (err) {
-        alert('게시 오류: ' + err.message);
+        alert('게시 실패: ' + err.message);
       } finally {
         btn.disabled = false;
         btn.innerText = '📌 놀이터 보드에 게시';
       }
     }
 
+    // 2-1 & 2. 인스타 스토리 카드 생성 (선택적 항목 노출 및 배경사진 적용)
     function previewAndDownloadInstaCard() {
       const author = document.getElementById('snsAuthorName').value.trim() || 'SHIFT 팀원';
-      const word = document.getElementById('snsWordQt').value.trim() || '시편 23편 1절';
-      const fav = document.getElementById('snsFavSongs').value.trim() || '1. 은혜 2. 시선 3. 꽃들도';
-      const rec = document.getElementById('snsRecSong').value.trim() || '나의 하나님 - 위러브';
+      const word = document.getElementById('snsWordQt').value.trim();
+      const fav = document.getElementById('snsFavSongs').value.trim();
+      const rec = document.getElementById('snsRecSong').value.trim();
+
+      if (!word && !fav && !rec) {
+        alert('인스타 카드에 담을 내용을 1개 이상 작성해 주세요!');
+        return;
+      }
 
       document.getElementById('cardPreviewAuthor').innerText = `${author}의 찬양 노트`;
-      document.getElementById('cardPreviewWord').innerText = word;
-      document.getElementById('cardPreviewFav').innerText = fav;
-      document.getElementById('cardPreviewRec').innerText = rec;
 
+      // 1) 입력된 항목만 조건부 표시
+      const setCardItem = (wrapId, textId, value) => {
+        const wrap = document.getElementById(wrapId);
+        const text = document.getElementById(textId);
+        if (value) {
+          text.innerText = value;
+          wrap.style.display = 'block';
+        } else {
+          wrap.style.display = 'none';
+        }
+      };
+
+      setCardItem('cardWrapWord', 'cardPreviewWord', word);
+      setCardItem('cardWrapFav', 'cardPreviewFav', fav);
+      setCardItem('cardWrapRec', 'cardPreviewRec', rec);
+
+      // 2) 배경 사진 적용
       const cardEl = document.getElementById('instaStoryCard');
-      html2canvas(cardEl, { scale: 3 }).then(canvas => {
+      if (customInstaBgImage) {
+        cardEl.style.backgroundImage = `url("${customInstaBgImage}")`;
+      } else {
+        cardEl.style.backgroundImage = 'none';
+      }
+
+      // 3) 고화질 캡처 후 다운로드
+      html2canvas(cardEl, { scale: 3, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
         link.download = `${author}_SHIFT_취향표_스토리.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        alert('📸 인스타그램 스토리용 취향표 이미지가 저장되었습니다!');
+        alert('📸 인스타그램 스토리용 맞춤 취향표 이미지가 저장되었습니다!');
       });
     }
 
@@ -4310,9 +4550,7 @@ ${details}
       metroBpm = parseInt(val, 10);
       document.getElementById('metroBpmVal').innerText = metroBpm;
       document.getElementById('metroSlider').value = metroBpm;
-      if (isMetroPlaying) {
-        restartMetronome();
-      }
+      if (isMetroPlaying) restartMetronome();
     }
 
     function adjustMetroBpm(delta) {
@@ -4335,9 +4573,7 @@ ${details}
     }
 
     function startMetronomeTimer() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const intervalMs = (60 / metroBpm) * 1000;
       metroTimerId = setInterval(triggerMetronomeTick, intervalMs);
       triggerMetronomeTick();
@@ -4356,7 +4592,6 @@ ${details}
     }
 
     function triggerMetronomeTick() {
-      // 1. 비주얼 펄스 효과
       const ring = document.getElementById('metronomePulseRing');
       if (ring) {
         ring.style.transform = 'scale(1.25)';
@@ -4367,14 +4602,13 @@ ${details}
         }, 100);
       }
 
-      // 2. 비프 사운드 재생 (체크박스 켜져 있을 때만)
       const isSoundOn = document.getElementById('metroSoundToggle')?.checked;
       if (isSoundOn && audioCtx) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz 비프
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
         osc.start();
@@ -4385,7 +4619,6 @@ ${details}
     function handleTapTempo() {
       const now = Date.now();
       tapTimes.push(now);
-
       if (tapTimes.length > 4) tapTimes.shift();
 
       if (tapTimes.length >= 2) {
@@ -4396,9 +4629,7 @@ ${details}
         const avgDiff = diffs.reduce((a, b) => a + b) / diffs.length;
         if (avgDiff > 0) {
           const calcBpm = Math.round(60000 / avgDiff);
-          if (calcBpm >= 40 && calcBpm <= 220) {
-            setMetroBpm(calcBpm);
-          }
+          if (calcBpm >= 40 && calcBpm <= 220) setMetroBpm(calcBpm);
         }
       }
     }
