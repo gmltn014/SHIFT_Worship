@@ -4660,6 +4660,28 @@ ${details}
       }
     }
 
+    function closeSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // 모달 바깥 어두운 배경 클릭 시 닫기
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('settingsModal');
+      if (event.target === modal) {
+        closeSettingsModal();
+      }
+    });
+
+    // ESC 키 누르면 설정창 닫기
+    window.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeSettingsModal();
+      }
+    });
+
     /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadCurrentConti();
