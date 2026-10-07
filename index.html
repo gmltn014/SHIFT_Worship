@@ -566,6 +566,39 @@
     [data-theme="dark"] .version-bubble:hover {
       background-color: rgba(56, 189, 248, 0.28);
     }
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff">
+
+  :root {
+      --app-font: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+      /* 기존 색상 변수들 ... */
+    }
+
+    * {
+      font-family: var(--app-font);
+    }
+
+    /* 헤더 설정 열기 버튼 */
+    .settings-open-btn {
+      background-color: var(--tab-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background-color 0.15s;
+    }
+    .settings-open-btn:hover {
+      background-color: var(--border-color);
+    }
+    
   </style>
 </head>
 <body>
@@ -582,11 +615,9 @@
       </button>
     </div>
 
-    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
-      <span id="themeIcon">🌙</span>
-      <span id="themeLabel">다크 모드</span>
+    <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
+      ⚙️ 설정
     </button>
-  </header>
 
   <!-- 탭 메뉴 -->
   <nav class="tab-container">
@@ -1216,6 +1247,96 @@
       <div style="display: flex; justify-content: flex-end; gap: 8px;">
         <button type="button" class="btn-action btn-secondary" onclick="closeMonthLineupModal()" style="font-size: 0.85rem;">닫기</button>
         <button type="button" id="btnSaveMonthLineup" class="btn-action btn-primary" onclick="saveAllMonthLineup()" style="font-size: 0.85rem; padding: 8px 18px;">한 달 라인업 일괄 저장</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- 통합 설정창 모달 -->
+  <div id="settingsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+          <span>⚙️ 포털 환경설정</span>
+        </h3>
+        <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- 1. 테마 & 스타일 -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🎨 화면 스타일 & 글꼴</h4>
+          
+          <!-- 테마 선택 -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <label style="font-size: 0.82rem; font-weight: 600;">테마 모드</label>
+            <select id="settingThemeSelect" onchange="changeThemeFromSetting(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+              <option value="light">☀️ 라이트 모드</option>
+              <option value="dark">🌙 다크 모드</option>
+            </select>
+          </div>
+
+          <!-- 폰트 변경 -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label style="font-size: 0.82rem; font-weight: 600;">기본 글꼴</label>
+            <select id="settingFontSelect" onchange="changeAppFont(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+              <option value="system">기본 고딕 (Pretendard)</option>
+              <option value="score">에스코어 드림 (또렷한 고딕)</option>
+              <option value="serif">나눔명조 (단정한 명조)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 2. 예배 & 연습 편의 -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">📱 연습 & 예배 편의</h4>
+          
+          <!-- 화면 꺼짐 방지 -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 600; display: block;">화면 켜짐 유지 (Wake Lock)</label>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티/악보 확인 중 화면이 절전 모드로 꺼지지 않습니다.</span>
+            </div>
+            <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+          </div>
+        </div>
+
+        <!-- 3. 알림 설정 -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🔔 알림</h4>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <label style="font-size: 0.82rem; font-weight: 600; display: block;">새 공지 & 콘티 업데이트 알림</label>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">새로운 소식이 있을 때 브라우저 알림을 받습니다.</span>
+            </div>
+            <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+          </div>
+        </div>
+
+        <!-- 4. 앱 동기화 & 관리자 계정 -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">⚡ 동기화 & 보안</h4>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 0.82rem;">최신 코드 새로고침 (캐시 삭제)</span>
+            <button type="button" class="btn-action btn-secondary" onclick="forceAppRefresh()" style="padding: 5px 10px; font-size: 0.75rem;">
+              🔄 캐시 초기화
+            </button>
+          </div>
+
+          <div id="settingAdminStatusRow" style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-color);">
+            <span style="font-size: 0.82rem;" id="settingAdminStatusText">관리자 모드: 미인증</span>
+            <button type="button" id="settingAdminLogoutBtn" class="btn-action btn-secondary" onclick="adminLogoutFromSettings()" style="display: none; padding: 5px 10px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444;">
+              🚪 로그아웃
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <button type="button" class="btn-action btn-primary" onclick="closeSettingsModal()" style="font-size: 0.85rem; padding: 7px 18px;">확인</button>
       </div>
     </div>
   </div>
@@ -3178,6 +3299,144 @@
 
       // 3. 화면 최상단으로 부드럽게 스크롤 이동
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ===================================================
+       통합 설정창 (Settings Hub) 모듈
+    =================================================== */
+    let wakeLockSentinel = null;
+
+    function openSettingsModal() {
+      // 1. 현재 테마 옵션 선택값 반영
+      const currentTheme = localStorage.getItem('shift_theme') || 'light';
+      const themeSelect = document.getElementById('settingThemeSelect');
+      if (themeSelect) themeSelect.value = currentTheme;
+
+      // 2. 현재 폰트 옵션 선택값 반영
+      const currentFont = localStorage.getItem('shift_font') || 'system';
+      const fontSelect = document.getElementById('settingFontSelect');
+      if (fontSelect) fontSelect.value = currentFont;
+
+      // 3. 알림 토글 상태 반영
+      const notiToggle = document.getElementById('settingNotificationToggle');
+      if (notiToggle) {
+        notiToggle.checked = ('Notification' in window && Notification.permission === 'granted');
+      }
+
+      // 4. 관리자 상태 반영
+      const isAuth = isAdminAuthenticated();
+      const statusText = document.getElementById('settingAdminStatusText');
+      const logoutBtn = document.getElementById('settingAdminLogoutBtn');
+      if (statusText && logoutBtn) {
+        if (isAuth) {
+          statusText.innerHTML = '<span style="color: #10b981; font-weight: 700;">✅ 관리자 인증됨</span>';
+          logoutBtn.style.display = 'inline-flex';
+        } else {
+          statusText.innerHTML = '<span style="color: var(--sub-text);">관리자 모드: 미인증</span>';
+          logoutBtn.style.display = 'none';
+        }
+      }
+
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    /* 1) 설정창에서 테마 변경 */
+    function changeThemeFromSetting(theme) {
+      applyTheme(theme);
+    }
+
+    /* 2) 폰트 변경 및 브라우저 저장 */
+    function changeAppFont(fontKey) {
+      let fontStack = '';
+      switch (fontKey) {
+        case 'score':
+          fontStack = '"S-CoreDream-3Light", -apple-system, sans-serif';
+          break;
+        case 'serif':
+          fontStack = '"Noto Serif KR", serif';
+          break;
+        case 'system':
+        default:
+          fontStack = '-apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+          break;
+      }
+      document.documentElement.style.setProperty('--app-font', fontStack);
+      localStorage.setItem('shift_font', fontKey);
+    }
+
+    // 페이지 첫 로드 시 저장된 폰트 불러오기
+    function initAppFont() {
+      const savedFont = localStorage.getItem('shift_font') || 'system';
+      changeAppFont(savedFont);
+    }
+    initAppFont();
+
+    /* 3) 화면 꺼짐 방지 (Wake Lock API) */
+    async function toggleWakeLock(enable) {
+      if (!('wakeLock' in navigator)) {
+        alert('현재 사용 중인 브라우저는 화면 켜짐 유지(Wake Lock) 기능을 지원하지 않습니다.');
+        document.getElementById('settingWakeLockToggle').checked = false;
+        return;
+      }
+
+      try {
+        if (enable) {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          wakeLockSentinel.addEventListener('release', () => {
+            console.log('화면 켜짐 유지가 해제되었습니다.');
+          });
+          alert('화면 켜짐 유지가 활성화되었습니다! 예배 중 화면이 꺼지지 않습니다.');
+        } else {
+          if (wakeLockSentinel) {
+            await wakeLockSentinel.release();
+            wakeLockSentinel = null;
+          }
+        }
+      } catch (err) {
+        console.error('Wake Lock 설정 오류:', err);
+      }
+    }
+
+    /* 4) 브라우저 알림 토글 (Notification API) */
+    async function toggleAppNotification(enable) {
+      if (!('Notification' in window)) {
+        alert('이 브라우저는 웹 알림 기능을 지원하지 않습니다.');
+        document.getElementById('settingNotificationToggle').checked = false;
+        return;
+      }
+
+      if (enable) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          new Notification('SHIFT Worship', {
+            body: 'SHIFT 찬양팀 웹앱 알림이 켜졌습니다! 새로운 콘티와 소식을 전해드릴게요. 🕊️',
+            icon: 'favicon.ico'
+          });
+        } else {
+          alert('알림 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용해 주세요.');
+          document.getElementById('settingNotificationToggle').checked = false;
+        }
+      }
+    }
+
+    /* 5) 최신 캐시 지우기 및 강제 새로고침 */
+    function forceAppRefresh() {
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+      window.location.reload(true);
+    }
+
+    /* 6) 설정창 내부 관리자 로그아웃 */
+    function adminLogoutFromSettings() {
+      adminLogout();
+      openSettingsModal(); // 상태 갱신
     }
 
     /* 11. 진입점 */
