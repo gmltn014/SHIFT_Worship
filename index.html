@@ -2902,7 +2902,7 @@
       const container = document.getElementById('archiveMembersList');
       if (!container) return;
 
-      if (list.length === 0) {
+      if (!list || list.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">해당 기간의 섬김이 기록이 없습니다.</div>';
         return;
       }
@@ -2924,20 +2924,22 @@
           `;
         }
 
-        // ★ 건반: 메인과 세컨을 깔끔하게 줄바꿈 분리
-        const kb1 = (item.keyboard1 && !['X', 'x', '-'].includes(item.keyboard1.trim())) ? item.keyboard1.trim() : null;
-        const kb2 = (item.keyboard2 && !['X', 'x', '-'].includes(item.keyboard2.trim())) ? item.keyboard2.trim() : null;
+        // 건반 1, 2 처리 (괄호 누락 방지 안전 분리)
+        const rawKb1 = item.keyboard1 ? String(item.keyboard1).trim() : '';
+        const rawKb2 = item.keyboard2 ? String(item.keyboard2).trim() : '';
+        const hasKb1 = rawKb1 && rawKb1 !== 'X' && rawKb1 !== 'x' && rawKb1 !== '-';
+        const hasKb2 = rawKb2 && rawKb2 !== 'X' && rawKb2 !== 'x' && rawKb2 !== '-';
 
         let kbHtml = '-';
-        if (kb1 || kb2) {
+        if (hasKb1 || hasKb2) {
           const lines = [];
-          if (kb1) lines.push(`<div>${kb1} <span style="font-size:0.75rem; color:var(--sub-text);">(메인)</span></div>`);
-          if (kb2) lines.push(`<div>${kb2} <span style="font-size:0.75rem; color:var(--sub-text);">(세컨)</span></div>`);
+          if (hasKb1) lines.push('<div>' + rawKb1 + ' <span style="font-size:0.75rem; color:var(--sub-text);">(메인)</span></div>');
+          if (hasKb2) lines.push('<div>' + rawKb2 + ' <span style="font-size:0.75rem; color:var(--sub-text);">(세컨)</span></div>');
           kbHtml = lines.join('');
         }
 
-        // 자막/프롬프터는 Prompter 키 우선 참조
-        const prompterVal = item.prompter || item.subtitle || '-';
+        // Prompter 키 반영
+        const prompterVal = item.Prompter || item.prompter || item.subtitle || '-';
 
         return `
           <div class="card" style="margin-bottom: 12px; padding: 16px;">
@@ -2948,7 +2950,7 @@
             <div class="members-history-grid">
               <div class="members-history-item" style="grid-column: 1 / -1; background: var(--card-sub-bg);">
                 <span>인도자 / 보컬</span>
-                <strong>🎤 ${item.leader || '-'} / 👥 ${item.vocal || '-'}</strong>
+                <strong>🎤 ${item.leader \vert{}\vert{} '-'} / 👥 ${item.vocal || '-'}</strong>
               </div>
               <div class="members-history-item"><span>건반</span>${kbHtml}</div>
               <div class="members-history-item"><span>드럼</span>${item.drum || '-'}</div>
@@ -2963,7 +2965,7 @@
         `;
       }).join('');
     }
-
+    
     function populateLeaderFilterOptions() {
       const leaderSelect = document.getElementById('archiveLeaderFilter');
       if (!leaderSelect) return;
