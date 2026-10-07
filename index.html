@@ -1854,12 +1854,14 @@
         html += `<option value="">(선택 안 함)</option>`;
       }
 
+      // 1. 등록된 파트 팀원 목록 렌더링
       members.forEach(m => {
         html += `<option value="${m.name}" ${m.name === selectedValue ? 'selected' : ''}>${m.name}</option>`;
       });
 
+      // 2. 만약 기존 저장된 값이 팀원 목록에 없는 이름이더라도 꼬리표 없이 이름만 출력
       if (selectedValue && selectedValue !== 'X' && !members.some(m => m.name === selectedValue)) {
-        html += `<option value="${selectedValue}" selected>${selectedValue} (직접 입력값)</option>`;
+        html += `<option value="${selectedValue}" selected>${selectedValue}</option>`;
       }
 
       return html;
