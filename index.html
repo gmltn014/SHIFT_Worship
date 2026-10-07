@@ -572,6 +572,33 @@
       padding: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
+    /* 업데이트 노트 모바일 넘침 방지 */
+.update-note-card {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important; /* 내부 요소가 바깥으로 삐져나가는 것 차단 */
+  word-break: break-word !important;
+}
+
+/* 주요 변경 내역 위아래 구분선 정돈 */
+.update-note-divider {
+  border: 0 !important;
+  border-top: 1px solid var(--border-color) !important;
+  width: 100% !important;
+  margin: 14px 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 주요 변경 내역 박스 */
+.update-changes-box {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 14px !important;
+  border-radius: 8px !important;
+  background: var(--card-sub-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  word-break: break-word !important;
+}
   </style>
 </head>
 <body>
@@ -3807,9 +3834,9 @@
 `[배포 버전]: ${version}
 [업데이트 개요]: ${summary}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+───────────────
 📌 주요 변경 내역
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+───────────────
 ${details}
 
 항상 팀을 위해 헌신해 주셔서 감사합니다. 포털 이용 중 불편한 점은 [익명의견함]에 남겨주세요! 🙏`;
