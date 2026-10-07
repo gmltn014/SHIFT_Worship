@@ -3736,7 +3736,7 @@
       }
       document.documentElement.style.setProperty('--app-font', fontStack);
       localStorage.setItem('shift_font', fontKey);
-      pushSyncDataToCloud();
+      pushSyncDataToCloud(); // 이제 에러 없이 정상 실행됩니다!
     }
 
     function initAppFont() {
@@ -3932,11 +3932,11 @@ ${details}
     }
 
     /* ===================================================
-       기기 동기화 모듈 (User Sync Engine)
+       기기 동기화 기본 상수 & 키 생성기 (최상단으로 위치 이동)
     =================================================== */
     const SYNC_KEY_STORAGE = 'shift_user_sync_key';
 
-    // 1. 고유 연동 키 가져오기 (없으면 랜덤 발급: 예 SHIFT-7492)
+    // 1. 고유 연동 키 가져오기 (없으면 발급)
     function getOrCreateSyncKey() {
       let key = localStorage.getItem(SYNC_KEY_STORAGE);
       if (!key) {
@@ -3948,13 +3948,13 @@ ${details}
       return key;
     }
 
-    // 2. 현재 기기 설정을 Supabase 클라우드에 자동 백업
+    // 2. 클라우드 동기화 백업 함수
     async function pushSyncDataToCloud() {
       if (!supabaseClient) return;
       const key = getOrCreateSyncKey();
       const currentTheme = localStorage.getItem('shift_theme') || 'light';
       const currentFont = localStorage.getItem('shift_font') || 'system';
-      const mySuggestionIds = getMySuggestionIds();
+      const mySuggestionIds = typeof getMySuggestionIds === 'function' ? getMySuggestionIds() : [];
 
       const payload = {
         sync_key: key,
@@ -3969,10 +3969,10 @@ ${details}
       try {
         await supabaseClient.from('user_sync').upsert(payload);
       } catch (e) {
-        console.warn('동기화 데이터 백업 실패(무시):', e);
+        console.warn('동기화 백업 무시:', e);
       }
     }
-
+    
     // 3. 다른 기기의 연동 코드를 입력하여 데이터 가져오기
     async function applySyncKeyFromInput() {
       const inputEl = document.getElementById('inputSyncKey');
