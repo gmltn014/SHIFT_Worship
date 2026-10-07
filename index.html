@@ -628,6 +628,7 @@
     <button class="tab-btn" onclick="switchTab('feedback', this)">익명의견함</button>
     <button class="tab-btn" onclick="switchTab('playground', this)">SHIFT 놀이터</button>
     <button class="tab-btn" onclick="switchTab('admin', this)">관리자</button>
+    <button class="tab-btn" onclick="switchTab('wiki', this)">📖 위키 가이드</button>
   </nav>
 
   <!-- 메인 본문 -->
@@ -1269,6 +1270,179 @@
         </div>
       </div>
     </section>
+
+    <!-- ================= 7. 위키 가이드 탭 ================= -->
+<section id="tab-wiki" class="tab-content" style="display: none;">
+  <!-- 헤더 배너 -->
+  <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.08)); border-left: 5px solid var(--accent-color); margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+      <span style="font-size: 1.6rem;">📖</span>
+      <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">SHIFT Worship 포털 가이드</h2>
+    </div>
+    <p style="font-size: 0.85rem; color: var(--sub-text); line-height: 1.5; margin: 0;">
+      포털의 모든 기능과 사역 편의 도구를 정리한 안내서입니다. 각 탭의 바로가기 버튼을 누르면 해당 화면으로 즉시 이동합니다.
+    </p>
+  </div>
+
+  <!-- 목차 네비게이션 (빠른 바로가기 칩) -->
+  <div class="card" style="padding: 14px; margin-bottom: 16px;">
+    <span style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 8px;">🚀 빠른 탭 바로가기</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('thisweek')" style="padding: 5px 10px; font-size: 0.78rem;">
+        1. 이번 주 콘티 ↗
+      </button>
+      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('archive')" style="padding: 5px 10px; font-size: 0.78rem;">
+        2. 아카이브 ↗
+      </button>
+      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('notice')" style="padding: 5px 10px; font-size: 0.78rem;">
+        3. 공지사항 ↗
+      </button>
+      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('members')" style="padding: 5px 10px; font-size: 0.78rem;">
+        4. 시프트 명단 ↗
+      </button>
+      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('feedback')" style="padding: 5px 10px; font-size: 0.78rem;">
+        5. 익명의견함 ↗
+      </button>
+      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('playground')" style="padding: 5px 10px; font-size: 0.78rem;">
+        6. SHIFT 놀이터 ↗
+      </button>
+      <button type="button" class="btn-action btn-secondary" onclick="openSettingsModal()" style="padding: 5px 10px; font-size: 0.78rem;">
+        ⚙️ 환경설정 ↗
+      </button>
+    </div>
+  </div>
+
+  <!-- 위키 카드 리스트 -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+
+    <!-- 1. 이번 주 콘티 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>🎼</span> 1. 이번 주 콘티 (This Week)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('thisweek')" style="padding: 4px 10px; font-size: 0.75rem;">
+          이동하기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>예배 및 곡 정보:</strong> 주일 일자, 예배 명칭, 주간 찬양 곡 순서 및 Key 표기, 결단 찬양 확인</li>
+        <li><strong>원클릭 사역 링크:</strong> 통합 악보집(PDF/드라이브) 및 유튜브 단일 재생목록 자동 연동</li>
+        <li><strong>세션 라인업:</strong> 인도자, 보컬, 건반(메인/세컨), 드럼, 기타, 베이스, 음향, 방송, <strong>Prompter</strong>, 영상 파트별 섬김이 명단 표기</li>
+        <li><strong>공유 유틸리티:</strong> 카톡 공지용 텍스트 클립보드 복사 및 보면대용 카드 이미지 캡처 다운로드</li>
+      </ul>
+    </div>
+
+    <!-- 2. 아카이브 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>📚</span> 2. 아카이브 (Archive)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('archive')" style="padding: 4px 10px; font-size: 0.75rem;">
+          이동하기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>서브 탭:</strong> 과거 모든 예배 콘티 기록과 주차별 세션 섬김이 라인업 내역 분리 조회</li>
+        <li><strong>건반 라인업:</strong> 메인 건반과 세컨 건반 섬김이를 두 줄로 깔끔하게 분리 표시</li>
+        <li><strong>다차원 탐색:</strong> 월별 네비게이션, 전체 기간 모아보기, 인도자 필터링 및 곡명 통합 검색 지원</li>
+      </ul>
+    </div>
+
+    <!-- 3. 공지사항 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>📢</span> 3. 공지사항 (Notice)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('notice')" style="padding: 4px 10px; font-size: 0.75rem;">
+          이동하기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>주요 공지 & 일정:</strong> 연습 일정, 수련회, 모임 등 중요한 팀 공지 확인 (상단 고정 공지 지원)</li>
+        <li><strong>배포 업데이트 노트:</strong> 버전별(`vX.X.X`) 신규 추가 기능과 개선 패치 내역 모바일 최적화 열람</li>
+      </ul>
+    </div>
+
+    <!-- 4. 시프트 명단 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>👥</span> 4. 시프트 명단 (Members)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('members')" style="padding: 4px 10px; font-size: 0.75rem;">
+          이동하기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>대분류 필터링:</strong> Worship(인도/싱어), Session(악기), Live Ops(음향/방송/Prompter), Post Prod(영상)</li>
+        <li><strong>연락처 바로연결:</strong> 터치 시 해당 팀원에게 통화가 즉시 연결되는 모바일 친화형 다이렉트 버튼 탑재</li>
+      </ul>
+    </div>
+
+    <!-- 5. 익명의견함 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>📬</span> 5. 익명의견함 (Feedback)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('feedback')" style="padding: 4px 10px; font-size: 0.75rem;">
+          이동하기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>100% 완전 익명:</strong> 개인/기기 정보 없이 건의사항(콘티/장비/일정 등)을 편안하게 접수</li>
+        <li><strong>내 의견 현황 추적:</strong> 접수 시 기기 내부 저장소를 통해 진행 상태와 답변을 확인</li>
+        <li><strong>반영 피드 공유:</strong> 실제 팀 운영에 반영 완료된 피드백 공유</li>
+      </ul>
+    </div>
+
+    <!-- 6. SHIFT 놀이터 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>🎡</span> 6. SHIFT 놀이터 (Playground)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('playground')" style="padding: 4px 10px; font-size: 0.75rem;">
+          이동하기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>게임 놀이터:</strong> 
+          <br>• 벌칙 룰렛(특정 1인 벌칙 뽑기) & 랜덤 룰렛(팀원 체크박스로 벌칙 수행자 뽑기)
+          <br>• 박진감 제비뽑기 & 팀원 체크박스 연동 사다리타기
+        </li>
+        <li><strong>SNS 놀이터:</strong>
+          <br>• 말씀, 인생 찬양, 추천곡 중 원하는 항목만 선택 작성 가능
+          <br>• 갤러리 배경 사진을 첨부한 9:16 인스타 스토리 카드 다운로드 지원
+          <br>• 추천 찬양 바로듣기(유튜브 검색 링크) 기능이 탑재된 실시간 포스트잇 피드
+        </li>
+        <li><strong>찬양팀 놀이터:</strong> 시각적 펄스 링과 탭 템포(Tap)를 지원하는 비주얼 메트로놈 탑재</li>
+      </ul>
+    </div>
+
+    <!-- 7. 환경설정 -->
+    <div class="card" style="padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>⚙️</span> 포털 환경설정 (Settings Hub)
+        </h3>
+        <button type="button" class="btn-action btn-primary" onclick="openSettingsModal()" style="padding: 4px 10px; font-size: 0.75rem;">
+          설정 열기 ➔
+        </button>
+      </div>
+      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
+        <li><strong>테마 & 글꼴:</strong> 다크/라이트 테마 전환 및 Pretendard / S-Core Dream / 명조 폰트 지원</li>
+        <li><strong>연습 편의:</strong> 콘티 확인 중 화면 절전 꺼짐을 막아주는 화면 켜짐 유지(Wake Lock)</li>
+        <li><strong>🔔 알림 토글:</strong> 새 공지 및 콘티 등록 시 브라우저 알림 수신 설정</li>
+        <li><strong>내 기기 기억(동기화):</strong> 고유 식별 키를 통한 스마트폰 ↔ PC 무계정 설정 동기화</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
   </main>
 
   <!-- ===================================================
@@ -1768,6 +1942,13 @@
       document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
+      const tabs = ['thisweek', 'archive', 'notice', 'members', 'feedback', 'playground', 'wiki'];
+
+      tabs.forEach(t => {
+        const sec = document.getElementById(`tab-${t}`);
+        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
+      });
+
       const target = document.getElementById('tab-' + tabId);
       if (target) target.classList.add('active');
       if (clickedBtn) clickedBtn.classList.add('active');
@@ -1789,6 +1970,9 @@
       }
       if (tabId === 'playground') {
         drawRouletteWheel();
+      }
+      if (tabId === 'playground') {
+        initGameModule();
       }
       if (tabId === 'playground') {
         initGameModule();
@@ -4718,6 +4902,34 @@ ${details}
         closeSettingsModal();
       }
     });
+
+    /* 위키 탭 전용: 다른 탭으로 다이렉트 전환 */
+    function jumpToPortalTab(targetTabId) {
+      // 1. 모든 네비게이션 탭 버튼에서 active 클래스 제거
+      const allNavBtns = document.querySelectorAll('.nav-tab-btn, .tab-btn');
+      let targetBtn = null;
+
+      allNavBtns.forEach(btn => {
+        btn.classList.remove('active');
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        if (onclickAttr.includes(`'${targetTabId}'`)) {
+          targetBtn = btn;
+        }
+      });
+
+      // 2. 대상 탭 버튼에 active 클래스 부여
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      }
+
+      // 3. 기존 switchTab 함수 실행
+      if (typeof switchTab === 'function') {
+        switchTab(targetTabId, targetBtn);
+      }
+
+      // 4. 화면 최상단으로 스크롤 이동
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
