@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SHIFT 찬양팀</title>
 
+  <!-- 웹폰트: Pretendard, S-Core Dream, Noto Serif -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff">
+
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- 카드 캡처 및 이미지 다운로드를 위한 html2canvas 라이브러리 -->
@@ -12,6 +17,7 @@
 
   <style>
     :root {
+      --app-font: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --card-sub-bg: #f1f5f9;
@@ -49,7 +55,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--app-font);
       transition: background-color 0.2s, color 0.2s;
     }
 
@@ -77,17 +83,52 @@
       letter-spacing: -0.5px;
     }
 
-    .theme-toggle-btn {
+    .version-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      border-radius: 9999px;
+      padding: 2px 9px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: monospace, -apple-system, sans-serif;
+      cursor: pointer;
+      line-height: 1.2;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
+
+    .version-bubble:hover {
+      background-color: #bae6fd;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(3, 105, 161, 0.15);
+    }
+
+    [data-theme="dark"] .version-bubble {
+      background-color: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .settings-open-btn {
       background-color: var(--tab-bg);
       color: var(--text-color);
       border: 1px solid var(--border-color);
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.85rem;
+      font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      transition: background-color 0.15s;
+    }
+    .settings-open-btn:hover {
+      background-color: var(--border-color);
     }
 
     .tab-container {
@@ -389,7 +430,7 @@
     .border-update { border-left: 4px solid #3b82f6 !important; }
     .border-ui { border-left: 4px solid #f59e0b !important; }
 
-    /* 멤버 탭 및 카테고리 테마 색상 */
+    /* 멤버 탭 */
     .member-cat-btn {
       background-color: var(--card-sub-bg);
       color: var(--sub-text);
@@ -486,7 +527,7 @@
       transition: background 0.15s;
     }
 
-    /* 의견함 상태 및 코멘트 */
+    /* 의견함 상태 */
     .status-tag {
       display: inline-block;
       font-size: 0.75rem;
@@ -509,7 +550,7 @@
       line-height: 1.5;
     }
 
-    /* 팝업 모달 공통 스타일 */
+    /* 팝업 모달 */
     .modal-overlay {
       position: fixed !important;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -531,81 +572,12 @@
       padding: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-
-    /* 헤더 버전 버블 뱃지 */
-    .version-bubble {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #e0f2fe; /* 하늘색 */
-      color: #0369a1;            /* 진한 블루 */
-      border: 1px solid #bae6fd;
-      border-radius: 9999px;     /* 타원형 */
-      padding: 2px 9px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      font-family: monospace, -apple-system, sans-serif;
-      cursor: pointer;
-      line-height: 1.2;
-      transition: all 0.15s ease-in-out;
-      user-select: none;
-    }
-
-    .version-bubble:hover {
-      background-color: #bae6fd;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 5px rgba(3, 105, 161, 0.15);
-    }
-
-    [data-theme="dark"] .version-bubble {
-      background-color: rgba(56, 189, 248, 0.18);
-      color: #7dd3fc;
-      border-color: rgba(56, 189, 248, 0.35);
-    }
-
-    [data-theme="dark"] .version-bubble:hover {
-      background-color: rgba(56, 189, 248, 0.28);
-    }
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff">
-
-  :root {
-      --app-font: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
-      /* 기존 색상 변수들 ... */
-    }
-
-    * {
-      font-family: var(--app-font);
-    }
-
-    /* 헤더 설정 열기 버튼 */
-    .settings-open-btn {
-      background-color: var(--tab-bg);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: background-color 0.15s;
-    }
-    .settings-open-btn:hover {
-      background-color: var(--border-color);
-    }
-    
   </style>
 </head>
 <body>
 
   <!-- 헤더 -->
   <header>
-    <!-- 좌측: 로고 + 버전 버블 뱃지 -->
     <div style="display: flex; align-items: center; gap: 8px;">
       <div class="brand" style="cursor: pointer;" onclick="switchTab('conti', document.querySelectorAll('.tab-btn')[0])">
         SHIFT Worship
@@ -613,15 +585,14 @@
       <button id="headerVersionBadge" class="version-bubble" onclick="goToUpdateNotes()" title="업데이트 노트 확인하기">
         v2.0.0
       </button>
-    </div> <!-- ★ 이 div 닫는 태그가 누락되었는지 확인! -->
+    </div>
 
-    <!-- 우측: 설정창 열기 버튼 -->
     <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
       ⚙️ 설정
     </button>
-  </header> <!-- ★ header가 여기서 확실히 닫혀야 아래 nav와 main이 세로로 내려갑니다! -->
+  </header>
 
-  <!-- 탭 메뉴 (반드시 header 바깥에 있어야 함) -->
+  <!-- 탭 메뉴 -->
   <nav class="tab-container">
     <button class="tab-btn active" onclick="switchTab('conti', this)">이번 주 콘티</button>
     <button class="tab-btn" onclick="switchTab('archive', this)">아카이브</button>
@@ -632,13 +603,11 @@
     <button class="tab-btn" onclick="switchTab('admin', this)">관리자</button>
   </nav>
 
-  <!-- 메인 본문 (header 바깥) -->
+  <!-- 메인 본문 -->
   <main>
     <!-- 1. 이번 주 콘티 탭 -->
     <section id="tab-conti" class="tab-content active">
-      <div id="contiLoading" class="loading-spinner">
-        데이터를 불러오는 중입니다...
-      </div>
+      <div id="contiLoading" class="loading-spinner">데이터를 불러오는 중입니다...</div>
 
       <div id="contiContainer" style="display: none;">
         <div class="card">
@@ -647,7 +616,6 @@
               <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
               <h2 class="worship-title" id="viewWorshipTitle">예배명을 불러옵니다</h2>
             </div>
-            <!-- 콘티 관리 버튼 (인증 가드 포함) -->
             <button class="btn-action btn-secondary" onclick="openContiAdminModal()" style="font-size: 0.82rem; padding: 6px 12px; border-color: var(--accent-color); color: var(--accent-color); flex-shrink: 0;">
               ⚙️ 콘티 관리
             </button>
@@ -851,7 +819,7 @@
           <div>
             <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">📮 SHIFT 익명 의견함</h3>
             <p style="font-size: 0.85rem; color: var(--sub-text);">
-              이름이나 계정 정보가 일절 남지 않는 100% 익명 공간입니다. 팀을 위한 따뜻한 제안과 솔직한 의견을 남겨주세요.
+              이름이나 계정 정보가 남지 않는 100% 익명 공간입니다. 팀을 위한 따뜻한 제안을 남겨주세요.
             </p>
           </div>
           <button class="btn-action btn-secondary" onclick="openFeedbackAdminModal()" style="font-size: 0.8rem; padding: 6px 10px; border-color: var(--accent-color); color: var(--accent-color); flex-shrink: 0;">
@@ -885,7 +853,7 @@
       <div id="myFeedbackSection" class="card" style="display: none; background: var(--card-sub-bg);">
         <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px;">
           <span>🔍 내가 남긴 의견 처리 현황</span>
-          <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(이 기기에서 작성한 글만 안전하게 조회됩니다)</span>
+          <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(이 기기에서 작성한 글만 조회됩니다)</span>
         </h4>
         <div id="myFeedbackList" style="display: flex; flex-direction: column; gap: 8px;"></div>
       </div>
@@ -912,7 +880,7 @@
         <div style="font-size: 2.5rem; margin-bottom: 12px;">🔒</div>
         <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">SHIFT 포털 관리자 인증</h3>
         <p style="font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px;">
-          콘티 수정, 세션 배정 및 팀원 관리를 위해 관리자 비밀번호를 입력해 주세요.
+          관리자 비밀번호를 입력해 주세요.
         </p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <input type="password" id="adminPasswordInput" placeholder="관리자 비밀번호 입력" onkeydown="if(event.key==='Enter') handleAdminLoginSubmit()" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.95rem; text-align: center;">
@@ -924,9 +892,9 @@
 
       <div id="adminDashboard" style="display: none;">
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
-          <div>
-            <span style="background: #d1fae5; color: #047857; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">인증 완료</span>
-            <h3 style="font-size: 1.2rem; font-weight: 700; margin-top: 4px;">⚙️ SHIFT 포털 통합 관리</h3>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="adminRoleBadge" style="background: #d1fae5; color: #047857; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">인증 완료</span>
+            <h3 style="font-size: 1.2rem; font-weight: 700;">⚙️ SHIFT 포털 통합 관리</h3>
           </div>
           <button class="btn-action btn-secondary" onclick="adminLogout()" style="font-size: 0.82rem; padding: 6px 12px; border-color: #ef4444; color: #ef4444;">
             🚪 관리자 로그아웃
@@ -949,40 +917,39 @@
             <p style="font-size: 0.82rem; color: var(--sub-text);">한 달 전체 일요일 세션 일괄 배정 및 수정</p>
           </div>
 
-          <div class="card" style="opacity: 0.7;">
-            <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📢 공지사항 및 업데이트</h4>
-            <p style="font-size: 0.82rem; color: var(--sub-text);">공지 작성, 버전 배포 노트 등록 (준비 중)</p>
+          <div class="card" style="cursor: pointer;" onclick="switchTab('feedback', document.querySelectorAll('.tab-btn')[4]); openFeedbackAdminModal();">
+            <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📮 익명의견함 관리</h4>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">건의 상태 변경 및 답변 작성</p>
           </div>
         </div>
-      </div>
 
-      <div id="superAdminSection" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--accent-color);">
+        <!-- 서버 최고관리자 (Super Admin) 전용 구역 -->
+        <div id="superAdminSection" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--accent-color);">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="background: #3b82f6; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">SUPER ADMIN</span>
-              <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 관리자 특수 제어판</h4>
+              <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 최고관리자 제어판</h4>
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
-            <!-- 업데이트 노트 간편 작성 -->
             <div class="card" style="border-color: #3b82f6; cursor: pointer;" onclick="openUpdateNoteCreatorModal()">
               <h4 style="font-size: 1rem; color: #2563eb; margin-bottom: 6px;">📝 새 업데이트 노트 작성 및 배포</h4>
               <p style="font-size: 0.82rem; color: var(--sub-text);">버전명과 패치 내역을 규격화된 양식으로 DB에 바로 등록합니다.</p>
             </div>
 
-            <!-- 웹앱 실시간 브라우저 푸시 알림 전송 -->
             <div class="card" style="border-color: #3b82f6; cursor: pointer;" onclick="openPushBroadcasterModal()">
               <h4 style="font-size: 1rem; color: #2563eb; margin-bottom: 6px;">📢 실시간 브라우저 알림 발송</h4>
               <p style="font-size: 0.82rem; color: var(--sub-text);">콘티 등록/공지 업데이트를 팀원들에게 푸시 알림으로 전송합니다.</p>
             </div>
           </div>
         </div>
+      </div>
     </section>
-  </main> <!-- ★ main 닫힘 태그 -->
+  </main>
 
   <!-- ===================================================
-       ★ 모달창 모음 (main 바깥, footer 위쪽에 안전하게 배치)
+       모달창 모음
   =================================================== -->
 
   <!-- 1. 멤버 관리자 모달 -->
@@ -1083,7 +1050,7 @@
     </div>
   </div>
 
-  <!-- 3. 이번 주 콘티 및 주간 라인업 관리 모달 -->
+  <!-- 3. 주간 콘티 및 라인업 관리 모달 -->
   <div id="contiAdminModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
@@ -1092,7 +1059,7 @@
       </div>
 
       <form id="contiAdminForm" onsubmit="handleSaveConti(event)">
-        <!-- 예배 기본 정보 -->
+        <!-- 기본 정보 -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div>
             <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배 일자</label>
@@ -1104,7 +1071,7 @@
           </div>
         </div>
 
-        <!-- 콘티 곡 수 (최대 6곡) -->
+        <!-- 콘티 곡 목록 (최대 6곡) -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <label style="font-size: 0.88rem; font-weight: 700;">📋 찬양 콘티 곡 목록</label>
@@ -1152,75 +1119,71 @@
           </div>
         </div>
 
-        <!-- 세션 라인업 배정 섹션 -->
+        <!-- 세션 라인업 (전 파트 드롭다운) -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
           <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
             <span>👥 세션 라인업 배정</span>
             <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(미배치 시 'X' 선택)</span>
           </div>
 
-          <!-- 인도자 & 보컬(4인) -->
           <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">인도자</label>
-              <select id="adminLeader" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+              <select id="adminLeader" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">보컬 (최대 4명)</label>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px;">
-                <select id="adminVocalSelect1" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
-                <select id="adminVocalSelect2" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
-                <select id="adminVocalSelect3" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
-                <select id="adminVocalSelect4" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect1" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect2" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect3" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect4" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
               </div>
             </div>
           </div>
 
-          <!-- 건반 -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">메인 건반</label>
-              <select id="adminKeyboard1" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+              <select id="adminKeyboard1" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">세컨 건반</label>
-              <select id="adminKeyboard2" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+              <select id="adminKeyboard2" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
           </div>
 
-          <!-- 드럼 / 기타 / 베이스 -->
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">드럼</label>
-              <select id="adminDrum" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+              <select id="adminDrum" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">기타</label>
-              <select id="adminGuitar" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+              <select id="adminGuitar" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">베이스</label>
-              <select id="adminBass" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+              <select id="adminBass" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
           </div>
 
-          <!-- 음향 / 방송 / 자막 / 영상 -->
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px;">
             <div>
               <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">음향</label>
-              <select id="adminSound" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
+              <select id="adminSound" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">방송/중계</label>
-              <select id="adminBroadcast" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
+              <select id="adminBroadcast" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">자막</label>
-              <select id="adminSubtitle" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
+              <select id="adminSubtitle" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">영상편집</label>
-              <select id="adminVideo" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
+              <select id="adminVideo" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
           </div>
         </div>
@@ -1233,19 +1196,15 @@
     </div>
   </div>
 
-  <!-- 4. 한 달 라인업 일괄 관리 모달 -->
+  <!-- 4. 월간 라인업 일괄 관리 모달 -->
   <div id="monthLineupModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card" style="max-width: 900px; width: 95%;">
+    <div class="modal-card" style="max-width: 960px; width: 95%;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <h3 style="font-size: 1.15rem; font-weight: 700;">🗓️ 월간 세션 라인업 일괄 관리</h3>
           <input type="month" id="monthLineupPicker" onchange="loadMonthLineupData(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; font-weight: 600;">
         </div>
         <button onclick="closeMonthLineupModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
-      </div>
-
-      <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 12px;">
-        선택한 월의 모든 주일(일요일) 세션 배정을 한눈에 확인하고 일괄 수정할 수 있습니다.
       </div>
 
       <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; max-height: 55vh; margin-bottom: 14px;">
@@ -1272,23 +1231,18 @@
     </div>
   </div>
 
-    <!-- 통합 설정창 모달 -->
+  <!-- 5. 환경설정 모달 -->
   <div id="settingsModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 480px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-        <h3 style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-          <span>⚙️ 포털 환경설정</span>
-        </h3>
+        <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 포털 환경설정</h3>
         <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        
-        <!-- 1. 테마 & 스타일 -->
+      <div style="display: flex; flex-direction: column; gap: 14px;">
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🎨 화면 스타일 & 글꼴</h4>
           
-          <!-- 테마 선택 -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <label style="font-size: 0.82rem; font-weight: 600;">테마 모드</label>
             <select id="settingThemeSelect" onchange="changeThemeFromSetting(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
@@ -1297,7 +1251,6 @@
             </select>
           </div>
 
-          <!-- 폰트 변경 -->
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <label style="font-size: 0.82rem; font-weight: 600;">기본 글꼴</label>
             <select id="settingFontSelect" onchange="changeAppFont(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
@@ -1308,37 +1261,30 @@
           </div>
         </div>
 
-        <!-- 2. 예배 & 연습 편의 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">📱 연습 & 예배 편의</h4>
-          
-          <!-- 화면 꺼짐 방지 -->
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
               <label style="font-size: 0.82rem; font-weight: 600; display: block;">화면 켜짐 유지 (Wake Lock)</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티/악보 확인 중 화면이 절전 모드로 꺼지지 않습니다.</span>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면이 절전 모드로 꺼지지 않습니다.</span>
             </div>
             <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
           </div>
         </div>
 
-        <!-- 3. 알림 설정 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🔔 알림</h4>
-          
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <label style="font-size: 0.82rem; font-weight: 600; display: block;">새 공지 & 콘티 업데이트 알림</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">새로운 소식이 있을 때 브라우저 알림을 받습니다.</span>
+              <label style="font-size: 0.82rem; font-weight: 600; display: block;">새 공지 & 콘티 알림</label>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">소식이 등록되면 브라우저 알림을 받습니다.</span>
             </div>
             <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
           </div>
         </div>
 
-        <!-- 4. 앱 동기화 & 관리자 계정 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">⚡ 동기화 & 보안</h4>
-          
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span style="font-size: 0.82rem;">최신 코드 새로고침 (캐시 삭제)</span>
             <button type="button" class="btn-action btn-secondary" onclick="forceAppRefresh()" style="padding: 5px 10px; font-size: 0.75rem;">
@@ -1353,7 +1299,6 @@
             </button>
           </div>
         </div>
-
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
@@ -1362,7 +1307,7 @@
     </div>
   </div>
 
-  <!-- [서버 관리자] 업데이트 노트 등록 모달 -->
+  <!-- 6. [서버 관리자] 업데이트 노트 등록 모달 -->
   <div id="updateNoteModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 540px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
@@ -1388,12 +1333,12 @@
 
         <div style="margin-bottom: 12px;">
           <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">업데이트 한 줄 요약</label>
-          <input type="text" id="newVersionSummary" required placeholder="예: 전 파트 라인업 드롭다운 도입 및 서버 관리자 기능 추가" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+          <input type="text" id="newVersionSummary" required placeholder="예: 전 파트 라인업 드롭다운 도입" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
         </div>
 
         <div style="margin-bottom: 16px;">
-          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">세부 변경 내역 (줄바꿈하여 자유롭게 입력)</label>
-          <textarea id="newVersionContent" rows="6" required placeholder="1. 주간/월간 라인업 선택창을 파트별 드롭다운으로 개선&#10;2. 세션 미배치 주차를 위한 'X' 옵션 추가&#10;3. 서버 최고관리자 권한 체계 도입" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem; line-height: 1.6;"></textarea>
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">세부 변경 내역</label>
+          <textarea id="newVersionContent" rows="6" required placeholder="1. 주간/월간 라인업 선택창 파트별 드롭다운 전환&#10;2. 세션 미배치 X 옵션 추가&#10;3. 서버 최고관리자 기능 도입" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem; line-height: 1.6;"></textarea>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -1404,7 +1349,7 @@
     </div>
   </div>
 
-  <!-- [서버 관리자] 실시간 웹 푸시 발송 모달 -->
+  <!-- 7. [서버 관리자] 실시간 웹 알림 발송 모달 -->
   <div id="pushBroadcastModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 480px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
@@ -1422,7 +1367,7 @@
           <textarea id="pushBodyInput" rows="3" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">새로운 주차의 찬양 콘티와 세션 라인업이 업로드되었습니다. 포털에서 확인해 주세요!</textarea>
         </div>
         <button type="button" class="btn-action btn-primary" onclick="broadcastInstantNotification()" style="justify-content: center; padding: 10px; font-size: 0.9rem;">
-          🚀 알림 즉시 테스트 및 발송
+          🚀 알림 발송 테스트
         </button>
       </div>
     </div>
@@ -1435,27 +1380,13 @@
   </footer>
 
   <!-- ===================================================
-       자바스크립트 엔진
+       자바스크립트 완전본
   =================================================== -->
   <script>
     /* 0. 기본 테마 & 탭 전환 */
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('shift_theme', theme);
-      const icon = document.getElementById('themeIcon');
-      const label = document.getElementById('themeLabel');
-      if (theme === 'dark') {
-        if (icon) icon.innerText = '☀️';
-        if (label) label.innerText = '라이트 모드';
-      } else {
-        if (icon) icon.innerText = '🌙';
-        if (label) label.innerText = '다크 모드';
-      }
-    }
-
-    function toggleTheme() {
-      const current = localStorage.getItem('shift_theme') || 'light';
-      applyTheme(current === 'light' ? 'dark' : 'light');
     }
 
     function switchTab(tabId, clickedBtn) {
@@ -1485,7 +1416,7 @@
 
     applyTheme(localStorage.getItem('shift_theme') || 'light');
 
-    /* 1. Supabase 연동 설정 */
+    /* 1. Supabase 연동 */
     const SUPABASE_URL = 'https://kglqxpusinxqttunkyld.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnbHF4cHVzaW54cXR0dW5reWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NDkzOTEsImV4cCI6MjEwNjMyNTM5MX0.BfGG15jXhFzOJGW0NonWDFgc2LBrK-zMCQYUuulrXSQ';
 
@@ -1498,7 +1429,7 @@
 
     let currentScheduleData = null;
 
-    /* 2. 관리자 인증 가드 모듈 */
+    /* 2. 관리자 인증 가드 (서버 관리자 gmltn014 / 일반 관리자 shift2026) */
     const GENERAL_ADMIN_PW = 'shift2026';
     const SUPER_ADMIN_PW = 'gmltn014';
     const SESSION_KEY = 'shift_admin_authenticated';
@@ -1544,11 +1475,20 @@
       const loginForm = document.getElementById('adminLoginForm');
       const dashboard = document.getElementById('adminDashboard');
       const superSec = document.getElementById('superAdminSection');
+      const roleBadge = document.getElementById('adminRoleBadge');
+      const pwInput = document.getElementById('adminPasswordInput');
 
       if (loginForm && dashboard) {
         if (isAuth) {
           loginForm.style.display = 'none';
           dashboard.style.display = 'block';
+          if (pwInput) pwInput.value = '';
+
+          if (roleBadge) {
+            roleBadge.innerText = isSuper ? 'SUPER ADMIN' : '일반 관리자';
+            roleBadge.style.background = isSuper ? '#3b82f6' : '#d1fae5';
+            roleBadge.style.color = isSuper ? '#ffffff' : '#047857';
+          }
           if (superSec) {
             superSec.style.display = isSuper ? 'block' : 'none';
           }
@@ -1573,21 +1513,17 @@
     function checkAdminAuth(onSuccessCallback) {
       if (isAdminAuthenticated()) {
         if (typeof onSuccessCallback === 'function') {
-          Promise.resolve(onSuccessCallback()).catch(err => {
-            console.error('관리자 기능 실행 중 오류:', err);
-          });
+          Promise.resolve(onSuccessCallback()).catch(err => console.error(err));
         }
         return;
       }
 
       const input = prompt('🔒 관리자 비밀번호를 입력해 주세요:');
-      if (input === null) return; // 취소
+      if (input === null) return;
 
       if (authenticateAdmin(input.trim())) {
         if (typeof onSuccessCallback === 'function') {
-          Promise.resolve(onSuccessCallback()).catch(err => {
-            console.error('관리자 기능 실행 중 오류:', err);
-          });
+          Promise.resolve(onSuccessCallback()).catch(err => console.error(err));
         }
       }
     }
@@ -1608,7 +1544,7 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    /* 4. 이번 주 콘티 로드 & 렌더링 */
+    /* 4. 이번 주 콘티 로드 */
     async function loadCurrentConti() {
       const loadingEl = document.getElementById('contiLoading');
       const containerEl = document.getElementById('contiContainer');
@@ -1656,10 +1592,9 @@
         } else {
           if (loadingEl) loadingEl.innerText = '등록된 예배 일정이 없습니다. 콘티 관리 버튼으로 일정을 추가해 주세요.';
         }
-
       } catch (err) {
         console.error('콘티 로드 실패:', err);
-        if (loadingEl) loadingEl.innerText = '데이터를 불러오는 중 오류가 발생했습니다: ' + err.message;
+        if (loadingEl) loadingEl.innerText = '데이터 로드 오류: ' + err.message;
       }
     }
     
@@ -1675,9 +1610,9 @@
       const dateEl = document.getElementById('viewWorshipDate');
       const titleEl = document.getElementById('viewWorshipTitle');
       const songBox = document.querySelector('#tab-conti .song-box');
-      const closingBox = songBox?.nextElementSibling;
+      const closingBox = songBox ? songBox.nextElementSibling : null;
       const actionGroup = document.querySelector('#tab-conti .action-btn-group');
-      const lineupSection = document.querySelector('.lineup-header-wrapper') || document.querySelector('.section-title');
+      const lineupSection = document.querySelector('.lineup-header-wrapper');
       const lineupCapture = document.getElementById('lineupCaptureArea');
 
       let cancelNoticeEl = document.getElementById('contiCancelNotice');
@@ -1742,7 +1677,7 @@
 
       const setSession = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.innerText = (val && val.trim() !== '') ? val.trim() : '-';
+        if (el) el.innerText = (val && val.trim() !== '' && val.trim() !== 'X') ? val.trim() : '-';
       };
 
       setSession('viewLeader', item.leader);
@@ -1801,7 +1736,7 @@
 📑 자막: ${subtitle}
 🎬 영상: ${video}
 ━━━━━━━━━━━━━━
-* 변경 사항이 있으신 분은 미리 말씀해 주세요. 이번 주도 기도로 준비하며 은혜의 시간 되길 소망합니다! 🙏`;
+* 변경 사항이 있으신 분은 미리 말씀해 주세요. 은혜의 시간 되길 소망합니다! 🙏`;
 
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(message).then(() => {
@@ -1824,7 +1759,7 @@
         document.execCommand('copy');
         alert('📋 이번 주 라인업이 복사되었습니다!\n단톡방에 붙여넣기(Ctrl+V) 하세요.');
       } catch (err) {
-        alert('복사에 실패했습니다. 수동으로 복사해 주세요.');
+        alert('복사에 실패했습니다.');
       }
       document.body.removeChild(textArea);
     }
@@ -1893,20 +1828,79 @@
       return trimmed;
     }
 
-    /* 5. 주간 콘티 및 세션 배정 관리 모달 */
+    /* 5. 파트별 드롭다운 헬퍼 및 주간 콘티 모달 */
+    function getMembersByPart(partKeyword) {
+      if (!allMembersList || allMembersList.length === 0) return [];
+
+      const keyword = (partKeyword || '').toLowerCase();
+      return allMembersList.filter(m => {
+        if ((m.active || '').trim() !== '활동 중') return false;
+        if (!keyword || keyword === 'all') return true;
+
+        const source = [m.main_category, m.main_part, m.part_b, m.part_tag]
+          .filter(Boolean).join(' ').toLowerCase();
+
+        return source.includes(keyword);
+      }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+
+    function generatePartOptionsHtml(partKeyword, selectedValue = '', allowEmpty = true) {
+      const members = getMembersByPart(partKeyword);
+      let html = '';
+
+      if (allowEmpty) {
+        html += `<option value="X" ${selectedValue === 'X' ? 'selected' : ''}>X (배치 없음)</option>`;
+      } else {
+        html += `<option value="">(선택 안 함)</option>`;
+      }
+
+      members.forEach(m => {
+        html += `<option value="${m.name}" ${m.name === selectedValue ? 'selected' : ''}>${m.name}</option>`;
+      });
+
+      if (selectedValue && selectedValue !== 'X' && !members.some(m => m.name === selectedValue)) {
+        html += `<option value="${selectedValue}" selected>${selectedValue} (직접 입력값)</option>`;
+      }
+
+      return html;
+    }
+
+    function populateAllLineupSelects(currentItem = {}) {
+      const leaderSel = document.getElementById('adminLeader');
+      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('all', currentItem.leader || '', false);
+
+      const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+      for (let i = 1; i <= 4; i++) {
+        const sel = document.getElementById(`adminVocalSelect${i}`);
+        if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
+      }
+
+      const setPart = (id, keyword, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
+      };
+
+      setPart('adminKeyboard1', '건반', currentItem.keyboard1 || 'X');
+      setPart('adminKeyboard2', '건반', currentItem.keyboard2 || 'X');
+      setPart('adminDrum', '드럼', currentItem.drum || 'X');
+      setPart('adminGuitar', '기타', currentItem.guitar || 'X');
+      setPart('adminBass', '베이스', currentItem.bass || 'X');
+
+      setPart('adminSound', '음향', currentItem.sound || 'X');
+      setPart('adminBroadcast', '방송', currentItem.broadcast || 'X');
+      setPart('adminSubtitle', '자막', currentItem.subtitle || 'X');
+      setPart('adminVideo', '영상', currentItem.video || 'X');
+    }
+
     function openContiAdminModal() {
       checkAdminAuth(async () => {
         try {
           await setupContiAdminForm();
         } catch (e) {
-          console.warn('폼 초기화 중 경고(무시 후 계속 진행):', e);
+          console.warn('콘티 폼 설정 중 경고:', e);
         }
         const modal = document.getElementById('contiAdminModal');
-        if (modal) {
-          modal.style.display = 'flex';
-        } else {
-          console.error('contiAdminModal 요소를 찾을 수 없습니다.');
-        }
+        if (modal) modal.style.display = 'flex';
       });
     }
 
@@ -1946,20 +1940,19 @@
       document.getElementById('adminSheetUrl').value = currentItem.sheet_url || '';
       document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
 
-      // ★ 모든 세션 라인업 드롭다운 옵션 및 선택값 세팅
       populateAllLineupSelects(currentItem);
 
-      // 곡 목록 생성
       const rawSongList = currentItem.song_list || '';
       let songs = [];
       if (rawSongList.trim()) {
         songs = rawSongList.split(/\r?\n/).map(line => line.replace(/^\d+[\.\)\-\s]\s*/, '').trim()).filter(Boolean);
       }
+
       const songCount = songs.length > 0 ? Math.min(Math.max(songs.length, 1), 6) : 4;
       const countSelect = document.getElementById('adminSongCountSelect');
       if (countSelect) countSelect.value = String(songCount);
+
       generateSongInputFields(songCount, songs);
-    }
     }
 
     function parseAndFormatYoutubeInput(rawText) {
@@ -1982,7 +1975,7 @@
       const textarea = document.getElementById('adminYoutubeUrl');
       if (!textarea) return;
       textarea.value = parseAndFormatYoutubeInput(textarea.value);
-      alert('유튜브 영상 코드가 11자리로 정리되었습니다!');
+      alert('유튜브 영상 코드가 정리되었습니다!');
     }
 
     async function handleSaveConti(e) {
@@ -1996,7 +1989,6 @@
       const monitoring_url = document.getElementById('adminMonitoringUrl').value.trim();
       const submitBtn = document.getElementById('btnSaveContiSubmit');
 
-      // 곡 목록 조합
       const songInputs = document.querySelectorAll('.admin-song-input');
       const songLines = [];
       songInputs.forEach((input, idx) => {
@@ -2006,7 +1998,6 @@
       const song_list = songLines.join('\n');
       const youtube_url = parseAndFormatYoutubeInput(rawYoutube);
 
-      // 보컬 조합
       const vocalArr = [];
       for (let i = 1; i <= 4; i++) {
         const val = document.getElementById(`adminVocalSelect${i}`)?.value.trim();
@@ -2052,7 +2043,7 @@
         if (existing && existing.id) {
           const { error: updateError } = await supabaseClient.from('schedules').update(payload).eq('id', existing.id);
           if (updateError) throw updateError;
-          alert('콘티 및 라인업이 성공적으로 수정되었습니다! ✨');
+          alert('콘티 및 라인업이 수정되었습니다! ✨');
         } else {
           const { error: insertError } = await supabaseClient.from('schedules').insert([payload]);
           if (insertError) throw insertError;
@@ -2065,7 +2056,7 @@
           await loadAllArchiveData();
         }
       } catch (err) {
-        console.error('저장 실패:', err);
+        console.error('콘티 저장 오류:', err);
         alert('저장에 실패했습니다: ' + err.message);
       } finally {
         submitBtn.disabled = false;
@@ -2073,7 +2064,7 @@
       }
     }
 
-    /* 6. 월간 세션 라인업 일괄 관리 모듈 */
+    /* 6. 월간 세션 일괄 관리 모듈 */
     let currentMonthSundays = [];
     let currentMonthSchedulesMap = {};
 
@@ -2120,7 +2111,6 @@
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
 
       try {
-        // 보컬 명단 세팅을 위해 멤버 데이터 로드 확인
         if (typeof allMembersList === 'undefined' || allMembersList.length === 0) {
           if (typeof loadMembersData === 'function') await loadMembersData();
         }
@@ -2143,7 +2133,7 @@
         if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 20px;">오류: ${err.message}</td></tr>`;
       }
     }
-    
+
     function renderMonthLineupTable() {
       const tbody = document.getElementById('monthLineupTableBody');
       if (!tbody) return;
@@ -2153,7 +2143,6 @@
         const isCanceled = /^x_/i.test((item.worship_title || '').trim());
         const rawVocals = (item.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
 
-        // 보컬 드롭다운 4개
         let vocalHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">';
         for (let i = 1; i <= 4; i++) {
           vocalHtml += `
@@ -2170,15 +2159,12 @@
               <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
               ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
             </td>
-            <!-- 인도자 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_leader_${dateStr}" style="width: 100%; min-width: 85px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
                 ${generatePartOptionsHtml('all', item.leader || '', false)}
               </select>
             </td>
-            <!-- 보컬 -->
             <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
-            <!-- 건반 (메인 / 세컨) -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_kb1_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
                 ${generatePartOptionsHtml('건반', item.keyboard1 || 'X', true)}
@@ -2187,13 +2173,11 @@
                 ${generatePartOptionsHtml('건반', item.keyboard2 || 'X', true)}
               </select>
             </td>
-            <!-- 드럼 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_drum_${dateStr}" style="width: 100%; min-width: 80px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
                 ${generatePartOptionsHtml('드럼', item.drum || 'X', true)}
               </select>
             </td>
-            <!-- 기타 / 베이스 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_guitar_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
                 ${generatePartOptionsHtml('기타', item.guitar || 'X', true)}
@@ -2202,7 +2186,6 @@
                 ${generatePartOptionsHtml('베이스', item.bass || 'X', true)}
               </select>
             </td>
-            <!-- 방송 / 엔지니어 -->
             <td style="padding: 6px; vertical-align: top;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                 <select id="m_sound_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
@@ -2233,11 +2216,10 @@
         for (const dateStr of currentMonthSundays) {
           const leader = document.getElementById(`m_leader_${dateStr}`)?.value.trim() || null;
 
-          // 4개의 보컬 드롭다운에서 선택된 값들을 쉼표로 조합
           const vocalArr = [];
           for (let i = 1; i <= 4; i++) {
             const val = document.getElementById(`m_vocal_${dateStr}_${i}`)?.value.trim();
-            if (val && !vocalArr.includes(val)) {
+            if (val && val !== 'X' && !vocalArr.includes(val)) {
               vocalArr.push(val);
             }
           }
@@ -2261,16 +2243,11 @@
           };
 
           if (existing && existing.id) {
-            const { error: updateErr } = await supabaseClient
-              .from('schedules')
-              .update(lineupData)
-              .eq('id', existing.id);
+            const { error: updateErr } = await supabaseClient.from('schedules').update(lineupData).eq('id', existing.id);
             if (updateErr) throw updateErr;
           } else {
             lineupData.worship_title = `${dateStr} 주일예배`;
-            const { error: insertErr } = await supabaseClient
-              .from('schedules')
-              .insert([lineupData]);
+            const { error: insertErr } = await supabaseClient.from('schedules').insert([lineupData]);
             if (insertErr) throw insertErr;
           }
         }
@@ -2468,7 +2445,7 @@
                   ${isCanceled ? `🚫 [예배 없음] ${cancelReason || '취소'}` : (rawTitle || item.date + ' 주일예배')}
                 </strong>
                 <span style="font-size: 0.82rem; color: var(--sub-text);">
-                  ${isCanceled ? '⚠️ 상세 취소 사유를 보려면 터치하세요' : `인도: ${item.leader || '-'}`}
+                  ${isCanceled ? '⚠️ 취소 사유 확인' : `인도: ${item.leader || '-'}`}
                 </span>
               </div>
               <button class="accordion-toggle-btn" id="acc-btn-${idx}">▼</button>
@@ -2478,7 +2455,7 @@
               ${isCanceled ? `
                 <div style="background: rgba(239, 68, 68, 0.08); border-radius: 8px; padding: 14px; margin: 12px 0; border: 1px dashed #ef4444;">
                   <strong style="color: #ef4444; display: block; margin-bottom: 4px;">🚫 예배 미진행 안내</strong>
-                  <div style="font-size: 0.92rem; color: var(--text-color);">${cancelReason || '별도 사유가 기재되지 않았습니다.'}</div>
+                  <div style="font-size: 0.92rem; color: var(--text-color);">${cancelReason || '사유가 없습니다.'}</div>
                 </div>
               ` : `
                 <div style="margin: 12px 0 8px 0;">
@@ -2534,7 +2511,7 @@
                 <span class="worship-date-badge" style="background-color: #fee2e2; color: #b91c1c;">${item.date}</span>
                 <strong style="font-size: 1rem; margin-left: 6px; color: #ef4444;">🚫 [예배 없음] ${cancelReason}</strong>
               </div>
-              <p style="font-size: 0.88rem; color: var(--sub-text); margin: 6px 0;">해당 주차는 예배가 없어 세션 배치가 없습니다.</p>
+              <p style="font-size: 0.88rem; color: var(--sub-text); margin: 6px 0;">해당 주차는 예배가 없습니다.</p>
             </div>
           `;
         }
@@ -2614,8 +2591,8 @@
         syncAppVersionFromNotices();
         renderNotices();
       } catch (err) {
-        console.error('공지사항 로드 오류:', err);
-        if (loadingEl) loadingEl.innerText = '공지사항 로드 실패: ' + err.message;
+        console.error('공지 로드 오류:', err);
+        if (loadingEl) loadingEl.innerText = '공지 로드 실패: ' + err.message;
       }
     }
 
@@ -2625,11 +2602,9 @@
         const match = title.match(/v\d+\.\d+(\.\d+)?/i);
         if (match) {
           const verText = match[0];
-          // 1. 헤더 버블 뱃지 동기화
           const bubble = document.getElementById('headerVersionBadge');
           if (bubble) bubble.innerText = verText;
 
-          // 2. 푸터 버전 동기화
           const footerVer = document.querySelector('.footer-version');
           if (footerVer) footerVer.innerText = `${verText} (Supabase Engine)`;
           break;
@@ -2715,7 +2690,7 @@
       const sorted = [...mainItems].sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
-        return new Date(a.created_at) - new Date(b.created_at);
+        return new Date(b.created_at) - new Date(a.created_at);
       });
 
       container.innerHTML = sorted.map(item => {
@@ -2805,6 +2780,13 @@
       btn.classList.toggle('open');
     }
 
+    function goToUpdateNotes() {
+      const noticeTabBtn = document.querySelectorAll('.tab-btn')[2];
+      switchTab('notice', noticeTabBtn);
+      if (typeof switchNoticeSubTab === 'function') switchNoticeSubTab('update');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     /* 9. 멤버 모듈 */
     let allMembersList = [];
     let selectedMemberCategory = 'ALL';
@@ -2854,11 +2836,7 @@
 
         if (keyword) {
           const searchSource = [
-            item.name,
-            item.main_category,
-            item.main_part,
-            item.part_b,
-            item.part_tag
+            item.name, item.main_category, item.main_part, item.part_b, item.part_tag
           ].filter(Boolean).join(' ').toLowerCase();
 
           if (!searchSource.includes(keyword)) return false;
@@ -2883,20 +2861,16 @@
 
       grid.innerHTML = filtered.map(item => {
         const rawCat = (item.main_category || '').trim().toLowerCase();
-        let catColorClass = 'cat-worship';
         let badgeColorClass = 'badge-worship';
         let borderColorClass = 'border-worship';
 
         if (rawCat.includes('session')) {
-          catColorClass = 'cat-session';
           badgeColorClass = 'badge-session';
           borderColorClass = 'border-session';
         } else if (rawCat.includes('live')) {
-          catColorClass = 'cat-liveops';
           badgeColorClass = 'badge-liveops';
           borderColorClass = 'border-liveops';
         } else if (rawCat.includes('post') || rawCat.includes('prod')) {
-          catColorClass = 'cat-postprod';
           badgeColorClass = 'badge-postprod';
           borderColorClass = 'border-postprod';
         }
@@ -2914,9 +2888,7 @@
 
         const callNum = (item.call || '').trim();
         const callButtonHtml = callNum ? `
-          <a href="tel:${callNum}" class="member-call-btn">
-            📞 ${callNum}
-          </a>
+          <a href="tel:${callNum}" class="member-call-btn">📞 ${callNum}</a>
         ` : '';
 
         return `
@@ -2930,9 +2902,7 @@
                 주파트: <strong style="color: var(--text-color);">${item.main_part || '-'}</strong>
                 ${item.part_b ? `<span style="font-size: 0.78rem; margin-left: 4px;">(${item.part_b})</span>` : ''}
               </div>
-              <div style="margin-top: 6px;">
-                ${tagsHtml}
-              </div>
+              <div style="margin-top: 6px;">${tagsHtml}</div>
             </div>
             ${callButtonHtml}
           </div>
@@ -3024,8 +2994,7 @@
       }
 
       const payload = {
-        name,
-        main_category,
+        name, main_category,
         main_part: main_part || null,
         part_b: part_b || null,
         part_tag: part_tag || null,
@@ -3035,16 +3004,11 @@
 
       try {
         if (memberId) {
-          const { error } = await supabaseClient
-            .from('members')
-            .update(payload)
-            .eq('member_id', memberId);
+          const { error } = await supabaseClient.from('members').update(payload).eq('member_id', memberId);
           if (error) throw error;
           alert(`'${name}' 팀원 정보가 수정되었습니다.`);
         } else {
-          const { error } = await supabaseClient
-            .from('members')
-            .insert([payload]);
+          const { error } = await supabaseClient.from('members').insert([payload]);
           if (error) throw error;
           alert(`'${name}' 팀원이 새로 등록되었습니다.`);
         }
@@ -3059,14 +3023,10 @@
     }
 
     async function deleteMemberData(memberId, memberName) {
-      if (!confirm(`정말로 '${memberName}' 팀원을 명단에서 삭제하시겠습니까?`)) return;
+      if (!confirm(`정말로 '${memberName}' 팀원을 삭제하시겠습니까?`)) return;
 
       try {
-        const { error } = await supabaseClient
-          .from('members')
-          .delete()
-          .eq('member_id', memberId);
-
+        const { error } = await supabaseClient.from('members').delete().eq('member_id', memberId);
         if (error) throw error;
 
         alert(`'${memberName}' 팀원이 삭제되었습니다.`);
@@ -3267,7 +3227,7 @@
             <button onclick="deleteSuggestion(${item.id})" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; margin-left: auto;">삭제</button>
           </div>
           <div style="display: flex; gap: 6px;">
-            <input type="text" id="comment-input-${item.id}" value="${item.admin_comment || ''}" placeholder="팀원들에게 보여줄 답변 입력..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+            <input type="text" id="comment-input-${item.id}" value="${item.admin_comment || ''}" placeholder="답변 입력..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
             <button onclick="saveAdminComment(${item.id})" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">저장</button>
           </div>
         </div>
@@ -3276,11 +3236,7 @@
 
     async function updateSuggestionStatus(id, newStatus) {
       try {
-        const { error } = await supabaseClient
-          .from('suggestion_box')
-          .update({ status: newStatus })
-          .eq('id', id);
-
+        const { error } = await supabaseClient.from('suggestion_box').update({ status: newStatus }).eq('id', id);
         if (error) throw error;
         await loadSuggestionBoxData();
         renderAdminFeedbackList();
@@ -3294,11 +3250,7 @@
       const comment = input ? input.value.trim() : '';
 
       try {
-        const { error } = await supabaseClient
-          .from('suggestion_box')
-          .update({ admin_comment: comment || null })
-          .eq('id', id);
-
+        const { error } = await supabaseClient.from('suggestion_box').update({ admin_comment: comment || null }).eq('id', id);
         if (error) throw error;
         alert('코멘트가 저장되었습니다.');
         await loadSuggestionBoxData();
@@ -3311,11 +3263,7 @@
     async function deleteSuggestion(id) {
       if (!confirm('이 의견을 정말 삭제하시겠습니까?')) return;
       try {
-        const { error } = await supabaseClient
-          .from('suggestion_box')
-          .delete()
-          .eq('id', id);
-
+        const { error } = await supabaseClient.from('suggestion_box').delete().eq('id', id);
         if (error) throw error;
         await loadSuggestionBoxData();
         renderAdminFeedbackList();
@@ -3324,84 +3272,31 @@
       }
     }
 
-    /* members 테이블에서 보컬 가능한 멤버 목록 추출 */
-    function getVocalMemberList() {
-      if (!allMembersList || allMembersList.length === 0) return [];
-      
-      return allMembersList.filter(m => {
-        // 활동 중인 인원만 대상
-        if ((m.active || '').trim() !== '활동 중') return false;
-
-        const partSource = [m.main_part, m.part_b, m.part_tag].filter(Boolean).join(' ').toLowerCase();
-        return partSource.includes('vocal') || partSource.includes('보컬');
-      }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-    }
-
-    /* 4개의 드롭다운에 보컬 옵션 채우기 */
-    function populateVocalSelectOptions() {
-      const vocalMembers = getVocalMemberList();
-      const selects = [
-        document.getElementById('adminVocalSelect1'),
-        document.getElementById('adminVocalSelect2'),
-        document.getElementById('adminVocalSelect3'),
-        document.getElementById('adminVocalSelect4')
-      ];
-
-      selects.forEach((sel, idx) => {
-        if (!sel) return;
-        sel.innerHTML = `<option value="">(싱어 ${idx + 1} 선택 안 함)</option>`;
-        vocalMembers.forEach(mem => {
-          const opt = document.createElement('option');
-          opt.value = mem.name;
-          opt.textContent = mem.name;
-          sel.appendChild(opt);
-        });
-      });
-    }
-
-    function goToUpdateNotes() {
-      // 1. 공지사항 탭 버튼(3번째) 활성화 및 탭 전환
-      const noticeTabBtn = document.querySelectorAll('.tab-btn')[2];
-      switchTab('notice', noticeTabBtn);
-
-      // 2. 공지사항 내부 서브탭을 '업데이트 노트'로 전환
-      if (typeof switchNoticeSubTab === 'function') {
-        switchNoticeSubTab('update');
-      }
-
-      // 3. 화면 최상단으로 부드럽게 스크롤 이동
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    /* ===================================================
-       통합 설정창 (Settings Hub) 모듈
-    =================================================== */
+    /* 11. 통합 환경설정 (Settings Hub) */
     let wakeLockSentinel = null;
 
     function openSettingsModal() {
-      // 1. 현재 테마 옵션 선택값 반영
       const currentTheme = localStorage.getItem('shift_theme') || 'light';
       const themeSelect = document.getElementById('settingThemeSelect');
       if (themeSelect) themeSelect.value = currentTheme;
 
-      // 2. 현재 폰트 옵션 선택값 반영
       const currentFont = localStorage.getItem('shift_font') || 'system';
       const fontSelect = document.getElementById('settingFontSelect');
       if (fontSelect) fontSelect.value = currentFont;
 
-      // 3. 알림 토글 상태 반영
       const notiToggle = document.getElementById('settingNotificationToggle');
       if (notiToggle) {
         notiToggle.checked = ('Notification' in window && Notification.permission === 'granted');
       }
 
-      // 4. 관리자 상태 반영
       const isAuth = isAdminAuthenticated();
       const statusText = document.getElementById('settingAdminStatusText');
       const logoutBtn = document.getElementById('settingAdminLogoutBtn');
       if (statusText && logoutBtn) {
         if (isAuth) {
-          statusText.innerHTML = '<span style="color: #10b981; font-weight: 700;">✅ 관리자 인증됨</span>';
+          statusText.innerHTML = isSuperAdmin() 
+            ? '<span style="color: #3b82f6; font-weight: 700;">⚡ 최고관리자(Super) 인증됨</span>' 
+            : '<span style="color: #10b981; font-weight: 700;">✅ 일반 관리자 인증됨</span>';
           logoutBtn.style.display = 'inline-flex';
         } else {
           statusText.innerHTML = '<span style="color: var(--sub-text);">관리자 모드: 미인증</span>';
@@ -3416,12 +3311,10 @@
       document.getElementById('settingsModal').style.display = 'none';
     }
 
-    /* 1) 설정창에서 테마 변경 */
     function changeThemeFromSetting(theme) {
       applyTheme(theme);
     }
 
-    /* 2) 폰트 변경 및 브라우저 저장 */
     function changeAppFont(fontKey) {
       let fontStack = '';
       switch (fontKey) {
@@ -3440,17 +3333,15 @@
       localStorage.setItem('shift_font', fontKey);
     }
 
-    // 페이지 첫 로드 시 저장된 폰트 불러오기
     function initAppFont() {
       const savedFont = localStorage.getItem('shift_font') || 'system';
       changeAppFont(savedFont);
     }
     initAppFont();
 
-    /* 3) 화면 꺼짐 방지 (Wake Lock API) */
     async function toggleWakeLock(enable) {
       if (!('wakeLock' in navigator)) {
-        alert('현재 사용 중인 브라우저는 화면 켜짐 유지(Wake Lock) 기능을 지원하지 않습니다.');
+        alert('현재 브라우저는 화면 켜짐 유지(Wake Lock)를 지원하지 않습니다.');
         document.getElementById('settingWakeLockToggle').checked = false;
         return;
       }
@@ -3458,10 +3349,7 @@
       try {
         if (enable) {
           wakeLockSentinel = await navigator.wakeLock.request('screen');
-          wakeLockSentinel.addEventListener('release', () => {
-            console.log('화면 켜짐 유지가 해제되었습니다.');
-          });
-          alert('화면 켜짐 유지가 활성화되었습니다! 예배 중 화면이 꺼지지 않습니다.');
+          alert('화면 켜짐 유지가 활성화되었습니다! 예배 중 절전되지 않습니다.');
         } else {
           if (wakeLockSentinel) {
             await wakeLockSentinel.release();
@@ -3473,7 +3361,6 @@
       }
     }
 
-    /* 4) 브라우저 알림 토글 (Notification API) */
     async function toggleAppNotification(enable) {
       if (!('Notification' in window)) {
         alert('이 브라우저는 웹 알림 기능을 지원하지 않습니다.');
@@ -3485,17 +3372,16 @@
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           new Notification('SHIFT Worship', {
-            body: 'SHIFT 찬양팀 웹앱 알림이 켜졌습니다! 새로운 콘티와 소식을 전해드릴게요. 🕊️',
+            body: 'SHIFT 찬양팀 웹앱 알림이 켜졌습니다! 🕊️',
             icon: 'favicon.ico'
           });
         } else {
-          alert('알림 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용해 주세요.');
+          alert('알림 권한이 거부되었습니다.');
           document.getElementById('settingNotificationToggle').checked = false;
         }
       }
     }
 
-    /* 5) 최신 캐시 지우기 및 강제 새로고침 */
     function forceAppRefresh() {
       if ('caches' in window) {
         caches.keys().then(names => {
@@ -3505,88 +3391,12 @@
       window.location.reload(true);
     }
 
-    /* 6) 설정창 내부 관리자 로그아웃 */
     function adminLogoutFromSettings() {
       adminLogout();
-      openSettingsModal(); // 상태 갱신
+      openSettingsModal();
     }
 
-    /* 파트별 멤버 필터링 헬퍼 */
-    function getMembersByPart(partKeyword) {
-      if (!allMembersList || allMembersList.length === 0) return [];
-
-      const keyword = (partKeyword || '').toLowerCase();
-      return allMembersList.filter(m => {
-        if ((m.active || '').trim() !== '활동 중') return false;
-        if (!keyword || keyword === 'all') return true;
-
-        const source = [m.main_category, m.main_part, m.part_b, m.part_tag]
-          .filter(Boolean).join(' ').toLowerCase();
-
-        return source.includes(keyword);
-      }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-    }
-
-    /* 드롭다운 옵션 HTML 생성기 (X 및 직접입력 포함) */
-    function generatePartOptionsHtml(partKeyword, selectedValue = '', allowEmpty = true) {
-      const members = getMembersByPart(partKeyword);
-      let html = '';
-
-      if (allowEmpty) {
-        html += `<option value="X" ${selectedValue === 'X' ? 'selected' : ''}>X (배치 없음)</option>`;
-      } else {
-        html += `<option value="">(선택 안 함)</option>`;
-      }
-
-      // 등록된 팀원 목록
-      members.forEach(m => {
-        html += `<option value="${m.name}" ${m.name === selectedValue ? 'selected' : ''}>${m.name}</option>`;
-      });
-
-      // 만약 등록된 팀원 외의 외부 이름이나 레거시 데이터가 있다면 커스텀 옵션으로 유지
-      if (selectedValue && selectedValue !== 'X' && !members.some(m => m.name === selectedValue)) {
-        html += `<option value="${selectedValue}" selected>${selectedValue} (직접 입력값)</option>`;
-      }
-
-      return html;
-    }
-
-    /* 주간 콘티 모달 내 모든 라인업 드롭다운 채우기 */
-    function populateAllLineupSelects(currentItem = {}) {
-      // 1. 인도자 (전체 명단)
-      const leaderSel = document.getElementById('adminLeader');
-      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('all', currentItem.leader || '', false);
-
-      // 2. 보컬 (최대 4명)
-      const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
-      for (let i = 1; i <= 4; i++) {
-        const sel = document.getElementById(`adminVocalSelect${i}`);
-        if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
-      }
-
-      // 3. 악기 세션 (X 기본 허용)
-      const setPart = (id, keyword, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
-      };
-
-      setPart('adminKeyboard1', '건반', currentItem.keyboard1 || currentItem.keyboard || 'X');
-      setPart('adminKeyboard2', '건반', currentItem.keyboard2 || 'X');
-      setPart('adminDrum', '드럼', currentItem.drum || 'X');
-      setPart('adminGuitar', '기타', currentItem.guitar || 'X');
-      setPart('adminBass', '베이스', currentItem.bass || 'X');
-
-      // 4. 엔지니어 & 미디어
-      setPart('adminSound', '음향', currentItem.sound || 'X');
-      setPart('adminBroadcast', '방송', currentItem.broadcast || 'X');
-      setPart('adminSubtitle', '자막', currentItem.subtitle || 'X');
-      setPart('adminVideo', '영상', currentItem.video || 'X');
-    }
-
-    /* ===================================================
-       서버 최고관리자 전용 기능 모듈
-    =================================================== */
-
+    /* 12. 서버 최고관리자 전용 기능 (업데이트 노트 등록 & 알림 발송) */
     function openUpdateNoteCreatorModal() {
       if (!isSuperAdmin()) {
         alert('서버 최고관리자만 접근할 수 있습니다.');
@@ -3599,7 +3409,6 @@
       document.getElementById('updateNoteModal').style.display = 'none';
     }
 
-    /* 1. 업데이트 노트 발행 (Supabase notice 테이블에 정형화된 포맷으로 INSERT) */
     async function handleCreateUpdateNote(e) {
       e.preventDefault();
 
@@ -3609,10 +3418,7 @@
       const details = document.getElementById('newVersionContent').value.trim();
       const btn = document.getElementById('btnPublishNote');
 
-      // 제목 생성: [업데이트] v2.1.0 - 요약내용
       const title = `${category} ${version} - ${summary}`;
-
-      // 본문 양식화
       const formattedContent = 
 `[배포 버전]: ${version}
 [업데이트 개요]: ${summary}
@@ -3639,10 +3445,8 @@ ${details}
 
         if (error) throw error;
 
-        alert(`🎉 ${version} 업데이트 노트가 성공적으로 공지사항에 배포되었습니다!`);
+        alert(`🎉 ${version} 업데이트 노트가 공지사항에 성공적으로 배포되었습니다!`);
         closeUpdateNoteModal();
-
-        // 공지 데이터 새로고침 및 헤더 버전 동기화
         await loadNoticeData();
       } catch (err) {
         console.error('업데이트 노트 발행 실패:', err);
@@ -3653,7 +3457,6 @@ ${details}
       }
     }
 
-    /* 2. 웹 브라우저 실시간 알림 발송 */
     function openPushBroadcasterModal() {
       if (!isSuperAdmin()) {
         alert('서버 최고관리자만 접근할 수 있습니다.');
@@ -3676,10 +3479,7 @@ ${details}
       }
 
       if (Notification.permission === 'granted') {
-        new Notification(title, {
-          body: body,
-          icon: 'favicon.ico'
-        });
+        new Notification(title, { body: body, icon: 'favicon.ico' });
         alert('브라우저 알림이 발송되었습니다!');
       } else {
         Notification.requestPermission().then(permission => {
@@ -3692,7 +3492,7 @@ ${details}
       }
     }
 
-    /* 11. 진입점 */
+    /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadCurrentConti();
     });
