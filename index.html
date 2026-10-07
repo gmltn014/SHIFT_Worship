@@ -531,13 +531,57 @@
       padding: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
+
+    /* 헤더 버전 버블 뱃지 */
+    .version-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #e0f2fe; /* 하늘색 */
+      color: #0369a1;            /* 진한 블루 */
+      border: 1px solid #bae6fd;
+      border-radius: 9999px;     /* 타원형 */
+      padding: 2px 9px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: monospace, -apple-system, sans-serif;
+      cursor: pointer;
+      line-height: 1.2;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
+
+    .version-bubble:hover {
+      background-color: #bae6fd;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(3, 105, 161, 0.15);
+    }
+
+    [data-theme="dark"] .version-bubble {
+      background-color: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    [data-theme="dark"] .version-bubble:hover {
+      background-color: rgba(56, 189, 248, 0.28);
+    }
   </style>
 </head>
 <body>
 
   <!-- 헤더 -->
   <header>
-    <div class="brand">SHIFT Worship</div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="brand" style="cursor: pointer;" onclick="switchTab('conti', document.querySelectorAll('.tab-btn')[0])">
+        SHIFT Worship
+      </div>
+      <!-- 하늘색 타원형 버전 버블 뱃지 -->
+      <button id="headerVersionBadge" class="version-bubble" onclick="goToUpdateNotes()" title="업데이트 노트 확인하기">
+        v2.0.0
+      </button>
+    </div>
+
     <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
       <span id="themeIcon">🌙</span>
       <span id="themeLabel">다크 모드</span>
@@ -2387,8 +2431,14 @@
         const title = item.title || '';
         const match = title.match(/v\d+\.\d+(\.\d+)?/i);
         if (match) {
+          const verText = match[0];
+          // 1. 헤더 버블 뱃지 동기화
+          const bubble = document.getElementById('headerVersionBadge');
+          if (bubble) bubble.innerText = verText;
+
+          // 2. 푸터 버전 동기화
           const footerVer = document.querySelector('.footer-version');
-          if (footerVer) footerVer.innerText = `${match[0]} (Supabase Engine)`;
+          if (footerVer) footerVer.innerText = `${verText} (Supabase Engine)`;
           break;
         }
       }
@@ -3114,6 +3164,20 @@
           sel.appendChild(opt);
         });
       });
+    }
+
+    function goToUpdateNotes() {
+      // 1. 공지사항 탭 버튼(3번째) 활성화 및 탭 전환
+      const noticeTabBtn = document.querySelectorAll('.tab-btn')[2];
+      switchTab('notice', noticeTabBtn);
+
+      // 2. 공지사항 내부 서브탭을 '업데이트 노트'로 전환
+      if (typeof switchNoticeSubTab === 'function') {
+        switchNoticeSubTab('update');
+      }
+
+      // 3. 화면 최상단으로 부드럽게 스크롤 이동
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /* 11. 진입점 */
