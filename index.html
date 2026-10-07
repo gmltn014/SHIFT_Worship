@@ -955,6 +955,29 @@
           </div>
         </div>
       </div>
+
+      <div id="superAdminSection" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--accent-color);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: #3b82f6; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">SUPER ADMIN</span>
+              <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 관리자 특수 제어판</h4>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+            <!-- 업데이트 노트 간편 작성 -->
+            <div class="card" style="border-color: #3b82f6; cursor: pointer;" onclick="openUpdateNoteCreatorModal()">
+              <h4 style="font-size: 1rem; color: #2563eb; margin-bottom: 6px;">📝 새 업데이트 노트 작성 및 배포</h4>
+              <p style="font-size: 0.82rem; color: var(--sub-text);">버전명과 패치 내역을 규격화된 양식으로 DB에 바로 등록합니다.</p>
+            </div>
+
+            <!-- 웹앱 실시간 브라우저 푸시 알림 전송 -->
+            <div class="card" style="border-color: #3b82f6; cursor: pointer;" onclick="openPushBroadcasterModal()">
+              <h4 style="font-size: 1rem; color: #2563eb; margin-bottom: 6px;">📢 실시간 브라우저 알림 발송</h4>
+              <p style="font-size: 0.82rem; color: var(--sub-text);">콘티 등록/공지 업데이트를 팀원들에게 푸시 알림으로 전송합니다.</p>
+            </div>
+          </div>
+        </div>
     </section>
   </main> <!-- ★ main 닫힘 태그 -->
 
@@ -1133,75 +1156,71 @@
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
           <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
             <span>👥 세션 라인업 배정</span>
-            <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(없을 경우 '-' 또는 공란)</span>
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(미배치 시 'X' 선택)</span>
           </div>
 
-          <div style="grid-column: 1 / -1;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">보컬 싱어 선택 (최대 4명)</label>
-                <span style="font-size: 0.72rem; color: var(--sub-text);">드롭다운에서 팀원을 선택하세요</span>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px;">
-                <select id="adminVocalSelect1" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                  <option value="">(싱어 1 선택)</option>
-                </select>
-                <select id="adminVocalSelect2" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                  <option value="">(싱어 2 선택)</option>
-                </select>
-                <select id="adminVocalSelect3" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                  <option value="">(싱어 3 선택)</option>
-                </select>
-                <select id="adminVocalSelect4" class="admin-vocal-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                  <option value="">(싱어 4 선택)</option>
-                </select>
+          <!-- 인도자 & 보컬(4인) -->
+          <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">인도자</label>
+              <select id="adminLeader" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">보컬 (최대 4명)</label>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px;">
+                <select id="adminVocalSelect1" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect2" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect3" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
+                <select id="adminVocalSelect4" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;"></select>
               </div>
             </div>
+          </div>
 
+          <!-- 건반 -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">메인 건반</label>
-              <input type="text" id="adminKeyboard1" placeholder="메인 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <select id="adminKeyboard1" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">세컨 건반</label>
-              <input type="text" id="adminKeyboard2" placeholder="세컨 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <select id="adminKeyboard2" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <!-- 드럼 / 기타 / 베이스 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">드럼</label>
-              <input type="text" id="adminDrum" placeholder="드럼" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <select id="adminDrum" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">기타</label>
-              <input type="text" id="adminGuitar" placeholder="기타" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <select id="adminGuitar" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">베이스</label>
-              <input type="text" id="adminBass" placeholder="베이스" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">음향</label>
-              <input type="text" id="adminSound" placeholder="음향" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <select id="adminBass" class="lineup-select" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;"></select>
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+          <!-- 음향 / 방송 / 자막 / 영상 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px;">
             <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">방송/중계</label>
-              <input type="text" id="adminBroadcast" placeholder="방송" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">음향</label>
+              <select id="adminSound" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
             <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">자막</label>
-              <input type="text" id="adminSubtitle" placeholder="자막" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">방송/중계</label>
+              <select id="adminBroadcast" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
             <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">영상편집</label>
-              <input type="text" id="adminVideo" placeholder="영상편집" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">자막</label>
+              <select id="adminSubtitle" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">영상편집</label>
+              <select id="adminVideo" class="lineup-select" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
           </div>
         </div>
@@ -1343,6 +1362,72 @@
     </div>
   </div>
 
+  <!-- [서버 관리자] 업데이트 노트 등록 모달 -->
+  <div id="updateNoteModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 540px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">📝 새 업데이트 노트 발행</h3>
+        <button onclick="closeUpdateNoteModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+
+      <form onsubmit="handleCreateUpdateNote(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">버전명 (예: v2.1.0)</label>
+            <input type="text" id="newVersionTag" required placeholder="v2.1.0" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">분류 태그</label>
+            <select id="newVersionCategory" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+              <option value="[업데이트]">[업데이트] 기능 추가/개편</option>
+              <option value="[UI 개선]">[UI 개선] 디자인/사용성 개선</option>
+              <option value="[공지]">[공지] 전체 공지</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">업데이트 한 줄 요약</label>
+          <input type="text" id="newVersionSummary" required placeholder="예: 전 파트 라인업 드롭다운 도입 및 서버 관리자 기능 추가" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">세부 변경 내역 (줄바꿈하여 자유롭게 입력)</label>
+          <textarea id="newVersionContent" rows="6" required placeholder="1. 주간/월간 라인업 선택창을 파트별 드롭다운으로 개선&#10;2. 세션 미배치 주차를 위한 'X' 옵션 추가&#10;3. 서버 최고관리자 권한 체계 도입" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem; line-height: 1.6;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-action btn-secondary" onclick="closeUpdateNoteModal()" style="font-size: 0.85rem;">취소</button>
+          <button type="submit" id="btnPublishNote" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px;">공지사항에 등록 & 배포</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- [서버 관리자] 실시간 웹 푸시 발송 모달 -->
+  <div id="pushBroadcastModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">📢 실시간 알림 발송</h3>
+        <button onclick="closePushBroadcasterModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">알림 제목</label>
+          <input type="text" id="pushTitleInput" value="[SHIFT 찬양팀] 이번 주 콘티가 등록되었습니다! 🕊️" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+        </div>
+        <div>
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">알림 내용</label>
+          <textarea id="pushBodyInput" rows="3" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">새로운 주차의 찬양 콘티와 세션 라인업이 업로드되었습니다. 포털에서 확인해 주세요!</textarea>
+        </div>
+        <button type="button" class="btn-action btn-primary" onclick="broadcastInstantNotification()" style="justify-content: center; padding: 10px; font-size: 0.9rem;">
+          🚀 알림 즉시 테스트 및 발송
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 푸터 -->
   <footer class="site-footer">
     <p class="footer-title">SHIFT 찬양팀 웹 포털</p>
@@ -1414,17 +1499,31 @@
     let currentScheduleData = null;
 
     /* 2. 관리자 인증 가드 모듈 */
-    const ADMIN_PASSWORD_HASH = 'shift2026';
+    const GENERAL_ADMIN_PW = 'shift2026';
+    const SUPER_ADMIN_PW = 'gmltn014';
     const SESSION_KEY = 'shift_admin_authenticated';
+    const SUPER_SESSION_KEY = 'shift_is_super_admin';
 
     function isAdminAuthenticated() {
       return sessionStorage.getItem(SESSION_KEY) === 'true';
     }
 
+    function isSuperAdmin() {
+      return sessionStorage.getItem(SUPER_SESSION_KEY) === 'true';
+    }
+
     function authenticateAdmin(inputPw) {
-      if (inputPw === ADMIN_PASSWORD_HASH) {
+      if (inputPw === SUPER_ADMIN_PW) {
         sessionStorage.setItem(SESSION_KEY, 'true');
+        sessionStorage.setItem(SUPER_SESSION_KEY, 'true');
         syncAdminUI();
+        alert('⚡ 서버 최고관리자(Super Admin)로 인증되었습니다.');
+        return true;
+      } else if (inputPw === GENERAL_ADMIN_PW) {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+        sessionStorage.removeItem(SUPER_SESSION_KEY);
+        syncAdminUI();
+        alert('일반 관리자로 로그인되었습니다.');
         return true;
       } else {
         alert('비밀번호가 올바르지 않습니다.');
@@ -1434,24 +1533,29 @@
 
     function adminLogout() {
       sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SUPER_SESSION_KEY);
       syncAdminUI();
       alert('관리자 모드에서 로그아웃되었습니다.');
     }
 
     function syncAdminUI() {
       const isAuth = isAdminAuthenticated();
+      const isSuper = isSuperAdmin();
       const loginForm = document.getElementById('adminLoginForm');
       const dashboard = document.getElementById('adminDashboard');
-      const pwInput = document.getElementById('adminPasswordInput');
+      const superSec = document.getElementById('superAdminSection');
 
       if (loginForm && dashboard) {
         if (isAuth) {
           loginForm.style.display = 'none';
           dashboard.style.display = 'block';
-          if (pwInput) pwInput.value = '';
+          if (superSec) {
+            superSec.style.display = isSuper ? 'block' : 'none';
+          }
         } else {
           loginForm.style.display = 'block';
           dashboard.style.display = 'none';
+          if (superSec) superSec.style.display = 'none';
         }
       }
     }
@@ -1828,75 +1932,34 @@
     }
 
     async function setupContiAdminForm() {
-      // 1) 팀원 명단 불러오기 및 보컬 셀렉트 세팅
-      try {
-        if (typeof allMembersList === 'undefined' || allMembersList.length === 0) {
-          if (typeof loadMembersData === 'function') {
-            await loadMembersData();
-          }
-        }
-        if (typeof populateVocalSelectOptions === 'function') {
-          populateVocalSelectOptions();
-        }
-      } catch (err) {
-        console.warn('보컬 목록 세팅 중 건너뜀:', err);
+      if (!allMembersList || allMembersList.length === 0) {
+        if (typeof loadMembersData === 'function') await loadMembersData();
       }
 
-      // 안전한 값 세팅 헬퍼
-      const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = (val !== null && val !== undefined) ? val : '';
-      };
-
-      const thisSundayStr = (typeof getThisSundayDateString === 'function') 
-        ? getThisSundayDateString() 
-        : new Date().toISOString().split('T')[0];
-
+      const thisSundayStr = getThisSundayDateString();
       const currentItem = currentScheduleData || {};
 
-      setVal('adminContiDate', currentItem.date || thisSundayStr);
-      setVal('adminContiTitle', currentItem.worship_title || '');
-      setVal('adminClosingSong', currentItem.closing_song || '');
-      setVal('adminYoutubeUrl', currentItem.youtube_url || '');
-      setVal('adminSheetUrl', currentItem.sheet_url || '');
-      setVal('adminMonitoringUrl', currentItem.monitoring_url || '');
+      document.getElementById('adminContiDate').value = currentItem.date || thisSundayStr;
+      document.getElementById('adminContiTitle').value = currentItem.worship_title || '';
+      document.getElementById('adminClosingSong').value = currentItem.closing_song || '';
+      document.getElementById('adminYoutubeUrl').value = currentItem.youtube_url || '';
+      document.getElementById('adminSheetUrl').value = currentItem.sheet_url || '';
+      document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
 
-      setVal('adminLeader', currentItem.leader || '');
+      // ★ 모든 세션 라인업 드롭다운 옵션 및 선택값 세팅
+      populateAllLineupSelects(currentItem);
 
-      // 보컬 드롭다운 값 매칭 (드롭다운이 있을 때만 동작)
-      const rawVocal = currentItem.vocal || '';
-      const currentVocals = rawVocal.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
-      for (let i = 1; i <= 4; i++) {
-        setVal(`adminVocalSelect${i}`, currentVocals[i - 1] || '');
-      }
-
-      setVal('adminKeyboard1', currentItem.keyboard1 || '');
-      setVal('adminKeyboard2', currentItem.keyboard2 || '');
-      setVal('adminDrum', currentItem.drum || '');
-      setVal('adminGuitar', currentItem.guitar || '');
-      setVal('adminBass', currentItem.bass || '');
-      setVal('adminSound', currentItem.sound || '');
-      setVal('adminBroadcast', currentItem.broadcast || '');
-      setVal('adminSubtitle', currentItem.subtitle || '');
-      setVal('adminVideo', currentItem.video || '');
-
-      // 콘티 곡 목록 생성
+      // 곡 목록 생성
       const rawSongList = currentItem.song_list || '';
       let songs = [];
       if (rawSongList.trim()) {
-        songs = rawSongList
-          .split(/\r?\n/)
-          .map(line => line.replace(/^\d+[\.\)\-\s]\s*/, '').trim())
-          .filter(Boolean);
+        songs = rawSongList.split(/\r?\n/).map(line => line.replace(/^\d+[\.\)\-\s]\s*/, '').trim()).filter(Boolean);
       }
-
       const songCount = songs.length > 0 ? Math.min(Math.max(songs.length, 1), 6) : 4;
       const countSelect = document.getElementById('adminSongCountSelect');
       if (countSelect) countSelect.value = String(songCount);
-
-      if (typeof generateSongInputFields === 'function') {
-        generateSongInputFields(songCount, songs);
-      }
+      generateSongInputFields(songCount, songs);
+    }
     }
 
     function parseAndFormatYoutubeInput(rawText) {
@@ -1933,6 +1996,7 @@
       const monitoring_url = document.getElementById('adminMonitoringUrl').value.trim();
       const submitBtn = document.getElementById('btnSaveContiSubmit');
 
+      // 곡 목록 조합
       const songInputs = document.querySelectorAll('.admin-song-input');
       const songLines = [];
       songInputs.forEach((input, idx) => {
@@ -1942,16 +2006,19 @@
       const song_list = songLines.join('\n');
       const youtube_url = parseAndFormatYoutubeInput(rawYoutube);
 
+      // 보컬 조합
       const vocalArr = [];
       for (let i = 1; i <= 4; i++) {
         const val = document.getElementById(`adminVocalSelect${i}`)?.value.trim();
-        if (val && !vocalArr.includes(val)) {
-          vocalArr.push(val);
-        }
+        if (val && val !== 'X' && !vocalArr.includes(val)) vocalArr.push(val);
       }
-      const combinedVocal = vocalArr.length > 0 ? vocalArr.join(', ') : null;
+      const vocal = vocalArr.length > 0 ? vocalArr.join(', ') : null;
 
-      // payload 구성 시 vocal에 대입
+      const getVal = (id) => {
+        const val = document.getElementById(id)?.value.trim();
+        return val || null;
+      };
+
       const payload = {
         date,
         worship_title: worship_title || null,
@@ -1961,17 +2028,17 @@
         sheet_url: sheet_url || null,
         monitoring_url: monitoring_url || null,
 
-        leader: document.getElementById('adminLeader').value.trim() || null,
-        vocal: combinedVocal, // ★ 드롭다운으로 선택된 보컬 목록
-        keyboard1: document.getElementById('adminKeyboard1').value.trim() || null,
-        keyboard2: document.getElementById('adminKeyboard2').value.trim() || null,
-        drum: document.getElementById('adminDrum').value.trim() || null,
-        guitar: document.getElementById('adminGuitar').value.trim() || null,
-        bass: document.getElementById('adminBass').value.trim() || null,
-        sound: document.getElementById('adminSound').value.trim() || null,
-        broadcast: document.getElementById('adminBroadcast').value.trim() || null,
-        subtitle: document.getElementById('adminSubtitle').value.trim() || null,
-        video: document.getElementById('adminVideo').value.trim() || null
+        leader: getVal('adminLeader'),
+        vocal: vocal,
+        keyboard1: getVal('adminKeyboard1'),
+        keyboard2: getVal('adminKeyboard2'),
+        drum: getVal('adminDrum'),
+        guitar: getVal('adminGuitar'),
+        bass: getVal('adminBass'),
+        sound: getVal('adminSound'),
+        broadcast: getVal('adminBroadcast'),
+        subtitle: getVal('adminSubtitle'),
+        video: getVal('adminVideo')
       };
 
       submitBtn.disabled = true;
@@ -1979,26 +2046,17 @@
 
       try {
         const { data: existing, error: checkError } = await supabaseClient
-          .from('schedules')
-          .select('id')
-          .eq('date', date)
-          .maybeSingle();
-
+          .from('schedules').select('id').eq('date', date).maybeSingle();
         if (checkError) throw checkError;
 
         if (existing && existing.id) {
-          const { error: updateError } = await supabaseClient
-            .from('schedules')
-            .update(payload)
-            .eq('id', existing.id);
+          const { error: updateError } = await supabaseClient.from('schedules').update(payload).eq('id', existing.id);
           if (updateError) throw updateError;
           alert('콘티 및 라인업이 성공적으로 수정되었습니다! ✨');
         } else {
-          const { error: insertError } = await supabaseClient
-            .from('schedules')
-            .insert([payload]);
+          const { error: insertError } = await supabaseClient.from('schedules').insert([payload]);
           if (insertError) throw insertError;
-          alert('새로운 주차의 콘티 및 라인업이 등록되었습니다! ✨');
+          alert('새로운 콘티 및 라인업이 등록되었습니다! ✨');
         }
 
         closeContiAdminModal();
@@ -2007,7 +2065,7 @@
           await loadAllArchiveData();
         }
       } catch (err) {
-        console.error('콘티 저장 오류:', err);
+        console.error('저장 실패:', err);
         alert('저장에 실패했습니다: ' + err.message);
       } finally {
         submitBtn.disabled = false;
@@ -2090,27 +2148,21 @@
       const tbody = document.getElementById('monthLineupTableBody');
       if (!tbody) return;
 
-      const vocalMembers = typeof getVocalMemberList === 'function' ? getVocalMemberList() : [];
-
       tbody.innerHTML = currentMonthSundays.map(dateStr => {
         const item = currentMonthSchedulesMap[dateStr] || {};
         const isCanceled = /^x_/i.test((item.worship_title || '').trim());
-
         const rawVocals = (item.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
 
-        let vocalSelectsHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">';
+        // 보컬 드롭다운 4개
+        let vocalHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">';
         for (let i = 1; i <= 4; i++) {
-          const selectedVal = rawVocals[i - 1] || '';
-          vocalSelectsHtml += `
-            <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 5px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <option value="">(싱어 ${i})</option>
-              ${vocalMembers.map(m => `
-                <option value="${m.name}" ${m.name === selectedVal ? 'selected' : ''}>${m.name}</option>
-              `).join('')}
+          vocalHtml += `
+            <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              ${generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false)}
             </select>
           `;
         }
-        vocalSelectsHtml += '</div>';
+        vocalHtml += '</div>';
 
         return `
           <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
@@ -2118,35 +2170,53 @@
               <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
               ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
             </td>
-            <!-- 인도자 (너비 확보 & 중앙 정렬) -->
+            <!-- 인도자 -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; min-width: 80px; padding: 6px 8px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
+              <select id="m_leader_${dateStr}" style="width: 100%; min-width: 85px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+                ${generatePartOptionsHtml('all', item.leader || '', false)}
+              </select>
             </td>
             <!-- 보컬 -->
+            <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
+            <!-- 건반 (메인 / 세컨) -->
             <td style="padding: 6px; vertical-align: top;">
-              ${vocalSelectsHtml}
+              <select id="m_kb1_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+                ${generatePartOptionsHtml('건반', item.keyboard1 || 'X', true)}
+              </select>
+              <select id="m_kb2_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+                ${generatePartOptionsHtml('건반', item.keyboard2 || 'X', true)}
+              </select>
             </td>
-            <!-- 건반 -->
+            <!-- 드럼 -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px 6px; margin-bottom: 4px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="m_kb2_${dateStr}" value="${item.keyboard2 || ''}" placeholder="세컨건반" style="width: 100%; padding: 5px 6px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-            </td>
-            <!-- 드럼 (너비 확보 & 중앙 정렬) -->
-            <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_drum_${dateStr}" value="${item.drum || ''}" placeholder="드럼" style="width: 100%; min-width: 75px; padding: 6px 8px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
+              <select id="m_drum_${dateStr}" style="width: 100%; min-width: 80px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+                ${generatePartOptionsHtml('드럼', item.drum || 'X', true)}
+              </select>
             </td>
             <!-- 기타 / 베이스 -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_guitar_${dateStr}" value="${item.guitar || ''}" placeholder="기타" style="width: 100%; padding: 5px 6px; margin-bottom: 4px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="m_bass_${dateStr}" value="${item.bass || ''}" placeholder="베이스" style="width: 100%; padding: 5px 6px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <select id="m_guitar_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+                ${generatePartOptionsHtml('기타', item.guitar || 'X', true)}
+              </select>
+              <select id="m_bass_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+                ${generatePartOptionsHtml('베이스', item.bass || 'X', true)}
+              </select>
             </td>
             <!-- 방송 / 엔지니어 -->
             <td style="padding: 6px; vertical-align: top;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                <input type="text" id="m_sound_${dateStr}" value="${item.sound || ''}" placeholder="음향" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_broadcast_${dateStr}" value="${item.broadcast || ''}" placeholder="방송" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_subtitle_${dateStr}" value="${item.subtitle || ''}" placeholder="자막" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_video_${dateStr}" value="${item.video || ''}" placeholder="영상" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <select id="m_sound_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('음향', item.sound || 'X', true)}
+                </select>
+                <select id="m_broadcast_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('방송', item.broadcast || 'X', true)}
+                </select>
+                <select id="m_subtitle_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('자막', item.subtitle || 'X', true)}
+                </select>
+                <select id="m_video_${dateStr}" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('영상', item.video || 'X', true)}
+                </select>
               </div>
             </td>
           </tr>
@@ -3439,6 +3509,187 @@
     function adminLogoutFromSettings() {
       adminLogout();
       openSettingsModal(); // 상태 갱신
+    }
+
+    /* 파트별 멤버 필터링 헬퍼 */
+    function getMembersByPart(partKeyword) {
+      if (!allMembersList || allMembersList.length === 0) return [];
+
+      const keyword = (partKeyword || '').toLowerCase();
+      return allMembersList.filter(m => {
+        if ((m.active || '').trim() !== '활동 중') return false;
+        if (!keyword || keyword === 'all') return true;
+
+        const source = [m.main_category, m.main_part, m.part_b, m.part_tag]
+          .filter(Boolean).join(' ').toLowerCase();
+
+        return source.includes(keyword);
+      }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
+
+    /* 드롭다운 옵션 HTML 생성기 (X 및 직접입력 포함) */
+    function generatePartOptionsHtml(partKeyword, selectedValue = '', allowEmpty = true) {
+      const members = getMembersByPart(partKeyword);
+      let html = '';
+
+      if (allowEmpty) {
+        html += `<option value="X" ${selectedValue === 'X' ? 'selected' : ''}>X (배치 없음)</option>`;
+      } else {
+        html += `<option value="">(선택 안 함)</option>`;
+      }
+
+      // 등록된 팀원 목록
+      members.forEach(m => {
+        html += `<option value="${m.name}" ${m.name === selectedValue ? 'selected' : ''}>${m.name}</option>`;
+      });
+
+      // 만약 등록된 팀원 외의 외부 이름이나 레거시 데이터가 있다면 커스텀 옵션으로 유지
+      if (selectedValue && selectedValue !== 'X' && !members.some(m => m.name === selectedValue)) {
+        html += `<option value="${selectedValue}" selected>${selectedValue} (직접 입력값)</option>`;
+      }
+
+      return html;
+    }
+
+    /* 주간 콘티 모달 내 모든 라인업 드롭다운 채우기 */
+    function populateAllLineupSelects(currentItem = {}) {
+      // 1. 인도자 (전체 명단)
+      const leaderSel = document.getElementById('adminLeader');
+      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('all', currentItem.leader || '', false);
+
+      // 2. 보컬 (최대 4명)
+      const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+      for (let i = 1; i <= 4; i++) {
+        const sel = document.getElementById(`adminVocalSelect${i}`);
+        if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
+      }
+
+      // 3. 악기 세션 (X 기본 허용)
+      const setPart = (id, keyword, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
+      };
+
+      setPart('adminKeyboard1', '건반', currentItem.keyboard1 || currentItem.keyboard || 'X');
+      setPart('adminKeyboard2', '건반', currentItem.keyboard2 || 'X');
+      setPart('adminDrum', '드럼', currentItem.drum || 'X');
+      setPart('adminGuitar', '기타', currentItem.guitar || 'X');
+      setPart('adminBass', '베이스', currentItem.bass || 'X');
+
+      // 4. 엔지니어 & 미디어
+      setPart('adminSound', '음향', currentItem.sound || 'X');
+      setPart('adminBroadcast', '방송', currentItem.broadcast || 'X');
+      setPart('adminSubtitle', '자막', currentItem.subtitle || 'X');
+      setPart('adminVideo', '영상', currentItem.video || 'X');
+    }
+
+    /* ===================================================
+       서버 최고관리자 전용 기능 모듈
+    =================================================== */
+
+    function openUpdateNoteCreatorModal() {
+      if (!isSuperAdmin()) {
+        alert('서버 최고관리자만 접근할 수 있습니다.');
+        return;
+      }
+      document.getElementById('updateNoteModal').style.display = 'flex';
+    }
+
+    function closeUpdateNoteModal() {
+      document.getElementById('updateNoteModal').style.display = 'none';
+    }
+
+    /* 1. 업데이트 노트 발행 (Supabase notice 테이블에 정형화된 포맷으로 INSERT) */
+    async function handleCreateUpdateNote(e) {
+      e.preventDefault();
+
+      const version = document.getElementById('newVersionTag').value.trim();
+      const category = document.getElementById('newVersionCategory').value;
+      const summary = document.getElementById('newVersionSummary').value.trim();
+      const details = document.getElementById('newVersionContent').value.trim();
+      const btn = document.getElementById('btnPublishNote');
+
+      // 제목 생성: [업데이트] v2.1.0 - 요약내용
+      const title = `${category} ${version} - ${summary}`;
+
+      // 본문 양식화
+      const formattedContent = 
+`[배포 버전]: ${version}
+[업데이트 개요]: ${summary}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 주요 변경 내역
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+${details}
+
+항상 팀을 위해 헌신해 주셔서 감사합니다. 포털 이용 중 불편한 점은 [익명의견함]에 남겨주세요! 🙏`;
+
+      btn.disabled = true;
+      btn.innerText = '발행 중...';
+
+      try {
+        const { error } = await supabaseClient
+          .from('notice')
+          .insert([{
+            title: title,
+            content: formattedContent,
+            author: '서버 관리자',
+            is_pinned: false
+          }]);
+
+        if (error) throw error;
+
+        alert(`🎉 ${version} 업데이트 노트가 성공적으로 공지사항에 배포되었습니다!`);
+        closeUpdateNoteModal();
+
+        // 공지 데이터 새로고침 및 헤더 버전 동기화
+        await loadNoticeData();
+      } catch (err) {
+        console.error('업데이트 노트 발행 실패:', err);
+        alert('발행 실패: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '공지사항에 등록 & 배포';
+      }
+    }
+
+    /* 2. 웹 브라우저 실시간 알림 발송 */
+    function openPushBroadcasterModal() {
+      if (!isSuperAdmin()) {
+        alert('서버 최고관리자만 접근할 수 있습니다.');
+        return;
+      }
+      document.getElementById('pushBroadcastModal').style.display = 'flex';
+    }
+
+    function closePushBroadcasterModal() {
+      document.getElementById('pushBroadcastModal').style.display = 'none';
+    }
+
+    function broadcastInstantNotification() {
+      const title = document.getElementById('pushTitleInput').value.trim();
+      const body = document.getElementById('pushBodyInput').value.trim();
+
+      if (!('Notification' in window)) {
+        alert('현재 브라우저는 알림을 지원하지 않습니다.');
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body: body,
+          icon: 'favicon.ico'
+        });
+        alert('브라우저 알림이 발송되었습니다!');
+      } else {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            new Notification(title, { body: body, icon: 'favicon.ico' });
+          } else {
+            alert('알림 권한이 허용되어 있지 않습니다.');
+          }
+        });
+      }
     }
 
     /* 11. 진입점 */
