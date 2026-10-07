@@ -1822,13 +1822,20 @@
           </div>
 
           <!-- 다른 기기 코드 입력 -->
-          <div style="display: flex; gap: 6px;">
-            <input type="text" id="inputSyncKey" placeholder="다른 기기의 연동 코드 입력 (예: SHIFT-1234)" style="flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.8rem; font-family: monospace;">
-            <button type="button" class="btn-action btn-primary" onclick="applySyncKeyFromInput()" style="padding: 7px 12px; font-size: 0.8rem; flex-shrink: 0;">
-              동기화 불러오기
-            </button>
-          </div>
-        </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+  <input type="text" 
+         id="syncCodeInput" 
+         placeholder="동기화 코드 8자리 입력" 
+         style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+  
+  <button type="button" 
+          id="btnRestoreSync" 
+          onclick="handleApplySyncCode(event)" 
+          class="btn-action btn-primary" 
+          style="padding: 10px 16px; font-size: 0.85rem; font-weight: 700; white-space: nowrap;">
+    불러오기
+  </button>
+</div>
 
         <!-- 5. [NEW] 홈 화면에 앱 설치 (PWA) -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
@@ -4285,67 +4292,89 @@ ${details}
     }
     initAppFont();
     
-    async function handleApplySyncCode() {
-  // 1. 흔히 쓰이는 동기화 입력창 ID 후보군을 순서대로 탐색
-  const inputEl = document.getElementById('syncCodeInput') || 
-                  document.getElementById('inputSyncCode') || 
-                  document.getElementById('targetSyncCode') || 
-                  document.getElementById('deviceSyncCode') ||
-                  document.querySelector('#settingsModal input[type="text"]') ||
-                  document.querySelector('input[placeholder*="동기화"]');
+    async function handleApplySyncCode(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      console.log('동기화 불러오기 버튼 클릭됨');
 
-  if (!inputEl) {
-    console.error('동기화 입력창 태그를 찾지 못했습니다.');
-    alert('동기화 입력창을 찾을 수 없습니다. 관리자에게 문의해 주세요.');
-    return;
-  }
+      // 1. 입력창 탐색 (ID 및 플레이스홀더 다중 폴백)
+      const inputEl = document.getElementById('syncCodeInput') || 
+                      document.getElementById('inputSyncCode') || 
+                      document.getElementById('targetSyncCode') || 
+                      document.getElementById('deviceSyncCode') ||
+                      document.querySelector('input[placeholder*="동기화"]');
 
-  // 2. 값 추출 및 공백/하이픈 제거 정돈
-  const code = inputEl.value ? inputEl.value.trim() : '';
+      if (!inputEl) {
+        alert('동기화 코드 입력창을 찾지 못했습니다.');
+        console.error('sync input element not found');
+        return;
+      }
 
-  if (!code) {
-    alert('동기화 코드를 입력해 주세요.');
-    inputEl.focus();
-    return;
-  }
+      const code = inputEl.value ? inputEl.value.trim() : '';
 
-  const storageKey = (typeof SYNC_KEY_STORAGE !== 'undefined') ? SYNC_KEY_STORAGE : 'shift_portal_sync_key';
+      if (!code) {
+        alert('동기화 코드를 입력해 주세요.');
+        inputEl.focus();
+        return;
+      }
 
-  try {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) throw new Error('데이터베이스 연결에 실패했습니다.');
+      // 2. 버튼 상태 제어
+      const btn = document.getElementById('btnRestoreSync') || (event && event.target);
+      const originalText = btn ? btn.innerText : '불러오기';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '동기화 중...';
+      }
 
-    // Supabase에서 해당 동기화 코드 데이터 조회
-    const { data, error } = await client
-      .from('user_sync')
-      .select('*')
-      .eq('sync_code', code)
-      .single();
+      const storageKey = (typeof SYNC_KEY_STORAGE !== 'undefined') ? SYNC_KEY_STORAGE : 'shift_portal_sync_key';
 
-    if (error || !data) {
-      throw new Error('유효하지 않거나 일치하는 동기화 코드가 없습니다.');
+      try {
+        const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+        if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+
+        // 3. Supabase user_sync 테이블에서 코드 일치 데이터 조회
+        const { data, error } = await client
+          .from('user_sync')
+          .select('*')
+          .eq('sync_code', code)
+          .single();
+
+        if (error || !data) {
+          throw new Error('유효하지 않거나 일치하는 동기화 코드가 없습니다.');
+        }
+
+        // 4. 로컬스토리지에 동기화 키 저장
+        localStorage.setItem(storageKey, code);
+
+        // 5. 환경설정 복원 (테마, 글꼴, 즐겨찾기 등)
+        if (data.settings) {
+          const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
+          
+          if (settings.theme) {
+            localStorage.setItem('shift_theme', settings.theme);
+            if (typeof applyTheme === 'function') applyTheme(settings.theme);
+          }
+          if (settings.font) {
+            localStorage.setItem('shift_font', settings.font);
+            if (typeof applyFont === 'function') applyFont(settings.font);
+          }
+          if (settings.my_parts) {
+            localStorage.setItem('shift_my_parts', JSON.stringify(settings.my_parts));
+          }
+        }
+
+        alert('🎉 기기 동기화가 완료되었습니다! 설정을 적용하기 위해 포털을 새로고침합니다.');
+        location.reload();
+
+      } catch (err) {
+        console.error('동기화 불러오기 실패:', err);
+        alert('불러오기 실패: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = originalText;
+        }
+      }
     }
-
-    // 1. 로컬스토리지에 동기화 키 저장
-    localStorage.setItem(storageKey, code);
-
-    // 2. 테마 및 글꼴 복원
-    if (data.settings) {
-      const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
-      if (settings.theme && typeof applyTheme === 'function') applyTheme(settings.theme);
-      if (settings.font && typeof applyFont === 'function') applyFont(settings.font);
-      localStorage.setItem('shift_theme', settings.theme || 'dark');
-      localStorage.setItem('shift_font', settings.font || 'pretendard');
-    }
-
-    alert('🎉 기기 동기화가 성공적으로 완료되었습니다!');
-    location.reload();
-
-  } catch (err) {
-    console.error('동기화 복원 오류:', err);
-    alert('동기화 실패: ' + err.message);
-  }
-}
 
     // 내 코드 복사 헬퍼
     function copyMySyncKey() {
