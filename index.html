@@ -1616,8 +1616,8 @@
 
     /* 5. 주간 콘티 및 세션 배정 관리 모달 */
     function openContiAdminModal() {
-      checkAdminAuth(() => {
-        setupContiAdminForm();
+      checkAdminAuth(async () => {
+        await setupContiAdminForm();
         document.getElementById('contiAdminModal').style.display = 'flex';
       });
     }
@@ -1643,7 +1643,7 @@
       }
     }
 
-    function setupContiAdminForm() {
+    async function setupContiAdminForm() {
       // 팀원 명단이 아직 로드되지 않았다면 먼저 로드
       if (!allMembersList || allMembersList.length === 0) {
         await loadMembersData();
