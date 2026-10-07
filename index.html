@@ -1301,15 +1301,23 @@
 
     function checkAdminAuth(onSuccessCallback) {
       if (isAdminAuthenticated()) {
-        if (typeof onSuccessCallback === 'function') onSuccessCallback();
+        if (typeof onSuccessCallback === 'function') {
+          Promise.resolve(onSuccessCallback()).catch(err => {
+            console.error('관리자 기능 실행 중 오류:', err);
+          });
+        }
         return;
       }
 
       const input = prompt('🔒 관리자 비밀번호를 입력해 주세요:');
-      if (input === null) return;
+      if (input === null) return; // 취소
 
       if (authenticateAdmin(input.trim())) {
-        if (typeof onSuccessCallback === 'function') onSuccessCallback();
+        if (typeof onSuccessCallback === 'function') {
+          Promise.resolve(onSuccessCallback()).catch(err => {
+            console.error('관리자 기능 실행 중 오류:', err);
+          });
+        }
       }
     }
 
@@ -1617,8 +1625,17 @@
     /* 5. 주간 콘티 및 세션 배정 관리 모달 */
     function openContiAdminModal() {
       checkAdminAuth(async () => {
-        await setupContiAdminForm();
-        document.getElementById('contiAdminModal').style.display = 'flex';
+        try {
+          await setupContiAdminForm();
+        } catch (e) {
+          console.warn('폼 초기화 중 경고(무시 후 계속 진행):', e);
+        }
+        const modal = document.getElementById('contiAdminModal');
+        if (modal) {
+          modal.style.display = 'flex';
+        } else {
+          console.error('contiAdminModal 요소를 찾을 수 없습니다.');
+        }
       });
     }
 
@@ -1644,45 +1661,59 @@
     }
 
     async function setupContiAdminForm() {
-      // 팀원 명단이 아직 로드되지 않았다면 먼저 로드
-      if (!allMembersList || allMembersList.length === 0) {
-        await loadMembersData();
+      // 1) 팀원 명단 불러오기 및 보컬 셀렉트 세팅
+      try {
+        if (typeof allMembersList === 'undefined' || allMembersList.length === 0) {
+          if (typeof loadMembersData === 'function') {
+            await loadMembersData();
+          }
+        }
+        if (typeof populateVocalSelectOptions === 'function') {
+          populateVocalSelectOptions();
+        }
+      } catch (err) {
+        console.warn('보컬 목록 세팅 중 건너뜀:', err);
       }
-      populateVocalSelectOptions();
 
-      const thisSundayStr = getThisSundayDateString();
+      // 안전한 값 세팅 헬퍼
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = (val !== null && val !== undefined) ? val : '';
+      };
+
+      const thisSundayStr = (typeof getThisSundayDateString === 'function') 
+        ? getThisSundayDateString() 
+        : new Date().toISOString().split('T')[0];
+
       const currentItem = currentScheduleData || {};
 
-      document.getElementById('adminContiDate').value = currentItem.date || thisSundayStr;
-      document.getElementById('adminContiTitle').value = currentItem.worship_title || '';
-      document.getElementById('adminClosingSong').value = currentItem.closing_song || '';
-      document.getElementById('adminYoutubeUrl').value = currentItem.youtube_url || '';
-      document.getElementById('adminSheetUrl').value = currentItem.sheet_url || '';
-      document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
+      setVal('adminContiDate', currentItem.date || thisSundayStr);
+      setVal('adminContiTitle', currentItem.worship_title || '');
+      setVal('adminClosingSong', currentItem.closing_song || '');
+      setVal('adminYoutubeUrl', currentItem.youtube_url || '');
+      setVal('adminSheetUrl', currentItem.sheet_url || '');
+      setVal('adminMonitoringUrl', currentItem.monitoring_url || '');
 
-      document.getElementById('adminLeader').value = currentItem.leader || '';
-      
-      // ★ 기존 보컬 텍스트("김철수, 이영희, 박민수")를 쪼개어 각각의 셀렉트에 매칭
+      setVal('adminLeader', currentItem.leader || '');
+
+      // 보컬 드롭다운 값 매칭 (드롭다운이 있을 때만 동작)
       const rawVocal = currentItem.vocal || '';
       const currentVocals = rawVocal.split(/[,/]+/).map(v => v.trim()).filter(Boolean);
       for (let i = 1; i <= 4; i++) {
-        const sel = document.getElementById(`adminVocalSelect${i}`);
-        if (sel) {
-          sel.value = currentVocals[i - 1] || '';
-        }
+        setVal(`adminVocalSelect${i}`, currentVocals[i - 1] || '');
       }
 
-      document.getElementById('adminKeyboard1').value = currentItem.keyboard1 || '';
-      document.getElementById('adminKeyboard2').value = currentItem.keyboard2 || '';
-      document.getElementById('adminDrum').value = currentItem.drum || '';
-      document.getElementById('adminGuitar').value = currentItem.guitar || '';
-      document.getElementById('adminBass').value = currentItem.bass || '';
-      document.getElementById('adminSound').value = currentItem.sound || '';
-      document.getElementById('adminBroadcast').value = currentItem.broadcast || '';
-      document.getElementById('adminSubtitle').value = currentItem.subtitle || '';
-      document.getElementById('adminVideo').value = currentItem.video || '';
+      setVal('adminKeyboard1', currentItem.keyboard1 || '');
+      setVal('adminKeyboard2', currentItem.keyboard2 || '');
+      setVal('adminDrum', currentItem.drum || '');
+      setVal('adminGuitar', currentItem.guitar || '');
+      setVal('adminBass', currentItem.bass || '');
+      setVal('adminSound', currentItem.sound || '');
+      setVal('adminBroadcast', currentItem.broadcast || '');
+      setVal('adminSubtitle', currentItem.subtitle || '');
+      setVal('adminVideo', currentItem.video || '');
 
-      // 곡 목록 파싱
+      // 콘티 곡 목록 생성
       const rawSongList = currentItem.song_list || '';
       let songs = [];
       if (rawSongList.trim()) {
@@ -1696,7 +1727,9 @@
       const countSelect = document.getElementById('adminSongCountSelect');
       if (countSelect) countSelect.value = String(songCount);
 
-      generateSongInputFields(songCount, songs);
+      if (typeof generateSongInputFields === 'function') {
+        generateSongInputFields(songCount, songs);
+      }
     }
 
     function parseAndFormatYoutubeInput(rawText) {
