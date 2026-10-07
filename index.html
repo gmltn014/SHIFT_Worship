@@ -1153,16 +1153,16 @@
       </div>
 
       <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; max-height: 55vh; margin-bottom: 14px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 800px; text-align: left;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 960px; text-align: left;">
           <thead style="background: var(--card-sub-bg); position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border-color);">
             <tr>
-              <th style="padding: 8px 10px; width: 110px;">주일 일자</th>
-              <th style="padding: 8px;">인도자</th>
-              <th style="padding: 8px;">보컬</th>
-              <th style="padding: 8px;">건반 (메인 / 세컨)</th>
-              <th style="padding: 8px;">드럼</th>
-              <th style="padding: 8px;">기타 / 베이스</th>
-              <th style="padding: 8px;">방송/엔지니어 (음향,중계,자막,영상)</th>
+              <th style="padding: 10px 8px; width: 110px; text-align: center;">주일 일자</th>
+              <th style="padding: 10px 8px; width: 95px; text-align: center;">인도자</th>
+              <th style="padding: 10px 8px; width: 220px; text-align: center;">보컬 (최대 4명)</th>
+              <th style="padding: 10px 8px; width: 130px; text-align: center;">건반 (메인 / 세컨)</th>
+              <th style="padding: 10px 8px; width: 90px; text-align: center;">드럼</th>
+              <th style="padding: 10px 8px; width: 130px; text-align: center;">기타 / 베이스</th>
+              <th style="padding: 10px 8px; text-align: center;">방송/엔지니어 (음향,중계,자막,영상)</th>
             </tr>
           </thead>
           <tbody id="monthLineupTableBody"></tbody>
@@ -1923,22 +1923,19 @@
       const tbody = document.getElementById('monthLineupTableBody');
       if (!tbody) return;
 
-      // 보컬 가능한 멤버 목록 가져오기
       const vocalMembers = typeof getVocalMemberList === 'function' ? getVocalMemberList() : [];
 
       tbody.innerHTML = currentMonthSundays.map(dateStr => {
         const item = currentMonthSchedulesMap[dateStr] || {};
         const isCanceled = /^x_/i.test((item.worship_title || '').trim());
 
-        // 기존 보컬 텍스트를 쪼개어 각 드롭다운의 기본값으로 매칭
         const rawVocals = (item.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
 
-        // 보컬 드롭다운 4개 생성 헬퍼
-        let vocalSelectsHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; min-width: 190px;">';
+        let vocalSelectsHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">';
         for (let i = 1; i <= 4; i++) {
           const selectedVal = rawVocals[i - 1] || '';
           vocalSelectsHtml += `
-            <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 5px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
               <option value="">(싱어 ${i})</option>
               ${vocalMembers.map(m => `
                 <option value="${m.name}" ${m.name === selectedVal ? 'selected' : ''}>${m.name}</option>
@@ -1950,33 +1947,39 @@
 
         return `
           <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
-            <td style="padding: 10px; font-weight: 700; vertical-align: top;">
+            <td style="padding: 10px 8px; font-weight: 700; vertical-align: top; text-align: center;">
               <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
-              ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700;">🚫 예배 없음</div>' : ''}
+              ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
             </td>
+            <!-- 인도자 (너비 확보 & 중앙 정렬) -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+              <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; min-width: 80px; padding: 6px 8px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
             </td>
+            <!-- 보컬 -->
             <td style="padding: 6px; vertical-align: top;">
               ${vocalSelectsHtml}
             </td>
+            <!-- 건반 -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="m_kb2_${dateStr}" value="${item.keyboard2 || ''}" placeholder="세컨건반" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px 6px; margin-bottom: 4px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_kb2_${dateStr}" value="${item.keyboard2 || ''}" placeholder="세컨건반" style="width: 100%; padding: 5px 6px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
             </td>
+            <!-- 드럼 (너비 확보 & 중앙 정렬) -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_drum_${dateStr}" value="${item.drum || ''}" placeholder="드럼" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+              <input type="text" id="m_drum_${dateStr}" value="${item.drum || ''}" placeholder="드럼" style="width: 100%; min-width: 75px; padding: 6px 8px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
             </td>
+            <!-- 기타 / 베이스 -->
             <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_guitar_${dateStr}" value="${item.guitar || ''}" placeholder="기타" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="m_bass_${dateStr}" value="${item.bass || ''}" placeholder="베이스" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_guitar_${dateStr}" value="${item.guitar || ''}" placeholder="기타" style="width: 100%; padding: 5px 6px; margin-bottom: 4px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_bass_${dateStr}" value="${item.bass || ''}" placeholder="베이스" style="width: 100%; padding: 5px 6px; text-align: center; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
             </td>
+            <!-- 방송 / 엔지니어 -->
             <td style="padding: 6px; vertical-align: top;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                <input type="text" id="m_sound_${dateStr}" value="${item.sound || ''}" placeholder="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_broadcast_${dateStr}" value="${item.broadcast || ''}" placeholder="방송" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_subtitle_${dateStr}" value="${item.subtitle || ''}" placeholder="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_video_${dateStr}" value="${item.video || ''}" placeholder="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_sound_${dateStr}" value="${item.sound || ''}" placeholder="음향" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_broadcast_${dateStr}" value="${item.broadcast || ''}" placeholder="방송" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_subtitle_${dateStr}" value="${item.subtitle || ''}" placeholder="자막" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_video_${dateStr}" value="${item.video || ''}" placeholder="영상" style="padding: 5px 4px; text-align: center; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
               </div>
             </td>
           </tr>
