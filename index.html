@@ -599,6 +599,16 @@
   border: 1px solid var(--border-color) !important;
   word-break: break-word !important;
 }
+
+    /* 공지사항 본문 내용이 화면 바깥으로 삐져나가지 않도록 자동 줄바꿈 강제 */
+#tab-notice,
+#noticeList,
+.notice-content,
+.card p,
+.card pre {
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+}
   </style>
 </head>
 <body>
