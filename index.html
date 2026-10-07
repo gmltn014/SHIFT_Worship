@@ -297,6 +297,7 @@
       font-family: monospace, -apple-system, sans-serif;
     }
 
+    /* 아카이브 카드 */
     .archive-item-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -336,7 +337,7 @@
     .archive-item-body.open {
       display: block;
     }
-    
+
     .members-history-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -357,6 +358,7 @@
       font-weight: 600;
     }
 
+    /* 공지사항 카드 */
     .notice-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -368,7 +370,6 @@
     .notice-card.pinned {
       border: 2px solid var(--accent-color);
     }
-    
     .notice-tag {
       display: inline-block;
       font-size: 0.75rem;
@@ -388,7 +389,7 @@
     .border-update { border-left: 4px solid #3b82f6 !important; }
     .border-ui { border-left: 4px solid #f59e0b !important; }
 
-    /* 명단 탭 카테고리 필터 버튼 */
+    /* 멤버 탭 및 카테고리 테마 색상 */
     .member-cat-btn {
       background-color: var(--card-sub-bg);
       color: var(--sub-text);
@@ -407,7 +408,26 @@
       border-color: var(--accent-color);
     }
 
-    /* 팀원 카드 스타일 */
+    .cat-worship { color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
+    .badge-worship { background-color: rgba(139, 92, 246, 0.15) !important; color: #8b5cf6 !important; }
+    .border-worship { border-left: 4px solid #8b5cf6 !important; }
+    .btn-worship.active { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; color: #fff !important; }
+
+    .cat-session { color: #f43f5e !important; border-color: #f43f5e !important; }
+    .badge-session { background-color: rgba(244, 63, 94, 0.15) !important; color: #f43f5e !important; }
+    .border-session { border-left: 4px solid #f43f5e !important; }
+    .btn-session.active { background-color: #f43f5e !important; border-color: #f43f5e !important; color: #fff !important; }
+
+    .cat-liveops { color: #f59e0b !important; border-color: #f59e0b !important; }
+    .badge-liveops { background-color: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; }
+    .border-liveops { border-left: 4px solid #f59e0b !important; }
+    .btn-liveops.active { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
+
+    .cat-postprod { color: #06b6d4 !important; border-color: #06b6d4 !important; }
+    .badge-postprod { background-color: rgba(6, 182, 212, 0.15) !important; color: #06b6d4 !important; }
+    .border-postprod { border-left: 4px solid #06b6d4 !important; }
+    .btn-postprod.active { background-color: #06b6d4 !important; border-color: #06b6d4 !important; color: #fff !important; }
+
     .member-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -465,40 +485,36 @@
       margin-top: 4px;
       transition: background 0.15s;
     }
-    .member-call-btn:hover {
-      background: var(--border-color);
+
+    /* 의견함 상태 및 코멘트 */
+    .status-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
     }
-    /* 파트별 테마 컬러 클래스 */
-    /* 1) Worship (보라) */
-    .cat-worship { color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
-    .badge-worship { background-color: rgba(139, 92, 246, 0.15) !important; color: #8b5cf6 !important; }
-    .border-worship { border-left: 4px solid #8b5cf6 !important; }
-    .btn-worship.active { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; color: #fff !important; }
+    .status-received { background-color: #fee2e2; color: #dc2626; }
+    .status-reviewing { background-color: #fef3c7; color: #d97706; }
+    .status-completed { background-color: #d1fae5; color: #047857; }
+    .status-hold { background-color: #e2e8f0; color: #475569; }
 
-    /* 2) Session (로즈/다홍) */
-    .cat-session { color: #f43f5e !important; border-color: #f43f5e !important; }
-    .badge-session { background-color: rgba(244, 63, 94, 0.15) !important; color: #f43f5e !important; }
-    .border-session { border-left: 4px solid #f43f5e !important; }
-    .btn-session.active { background-color: #f43f5e !important; border-color: #f43f5e !important; color: #fff !important; }
+    .admin-comment-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-color);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
 
-    /* 3) Live Ops (오렌지/앰버) */
-    .cat-liveops { color: #f59e0b !important; border-color: #f59e0b !important; }
-    .badge-liveops { background-color: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; }
-    .border-liveops { border-left: 4px solid #f59e0b !important; }
-    .btn-liveops.active { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
-
-    /* 4) Post Prod (청록/시안) */
-    .cat-postprod { color: #06b6d4 !important; border-color: #06b6d4 !important; }
-    .badge-postprod { background-color: rgba(6, 182, 212, 0.15) !important; color: #06b6d4 !important; }
-    .border-postprod { border-left: 4px solid #06b6d4 !important; }
-    .btn-postprod.active { background-color: #06b6d4 !important; border-color: #06b6d4 !important; color: #fff !important; }
-
-    /* 관리자 모달 스타일 */
+    /* 팝업 모달 공통 스타일 */
     .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 200;
+      position: fixed !important;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 9999 !important;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -509,37 +525,12 @@
       border: 1px solid var(--border-color);
       border-radius: 14px;
       width: 100%;
-      max-width: 550px;
+      max-width: 580px;
       max-height: 90vh;
       overflow-y: auto;
       padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-
-    /* 의견 처리 상태 태그 뱃지 */
-    .status-tag {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-    .status-received { background-color: #fee2e2; color: #dc2626; }   /* 접수됨: 연빨강 */
-    .status-reviewing { background-color: #fef3c7; color: #d97706; }  /* 검토중: 앰버/노랑 */
-    .status-completed { background-color: #d1fae5; color: #047857; }  /* 반영완료: 초록 */
-    .status-hold { background-color: #e2e8f0; color: #475569; }       /* 보류: 회색 */
-
-    /* 관리자 답변 박스 */
-    .admin-comment-box {
-      margin-top: 10px;
-      padding: 10px 12px;
-      background-color: var(--card-bg);
-      border-radius: 8px;
-      border-left: 3px solid var(--accent-color);
-      font-size: 0.88rem;
-      line-height: 1.5;
-    }
-    
   </style>
 </head>
 <body>
@@ -579,12 +570,11 @@
               <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
               <h2 class="worship-title" id="viewWorshipTitle">예배명을 불러옵니다</h2>
             </div>
-            <!-- 콘티 관리자 버튼 추가 -->
+            <!-- 콘티 관리 버튼 (인증 가드 포함) -->
             <button class="btn-action btn-secondary" onclick="openContiAdminModal()" style="font-size: 0.82rem; padding: 6px 12px; border-color: var(--accent-color); color: var(--accent-color); flex-shrink: 0;">
               ⚙️ 콘티 관리
             </button>
           </div>
-
 
           <div class="song-box">
             <h4>📋 찬양 콘티 곡 목록</h4>
@@ -754,8 +744,6 @@
 
     <!-- 4. 시프트 명단 탭 -->
     <section id="tab-members" class="tab-content">
-      
-      <!-- 상단 카테고리 필터 버튼 -->
       <div style="display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; padding-bottom: 8px; margin-bottom: 14px; -webkit-overflow-scrolling: touch;">
         <button class="member-cat-btn active" onclick="filterMembersCategory('ALL', this)">전체</button>
         <button class="member-cat-btn btn-worship" onclick="filterMembersCategory('Worship', this)">Worship (예배/보컬)</button>
@@ -764,7 +752,6 @@
         <button class="member-cat-btn btn-postprod" onclick="filterMembersCategory('Post Prod', this)">Post Prod (영상/미디어)</button>
       </div>
 
-      <!-- 멤버 검색창 & 인원수 표시 바 & 관리자 설정 버튼 -->
       <div class="card" style="padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
         <input type="text" id="memberSearchInput" placeholder="🔍 팀원 이름 또는 파트 검색..." oninput="handleMemberSearch()" style="flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
         
@@ -776,105 +763,12 @@
         </div>
       </div>
 
-      <!-- 로딩 표시 -->
       <div id="membersLoading" class="loading-spinner">명단을 불러오는 중입니다...</div>
-
-      <!-- 팀원 카드 그리드 컨테이너 -->
       <div id="membersGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
-
     </section>
 
-    <!-- 멤버 관리자 모달 (팝업) -->
-    <div id="memberAdminModal" class="modal-overlay" style="display: none;">
-      <div class="modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-          <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 팀원 명단 관리</h3>
-          <button onclick="closeMemberAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
-        </div>
-
-        <!-- 팀원 등록/수정 폼 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
-          <h4 id="memberFormTitle" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: 700;">➕ 새 팀원 등록</h4>
-          <input type="hidden" id="editMemberId" value="">
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">이름 (필수)</label>
-              <input type="text" id="formMemberName" placeholder="홍길동" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">대분류</label>
-              <select id="formMemberCategory" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                <option value="Worship">Worship</option>
-                <option value="Session">Session</option>
-                <option value="Live Ops">Live Ops</option>
-                <option value="Post Prod">Post Prod</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">주 파트</label>
-              <input type="text" id="formMemberMainPart" placeholder="예: Keyboard, Vocal" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">부 파트</label>
-              <input type="text" id="formMemberPartB" placeholder="예: Vocal (선택)" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">파트 태그 (공백/쉼표 구분)</label>
-              <input type="text" id="formMemberTag" placeholder="#메인건반 #보컬" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">활동 여부</label>
-              <select id="formMemberActive" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                <option value="활동 중">활동 중</option>
-                <option value="휴식">휴식</option>
-                <option value="군대">군대</option>
-                <option value="기타">기타</option>
-                <option value="탈퇴">탈퇴</option>
-              </select>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">연락처</label>
-            <input type="text" id="formMemberCall" placeholder="010-0000-0000" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; gap: 6px;">
-            <button type="button" class="btn-action btn-secondary" onclick="resetMemberForm()" style="font-size: 0.8rem; padding: 6px 12px;">초기화</button>
-            <button type="button" id="btnSaveMember" class="btn-action btn-primary" onclick="saveMemberData()" style="font-size: 0.8rem; padding: 6px 16px;">저장하기</button>
-          </div>
-        </div>
-
-        <!-- 전체 멤버 관리 테이블 (수정/삭제) -->
-        <h4 style="font-size: 0.95rem; margin-bottom: 8px; font-weight: 700;">📋 등록된 전체 팀원 목록</h4>
-        <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
-            <thead style="background: var(--card-sub-bg); position: sticky; top: 0; border-bottom: 1px solid var(--border-color);">
-              <tr>
-                <th style="padding: 8px;">이름</th>
-                <th style="padding: 8px;">분류</th>
-                <th style="padding: 8px;">파트</th>
-                <th style="padding: 8px;">상태</th>
-                <th style="padding: 8px; text-align: right;">관리</th>
-              </tr>
-            </thead>
-            <tbody id="memberAdminTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
     <!-- 5. 익명의견함 탭 -->
     <section id="tab-feedback" class="tab-content">
-      
-      <!-- 상단 안내 및 건의 작성 폼 카드 -->
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
           <div>
@@ -889,7 +783,6 @@
         </div>
 
         <form id="feedbackSubmitForm" onsubmit="handleFeedbackSubmit(event)">
-          <!-- 카테고리 선택 -->
           <div style="margin-bottom: 12px;">
             <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--sub-text); margin-bottom: 6px;">건의 분류</label>
             <select id="feedbackCategory" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.9rem;">
@@ -901,10 +794,9 @@
             </select>
           </div>
 
-          <!-- 건의 내용 입력창 -->
           <div style="margin-bottom: 14px;">
             <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--sub-text); margin-bottom: 6px;">의견 내용</label>
-            <textarea id="feedbackContent" rows="4" required placeholder="솔직하고 자유로운 의견을 남겨주세요. 비방보다는 팀을 세우는 따뜻한 제안을 부탁드립니다." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.92rem; line-height: 1.6; resize: vertical;"></textarea>
+            <textarea id="feedbackContent" rows="4" required placeholder="솔직하고 자유로운 의견을 남겨주세요." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.92rem; line-height: 1.6; resize: vertical;"></textarea>
           </div>
 
           <button type="submit" id="btnSubmitFeedback" class="btn-action btn-primary" style="width: 100%; justify-content: center; padding: 11px; font-size: 0.95rem;">
@@ -913,51 +805,37 @@
         </form>
       </div>
 
-      <!-- 2. 내가 남긴 의견 진행 상황 (내 기기에서만 보임) -->
       <div id="myFeedbackSection" class="card" style="display: none; background: var(--card-sub-bg);">
-        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px;">
           <span>🔍 내가 남긴 의견 처리 현황</span>
           <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(이 기기에서 작성한 글만 안전하게 조회됩니다)</span>
         </h4>
         <div id="myFeedbackList" style="display: flex; flex-direction: column; gap: 8px;"></div>
       </div>
 
-      <!-- 3. 반영 완료된 의견 공개 피드 -->
       <div style="margin-top: 28px;">
-        <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-          <span>🎉 반영 완료된 소중한 의견들</span>
-        </h4>
+        <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">🎉 반영 완료된 소중한 의견들</h4>
         <div id="completedFeedbackList" style="display: flex; flex-direction: column; gap: 12px;">
           <div class="loading-spinner">반영된 의견을 불러오는 중입니다...</div>
         </div>
       </div>
-
     </section>
 
-    <!-- 관리자용 의견함 관리 모달 -->
-    <div id="feedbackAdminModal" class="modal-overlay" style="display: none;">
-      <div class="modal-card" style="max-width: 650px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-          <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 익명의견함 관리 (관리자)</h3>
-          <button onclick="closeFeedbackAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
-        </div>
-
-        <div id="adminFeedbackList" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
-          <div class="loading-spinner">의견 목록을 불러오는 중입니다...</div>
-        </div>
+    <!-- 6. 놀이터 탭 -->
+    <section id="tab-playground" class="tab-content">
+      <div class="card">
+        <h2>🎮 SHIFT 놀이터</h2>
+        <p style="margin-top: 8px; color: var(--sub-text);">준비 중입니다.</p>
       </div>
-    </div>
-  
-    <section id="tab-playground" class="tab-content"><div class="card"><h2>🎮 SHIFT 놀이터</h2><p>준비 중입니다.</p></div></section>
+    </section>
+
     <!-- 7. 관리자 탭 -->
     <section id="tab-admin" class="tab-content">
-      
-      <!-- A. 로그인 전 화면 (비밀번호 입력 폼) -->
       <div id="adminLoginForm" class="card" style="max-width: 420px; margin: 40px auto; text-align: center; padding: 32px 24px;">
         <div style="font-size: 2.5rem; margin-bottom: 12px;">🔒</div>
         <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">SHIFT 포털 관리자 인증</h3>
         <p style="font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px;">
-          콘티 수정, 공지 작성 및 팀원 관리를 위해 관리자 비밀번호를 입력해 주세요.
+          콘티 수정, 세션 배정 및 팀원 관리를 위해 관리자 비밀번호를 입력해 주세요.
         </p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <input type="password" id="adminPasswordInput" placeholder="관리자 비밀번호 입력" onkeydown="if(event.key==='Enter') handleAdminLoginSubmit()" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.95rem; text-align: center;">
@@ -967,7 +845,6 @@
         </div>
       </div>
 
-      <!-- B. 로그인 후 관리자 대시보드 화면 -->
       <div id="adminDashboard" style="display: none;">
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
           <div>
@@ -979,20 +856,18 @@
           </button>
         </div>
 
-        <!-- 빠른 관리자 메뉴 그리드 -->
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
-          <div class="card" style="cursor: pointer; transition: transform 0.15s;" onclick="switchTab('members', document.querySelectorAll('.tab-btn')[3]); openMemberAdminModal();">
+          <div class="card" style="cursor: pointer;" onclick="switchTab('members', document.querySelectorAll('.tab-btn')[3]); openMemberAdminModal();">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">👥 팀원 명단 관리</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">팀원 추가, 파트 수정, 활동 상태 변경</p>
           </div>
-          <!-- 1. 예배 콘티 & 한 주 라인업 등록/수정 연결 -->
-          <div class="card" style="cursor: pointer; transition: transform 0.15s;" onclick="openContiAdminModal();">
+          
+          <div class="card" style="cursor: pointer;" onclick="openContiAdminModal();">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📅 예배 콘티 및 라인업 (주간)</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">이번 주 또는 특정 주차 콘티 및 세션 배정</p>
           </div>
 
-          <!-- 2. 한 달 라인업 일괄 관리 메뉴 추가 -->
-          <div class="card" style="cursor: pointer; transition: transform 0.15s;" onclick="openMonthLineupModal();">
+          <div class="card" style="cursor: pointer;" onclick="openMonthLineupModal();">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">🗓️ 월간 세션 라인업 일괄 관리</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">한 달 전체 일요일 세션 일괄 배정 및 수정</p>
           </div>
@@ -1003,157 +878,256 @@
           </div>
         </div>
       </div>
-
     </section>
-  </main>
+  </main> <!-- ★ main 닫힘 태그 -->
 
-  <!-- 이번 주 콘티 관리자 모달 -->
-    <div id="contiAdminModal" class="modal-overlay" style="display: none;">
-      <div class="modal-card" style="max-width: 580px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-          <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 이번 주 콘티 등록 및 수정</h3>
-          <button onclick="closeContiAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+  <!-- ===================================================
+       ★ 모달창 모음 (main 바깥, footer 위쪽에 안전하게 배치)
+  =================================================== -->
+
+  <!-- 1. 멤버 관리자 모달 -->
+  <div id="memberAdminModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 팀원 명단 관리</h3>
+        <button onclick="closeMemberAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+
+      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+        <h4 id="memberFormTitle" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: 700;">➕ 새 팀원 등록</h4>
+        <input type="hidden" id="editMemberId" value="">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">이름 (필수)</label>
+            <input type="text" id="formMemberName" placeholder="홍길동" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">대분류</label>
+            <select id="formMemberCategory" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <option value="Worship">Worship</option>
+              <option value="Session">Session</option>
+              <option value="Live Ops">Live Ops</option>
+              <option value="Post Prod">Post Prod</option>
+            </select>
+          </div>
         </div>
 
-        <form id="contiAdminForm" onsubmit="handleSaveConti(event)">
-          <!-- 예배 기본 정보 -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배 일자</label>
-              <input type="date" id="adminContiDate" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배명 (취소 시 'X_사유')</label>
-              <input type="text" id="adminContiTitle" placeholder="예: 주일 3부 청년예배" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
-            </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">주 파트</label>
+            <input type="text" id="formMemberMainPart" placeholder="예: Keyboard, Vocal" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
           </div>
-
-          <!-- 1. 콘티 곡 수 및 곡 목록 동적 입력기 -->
-          <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <label style="font-size: 0.88rem; font-weight: 700;">📋 찬양 콘티 곡 목록</label>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 0.78rem; color: var(--sub-text);">곡 수:</span>
-                <select id="adminSongCountSelect" onchange="generateSongInputFields(parseInt(this.value, 10))" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem; font-weight: 600;">
-                  <option value="1">1곡</option>
-                  <option value="2">2곡</option>
-                  <option value="3">3곡</option>
-                  <option value="4" selected>4곡</option>
-                  <option value="5">5곡</option>
-                  <option value="6">6곡</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- 동적으로 생성되는 곡 입력 필드들 -->
-            <div id="adminSongInputsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">부 파트</label>
+            <input type="text" id="formMemberPartB" placeholder="예: Vocal" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
           </div>
+        </div>
 
-          <!-- 결단 찬양 -->
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 결단 찬양 (곡명 및 코드)</label>
-            <input type="text" id="adminClosingSong" placeholder="예: 꽃들도 (G)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">파트 태그</label>
+            <input type="text" id="formMemberTag" placeholder="#메인건반 #보컬" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
           </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">활동 여부</label>
+            <select id="formMemberActive" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <option value="활동 중">활동 중</option>
+              <option value="휴식">휴식</option>
+              <option value="군대">군대</option>
+              <option value="기타">기타</option>
+              <option value="탈퇴">탈퇴</option>
+            </select>
+          </div>
+        </div>
 
-          <!-- 2. 유튜브 음원 링크 입력 (스마트 파싱 안내 포함) -->
-          <div style="margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">🎧 유튜브 음원 링크 (재생목록 / 영상 링크들)</label>
-              <button type="button" onclick="formatYoutubeInputHelper()" style="background: none; border: none; font-size: 0.75rem; color: var(--accent-color); cursor: pointer; text-decoration: underline;">
-                ⚡ 11자리 코드 자동 추출
-              </button>
-            </div>
-            <textarea id="adminYoutubeUrl" rows="2" placeholder="유튜브 영상 링크(여러 개 줄바꿈) 또는 재생목록 링크를 붙여넣으세요. 저장 시 11자리 코드로 자동 변환됩니다." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; font-family: monospace;"></textarea>
-          </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">연락처</label>
+          <input type="text" id="formMemberCall" placeholder="010-0000-0000" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+        </div>
 
-          <!-- 기타 링크들 (악보, 실황 등) -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📑 전체 악보 링크</label>
-              <input type="url" id="adminSheetUrl" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎥 실황 모니터링 링크</label>
-              <input type="url" id="adminMonitoringUrl" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-          </div>
+        <div style="display: flex; justify-content: flex-end; gap: 6px;">
+          <button type="button" class="btn-action btn-secondary" onclick="resetMemberForm()" style="font-size: 0.8rem; padding: 6px 12px;">초기화</button>
+          <button type="button" id="btnSaveMember" class="btn-action btn-primary" onclick="saveMemberData()" style="font-size: 0.8rem; padding: 6px 16px;">저장하기</button>
+        </div>
+      </div>
 
-          <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 14px;">
-            <button type="button" class="btn-action btn-secondary" onclick="closeContiAdminModal()" style="font-size: 0.85rem;">취소</button>
-            <button type="submit" id="btnSaveContiSubmit" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px;">저장하기</button>
-          </div>
-        </form>
+      <h4 style="font-size: 0.95rem; margin-bottom: 8px; font-weight: 700;">📋 등록된 전체 팀원 목록</h4>
+      <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
+          <thead style="background: var(--card-sub-bg); position: sticky; top: 0; border-bottom: 1px solid var(--border-color);">
+            <tr>
+              <th style="padding: 8px;">이름</th>
+              <th style="padding: 8px;">분류</th>
+              <th style="padding: 8px;">파트</th>
+              <th style="padding: 8px;">상태</th>
+              <th style="padding: 8px; text-align: right;">관리</th>
+            </tr>
+          </thead>
+          <tbody id="memberAdminTableBody"></tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-  <!-- 3. 해당 주차 세션 라인업 입력 (한 주 관리) -->
-          <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
-            <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
-              <span>👥 세션 라인업 배정</span>
-              <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(없을 경우 '-' 또는 비워둠)</span>
+  <!-- 2. 의견함 관리자 모달 -->
+  <div id="feedbackAdminModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 650px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 익명의견함 관리 (관리자)</h3>
+        <button onclick="closeFeedbackAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+      <div id="adminFeedbackList" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
+        <div class="loading-spinner">의견 목록을 불러오는 중입니다...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 이번 주 콘티 및 주간 라인업 관리 모달 -->
+  <div id="contiAdminModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 콘티 및 라인업 등록/수정</h3>
+        <button type="button" onclick="closeContiAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+      </div>
+
+      <form id="contiAdminForm" onsubmit="handleSaveConti(event)">
+        <!-- 예배 기본 정보 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배 일자</label>
+            <input type="date" id="adminContiDate" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배명 (취소 시 'X_사유')</label>
+            <input type="text" id="adminContiTitle" placeholder="예: 주일 3부 청년예배" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+          </div>
+        </div>
+
+        <!-- 콘티 곡 수 (최대 6곡) -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="font-size: 0.88rem; font-weight: 700;">📋 찬양 콘티 곡 목록</label>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.78rem; color: var(--sub-text);">곡 수:</span>
+              <select id="adminSongCountSelect" onchange="generateSongInputFields(parseInt(this.value, 10))" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem; font-weight: 600;">
+                <option value="1">1곡</option>
+                <option value="2">2곡</option>
+                <option value="3">3곡</option>
+                <option value="4" selected>4곡</option>
+                <option value="5">5곡</option>
+                <option value="6">6곡</option>
+              </select>
             </div>
+          </div>
+          <div id="adminSongInputsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">인도자</label>
-                <input type="text" id="adminLeader" placeholder="인도자 이름" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">보컬</label>
-                <input type="text" id="adminVocal" placeholder="예: 김보컬, 이보컬" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
+        <!-- 결단 찬양 -->
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 결단 찬양 (곡명 및 코드)</label>
+          <input type="text" id="adminClosingSong" placeholder="예: 꽃들도 (G)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+        </div>
+
+        <!-- 유튜브 음원 링크 -->
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">🎧 유튜브 음원 링크</label>
+            <button type="button" onclick="formatYoutubeInputHelper()" style="background: none; border: none; font-size: 0.75rem; color: var(--accent-color); cursor: pointer; text-decoration: underline;">
+              ⚡ 11자리 코드 자동 추출
+            </button>
+          </div>
+          <textarea id="adminYoutubeUrl" rows="2" placeholder="유튜브 영상 링크 또는 재생목록 링크를 입력하세요." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; font-family: monospace;"></textarea>
+        </div>
+
+        <!-- 악보 / 실황 링크 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📑 전체 악보 링크</label>
+            <input type="url" id="adminSheetUrl" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎥 실황 모니터링 링크</label>
+            <input type="url" id="adminMonitoringUrl" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <!-- 세션 라인업 배정 섹션 -->
+        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+          <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <span>👥 세션 라인업 배정</span>
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(없을 경우 '-' 또는 공란)</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">인도자</label>
+              <input type="text" id="adminLeader" placeholder="인도자 이름" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">메인 건반</label>
-                <input type="text" id="adminKeyboard1" placeholder="메인 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">세컨 건반</label>
-                <input type="text" id="adminKeyboard2" placeholder="세컨 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">드럼</label>
-                <input type="text" id="adminDrum" placeholder="드럼" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">기타</label>
-                <input type="text" id="adminGuitar" placeholder="기타" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">베이스</label>
-                <input type="text" id="adminBass" placeholder="베이스" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">음향</label>
-                <input type="text" id="adminSound" placeholder="음향 엔지니어" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">방송/중계</label>
-                <input type="text" id="adminBroadcast" placeholder="방송" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">자막</label>
-                <input type="text" id="adminSubtitle" placeholder="자막" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">영상편집</label>
-                <input type="text" id="adminVideo" placeholder="영상편집" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">보컬</label>
+              <input type="text" id="adminVocal" placeholder="예: 김보컬, 이보컬" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
           </div>
 
-    <!-- 한 달 라인업 일괄 관리 모달 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">메인 건반</label>
+              <input type="text" id="adminKeyboard1" placeholder="메인 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">세컨 건반</label>
+              <input type="text" id="adminKeyboard2" placeholder="세컨 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">드럼</label>
+              <input type="text" id="adminDrum" placeholder="드럼" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">기타</label>
+              <input type="text" id="adminGuitar" placeholder="기타" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">베이스</label>
+              <input type="text" id="adminBass" placeholder="베이스" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">음향</label>
+              <input type="text" id="adminSound" placeholder="음향" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">방송/중계</label>
+              <input type="text" id="adminBroadcast" placeholder="방송" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">자막</label>
+              <input type="text" id="adminSubtitle" placeholder="자막" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">영상편집</label>
+              <input type="text" id="adminVideo" placeholder="영상편집" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+          <button type="button" class="btn-action btn-secondary" onclick="closeContiAdminModal()" style="font-size: 0.85rem;">취소</button>
+          <button type="submit" id="btnSaveContiSubmit" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px;">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. 한 달 라인업 일괄 관리 모달 -->
   <div id="monthLineupModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 900px; width: 95%;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
@@ -1168,7 +1142,6 @@
         선택한 월의 모든 주일(일요일) 세션 배정을 한눈에 확인하고 일괄 수정할 수 있습니다.
       </div>
 
-      <!-- 월간 라인업 테이블 (가로 스크롤 가능) -->
       <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; max-height: 55vh; margin-bottom: 14px;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 800px; text-align: left;">
           <thead style="background: var(--card-sub-bg); position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border-color);">
@@ -1182,9 +1155,7 @@
               <th style="padding: 8px;">방송/엔지니어 (음향,중계,자막,영상)</th>
             </tr>
           </thead>
-          <tbody id="monthLineupTableBody">
-            <!-- 자바스크립트로 주차별 row 생성 -->
-          </tbody>
+          <tbody id="monthLineupTableBody"></tbody>
         </table>
       </div>
 
@@ -1195,16 +1166,17 @@
     </div>
   </div>
 
-  <!-- 하단 푸터 -->
+  <!-- 푸터 -->
   <footer class="site-footer">
     <p class="footer-title">SHIFT 찬양팀 웹 포털</p>
     <p class="footer-version">v2.0.0 (Supabase Engine)</p>
   </footer>
-  
+
+  <!-- ===================================================
+       자바스크립트 엔진
+  =================================================== -->
   <script>
-    /* ===================================================
-       0. 기본 테마 & 탭 전환 (최우선 선언: 절대 중단 방지)
-    =================================================== */
+    /* 0. 기본 테마 & 탭 전환 */
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('shift_theme', theme);
@@ -1232,7 +1204,6 @@
       if (target) target.classList.add('active');
       if (clickedBtn) clickedBtn.classList.add('active');
 
-      // 각 탭 전환 시 연동 로직
       if (tabId === 'archive' && typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length === 0) {
         loadAllArchiveData();
       }
@@ -1242,20 +1213,17 @@
       if (tabId === 'members' && typeof allMembersList !== 'undefined' && allMembersList.length === 0) {
         loadMembersData();
       }
-      if (tabId === 'admin') {
-        syncAdminUI(); // ★ 관리자 탭 전환 시 최신 인증 상태 반영
-      }
       if (tabId === 'feedback') {
         loadSuggestionBoxData();
       }
+      if (tabId === 'admin') {
+        syncAdminUI();
+      }
     }
 
-    // 초기 테마 즉시 적용
     applyTheme(localStorage.getItem('shift_theme') || 'light');
 
-    /* ===================================================
-       1. Supabase 연동 설정
-    =================================================== */
+    /* 1. Supabase 연동 설정 */
     const SUPABASE_URL = 'https://kglqxpusinxqttunkyld.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnbHF4cHVzaW54cXR0dW5reWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NDkzOTEsImV4cCI6MjEwNjMyNTM5MX0.BfGG15jXhFzOJGW0NonWDFgc2LBrK-zMCQYUuulrXSQ';
 
@@ -1268,9 +1236,74 @@
 
     let currentScheduleData = null;
 
-    /* ===================================================
-       2. 이번 주 일요일 계산 헬퍼 함수
-    =================================================== */
+    /* 2. 관리자 인증 가드 모듈 */
+    const ADMIN_PASSWORD_HASH = 'shift2026';
+    const SESSION_KEY = 'shift_admin_authenticated';
+
+    function isAdminAuthenticated() {
+      return sessionStorage.getItem(SESSION_KEY) === 'true';
+    }
+
+    function authenticateAdmin(inputPw) {
+      if (inputPw === ADMIN_PASSWORD_HASH) {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+        syncAdminUI();
+        return true;
+      } else {
+        alert('비밀번호가 올바르지 않습니다.');
+        return false;
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem(SESSION_KEY);
+      syncAdminUI();
+      alert('관리자 모드에서 로그아웃되었습니다.');
+    }
+
+    function syncAdminUI() {
+      const isAuth = isAdminAuthenticated();
+      const loginForm = document.getElementById('adminLoginForm');
+      const dashboard = document.getElementById('adminDashboard');
+      const pwInput = document.getElementById('adminPasswordInput');
+
+      if (loginForm && dashboard) {
+        if (isAuth) {
+          loginForm.style.display = 'none';
+          dashboard.style.display = 'block';
+          if (pwInput) pwInput.value = '';
+        } else {
+          loginForm.style.display = 'block';
+          dashboard.style.display = 'none';
+        }
+      }
+    }
+
+    function handleAdminLoginSubmit() {
+      const pwInput = document.getElementById('adminPasswordInput');
+      const val = pwInput ? pwInput.value.trim() : '';
+      if (!val) {
+        alert('비밀번호를 입력해 주세요.');
+        return;
+      }
+      authenticateAdmin(val);
+    }
+
+    function checkAdminAuth(onSuccessCallback) {
+      if (isAdminAuthenticated()) {
+        if (typeof onSuccessCallback === 'function') onSuccessCallback();
+        return;
+      }
+
+      const input = prompt('🔒 관리자 비밀번호를 입력해 주세요:');
+      if (input === null) return;
+
+      if (authenticateAdmin(input.trim())) {
+        if (typeof onSuccessCallback === 'function') onSuccessCallback();
+      }
+    }
+
+    /* 3. 이번 주 일요일 계산 */
     function getThisSundayDateString() {
       const now = new Date();
       const dayOfWeek = now.getDay();
@@ -1286,9 +1319,7 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    /* ===================================================
-       3. 이번 주 콘티 데이터 로드 로직
-    =================================================== */
+    /* 4. 이번 주 콘티 로드 & 렌더링 */
     async function loadCurrentConti() {
       const loadingEl = document.getElementById('contiLoading');
       const containerEl = document.getElementById('contiContainer');
@@ -1334,7 +1365,7 @@
             dateBadge.innerText = `${latestData[0].date} (최근 주차)`;
           }
         } else {
-          if (loadingEl) loadingEl.innerText = '등록된 예배 일정이 없습니다. Supabase에서 일정을 추가해 주세요.';
+          if (loadingEl) loadingEl.innerText = '등록된 예배 일정이 없습니다. 콘티 관리 버튼으로 일정을 추가해 주세요.';
         }
 
       } catch (err) {
@@ -1546,33 +1577,22 @@
       if (!urlOrText) return null;
       const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/;
       const match = urlOrText.match(regExp);
-      if (match && match[1]) {
-        return match[1];
-      }
+      if (match && match[1]) return match[1];
       const trimmed = urlOrText.trim();
-      if (/^[\w-]{11}$/.test(trimmed)) {
-        return trimmed;
-      }
+      if (/^[\w-]{11}$/.test(trimmed)) return trimmed;
       return null;
     }
 
     function buildYoutubePlaylistUrl(rawInput) {
       if (!rawInput || rawInput.trim() === '') return '';
-
       const trimmed = rawInput.trim();
-
-      if (trimmed.includes('list=PL') || trimmed.includes('list=OLAK5uy_')) {
-        return trimmed;
-      }
+      if (trimmed.includes('list=')) return trimmed;
 
       const tokens = trimmed.split(/[\r\n,\s]+/);
       const videoIds = [];
-
       tokens.forEach(token => {
         const id = extractYoutubeVideoId(token);
-        if (id && !videoIds.includes(id)) {
-          videoIds.push(id);
-        }
+        if (id && !videoIds.includes(id)) videoIds.push(id);
       });
 
       if (videoIds.length > 1) {
@@ -1581,15 +1601,10 @@
       if (videoIds.length === 1) {
         return `https://www.youtube.com/watch?v=${videoIds[0]}`;
       }
-
       return trimmed;
     }
 
-        /* ===================================================
-       이번 주 콘티 관리 모듈 (관리자 기능)
-    =================================================== */
-    
-    // 모달 열기 (관리자 인증 체크 연동)
+    /* 5. 주간 콘티 및 세션 배정 관리 모달 */
     function openContiAdminModal() {
       checkAdminAuth(() => {
         setupContiAdminForm();
@@ -1601,7 +1616,6 @@
       document.getElementById('contiAdminModal').style.display = 'none';
     }
 
-    // 곡 수에 맞춘 동적 input 필드 생성
     function generateSongInputFields(count, initialSongs = []) {
       const container = document.getElementById('adminSongInputsContainer');
       if (!container) return;
@@ -1619,7 +1633,6 @@
       }
     }
 
-    // 기존 데이터로 폼 채우기
     function setupContiAdminForm() {
       const thisSundayStr = getThisSundayDateString();
       const currentItem = currentScheduleData || {};
@@ -1631,7 +1644,6 @@
       document.getElementById('adminSheetUrl').value = currentItem.sheet_url || '';
       document.getElementById('adminMonitoringUrl').value = currentItem.monitoring_url || '';
 
-      // 세션 라인업 채우기
       document.getElementById('adminLeader').value = currentItem.leader || '';
       document.getElementById('adminVocal').value = currentItem.vocal || '';
       document.getElementById('adminKeyboard1').value = currentItem.keyboard1 || '';
@@ -1644,7 +1656,6 @@
       document.getElementById('adminSubtitle').value = currentItem.subtitle || '';
       document.getElementById('adminVideo').value = currentItem.video || '';
 
-      // 곡 목록 파싱 (최대 6곡)
       const rawSongList = currentItem.song_list || '';
       let songs = [];
       if (rawSongList.trim()) {
@@ -1661,45 +1672,29 @@
       generateSongInputFields(songCount, songs);
     }
 
-    // 유튜브 스마트 파싱 로직: 11자리 코드 추출 또는 비공개/재생목록 보존
     function parseAndFormatYoutubeInput(rawText) {
       if (!rawText || !rawText.trim()) return '';
       const trimmed = rawText.trim();
+      if (trimmed.includes('list=')) return trimmed;
 
-      // 만약 비공개/공개 재생목록 링크(list=...) 형태라면 링크 그대로 유지
-      if (trimmed.includes('list=')) {
-        return trimmed;
-      }
-
-      // 영상 링크나 텍스트에서 11자리 ID들 전부 추출
       const tokens = trimmed.split(/[\r\n,\s]+/);
       const videoIds = [];
-
       tokens.forEach(token => {
         const id = extractYoutubeVideoId(token);
-        if (id && !videoIds.includes(id)) {
-          videoIds.push(id);
-        }
+        if (id && !videoIds.includes(id)) videoIds.push(id);
       });
 
-      // 추출된 11자리 코드들을 "ID1, ID2, ID3" 형태로 결합
-      if (videoIds.length > 0) {
-        return videoIds.join(', ');
-      }
-
+      if (videoIds.length > 0) return videoIds.join(', ');
       return trimmed;
     }
 
-    // UI에서 추출 버튼 눌렀을 때 텍스트창 즉시 변환 도우미
     function formatYoutubeInputHelper() {
       const textarea = document.getElementById('adminYoutubeUrl');
       if (!textarea) return;
-      const formatted = parseAndFormatYoutubeInput(textarea.value);
-      textarea.value = formatted;
-      alert('유튜브 영상 코드가 추출 및 정리되었습니다!');
+      textarea.value = parseAndFormatYoutubeInput(textarea.value);
+      alert('유튜브 영상 코드가 11자리로 정리되었습니다!');
     }
 
-    // 폼 저장 (INSERT or UPDATE)
     async function handleSaveConti(e) {
       e.preventDefault();
 
@@ -1711,18 +1706,13 @@
       const monitoring_url = document.getElementById('adminMonitoringUrl').value.trim();
       const submitBtn = document.getElementById('btnSaveContiSubmit');
 
-      // 1. 각 곡 입력창들의 값을 모아 "1. 곡명\n2. 곡명..." 양식으로 조합
       const songInputs = document.querySelectorAll('.admin-song-input');
       const songLines = [];
       songInputs.forEach((input, idx) => {
         const val = input.value.trim();
-        if (val) {
-          songLines.push(`${idx + 1}. ${val}`);
-        }
+        if (val) songLines.push(`${idx + 1}. ${val}`);
       });
       const song_list = songLines.join('\n');
-
-      // 2. 유튜브 링크 스마트 파싱 적용
       const youtube_url = parseAndFormatYoutubeInput(rawYoutube);
 
       const payload = {
@@ -1734,7 +1724,6 @@
         sheet_url: sheet_url || null,
         monitoring_url: monitoring_url || null,
 
-        // 세션 라인업 필드
         leader: document.getElementById('adminLeader').value.trim() || null,
         vocal: document.getElementById('adminVocal').value.trim() || null,
         keyboard1: document.getElementById('adminKeyboard1').value.trim() || null,
@@ -1752,7 +1741,6 @@
       submitBtn.innerText = '저장 중...';
 
       try {
-        // 해당 date의 스케줄이 이미 있는지 확인
         const { data: existing, error: checkError } = await supabaseClient
           .from('schedules')
           .select('id')
@@ -1762,30 +1750,25 @@
         if (checkError) throw checkError;
 
         if (existing && existing.id) {
-          // 기존 데이터 UPDATE
           const { error: updateError } = await supabaseClient
             .from('schedules')
             .update(payload)
             .eq('id', existing.id);
           if (updateError) throw updateError;
-          alert('이번 주 콘티 정보가 성공적으로 수정되었습니다! ✨');
+          alert('콘티 및 라인업이 성공적으로 수정되었습니다! ✨');
         } else {
-          // 신규 데이터 INSERT
           const { error: insertError } = await supabaseClient
             .from('schedules')
             .insert([payload]);
           if (insertError) throw insertError;
-          alert('새로운 주차의 콘티가 성공적으로 등록되었습니다! ✨');
+          alert('새로운 주차의 콘티 및 라인업이 등록되었습니다! ✨');
         }
 
         closeContiAdminModal();
-
-        // 메인 콘티 화면 및 아카이브 데이터 갱신
         await loadCurrentConti();
         if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
           await loadAllArchiveData();
         }
-
       } catch (err) {
         console.error('콘티 저장 오류:', err);
         alert('저장에 실패했습니다: ' + err.message);
@@ -1795,9 +1778,173 @@
       }
     }
 
-    /* ===================================================
-       4. 아카이브 상태 관리 및 렌더링
-    =================================================== */
+    /* 6. 월간 세션 라인업 일괄 관리 모듈 */
+    let currentMonthSundays = [];
+    let currentMonthSchedulesMap = {};
+
+    function openMonthLineupModal() {
+      checkAdminAuth(() => {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const defaultMonth = `${yyyy}-${mm}`;
+
+        const picker = document.getElementById('monthLineupPicker');
+        if (picker) picker.value = defaultMonth;
+
+        loadMonthLineupData(defaultMonth);
+        document.getElementById('monthLineupModal').style.display = 'flex';
+      });
+    }
+
+    function closeMonthLineupModal() {
+      document.getElementById('monthLineupModal').style.display = 'none';
+    }
+
+    function getAllSundaysInMonth(year, month) {
+      const sundays = [];
+      const date = new Date(year, month - 1, 1);
+      while (date.getMonth() === month - 1) {
+        if (date.getDay() === 0) {
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const d = String(date.getDate()).padStart(2, '0');
+          sundays.push(`${y}-${m}-${d}`);
+        }
+        date.setDate(date.getDate() + 1);
+      }
+      return sundays;
+    }
+
+    async function loadMonthLineupData(yearMonthStr) {
+      if (!yearMonthStr) return;
+      const [y, m] = yearMonthStr.split('-').map(Number);
+      currentMonthSundays = getAllSundaysInMonth(y, m);
+
+      const tbody = document.getElementById('monthLineupTableBody');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('schedules')
+          .select('*')
+          .like('date', `${yearMonthStr}%`);
+
+        if (error) throw error;
+
+        currentMonthSchedulesMap = {};
+        (data || []).forEach(row => {
+          currentMonthSchedulesMap[row.date] = row;
+        });
+
+        renderMonthLineupTable();
+      } catch (err) {
+        console.error('월간 라인업 로드 오류:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 20px;">오류: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderMonthLineupTable() {
+      const tbody = document.getElementById('monthLineupTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = currentMonthSundays.map(dateStr => {
+        const item = currentMonthSchedulesMap[dateStr] || {};
+        const isCanceled = /^x_/i.test((item.worship_title || '').trim());
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
+            <td style="padding: 10px; font-weight: 700; vertical-align: top;">
+              <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
+              ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700;">🚫 예배 없음</div>' : ''}
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <textarea id="m_vocal_${dateStr}" rows="2" placeholder="보컬" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; resize: none;">${item.vocal || ''}</textarea>
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_kb2_${dateStr}" value="${item.keyboard2 || ''}" placeholder="세컨건반" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_drum_${dateStr}" value="${item.drum || ''}" placeholder="드럼" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <input type="text" id="m_guitar_${dateStr}" value="${item.guitar || ''}" placeholder="기타" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="m_bass_${dateStr}" value="${item.bass || ''}" placeholder="베이스" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            </td>
+            <td style="padding: 6px; vertical-align: top;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                <input type="text" id="m_sound_${dateStr}" value="${item.sound || ''}" placeholder="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_broadcast_${dateStr}" value="${item.broadcast || ''}" placeholder="방송" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_subtitle_${dateStr}" value="${item.subtitle || ''}" placeholder="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                <input type="text" id="m_video_${dateStr}" value="${item.video || ''}" placeholder="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function saveAllMonthLineup() {
+      const saveBtn = document.getElementById('btnSaveMonthLineup');
+      saveBtn.disabled = true;
+      saveBtn.innerText = '저장 중...';
+
+      try {
+        for (const dateStr of currentMonthSundays) {
+          const leader = document.getElementById(`m_leader_${dateStr}`)?.value.trim() || null;
+          const vocal = document.getElementById(`m_vocal_${dateStr}`)?.value.trim() || null;
+          const keyboard1 = document.getElementById(`m_kb1_${dateStr}`)?.value.trim() || null;
+          const keyboard2 = document.getElementById(`m_kb2_${dateStr}`)?.value.trim() || null;
+          const drum = document.getElementById(`m_drum_${dateStr}`)?.value.trim() || null;
+          const guitar = document.getElementById(`m_guitar_${dateStr}`)?.value.trim() || null;
+          const bass = document.getElementById(`m_bass_${dateStr}`)?.value.trim() || null;
+          const sound = document.getElementById(`m_sound_${dateStr}`)?.value.trim() || null;
+          const broadcast = document.getElementById(`m_broadcast_${dateStr}`)?.value.trim() || null;
+          const subtitle = document.getElementById(`m_subtitle_${dateStr}`)?.value.trim() || null;
+          const video = document.getElementById(`m_video_${dateStr}`)?.value.trim() || null;
+
+          const existing = currentMonthSchedulesMap[dateStr];
+          const lineupData = {
+            date: dateStr,
+            leader, vocal, keyboard1, keyboard2,
+            drum, guitar, bass, sound, broadcast, subtitle, video
+          };
+
+          if (existing && existing.id) {
+            const { error: updateErr } = await supabaseClient
+              .from('schedules')
+              .update(lineupData)
+              .eq('id', existing.id);
+            if (updateErr) throw updateErr;
+          } else {
+            lineupData.worship_title = `${dateStr} 주일예배`;
+            const { error: insertErr } = await supabaseClient
+              .from('schedules')
+              .insert([lineupData]);
+            if (insertErr) throw insertErr;
+          }
+        }
+
+        alert('한 달 라인업이 일괄 저장되었습니다! 🎉');
+        closeMonthLineupModal();
+        await loadCurrentConti();
+        if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
+          await loadAllArchiveData();
+        }
+      } catch (err) {
+        console.error('월간 라인업 저장 오류:', err);
+        alert('저장 중 오류: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = '한 달 라인업 일괄 저장';
+      }
+    }
+
+    /* 7. 아카이브 모듈 */
     let allScheduleArchive = [];
     let archiveCurrentYear = new Date().getFullYear();
     let archiveCurrentMonth = new Date().getMonth() + 1;
@@ -1831,7 +1978,7 @@
         renderArchive();
       } catch (err) {
         console.error('아카이브 로드 실패:', err);
-        if (loadingEl) loadingEl.innerText = '데이터를 불러오지 못했습니다: ' + err.message;
+        if (loadingEl) loadingEl.innerText = '데이터 로드 실패: ' + err.message;
       }
     }
 
@@ -1920,26 +2067,12 @@
       const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
 
       return allScheduleArchive.filter(item => {
-        if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
-          return false;
-        }
-
-        if (selectedLeader && (item.leader || '').trim() !== selectedLeader) {
-          return false;
-        }
+        if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) return false;
+        if (selectedLeader && (item.leader || '').trim() !== selectedLeader) return false;
 
         if (keyword) {
-          const targets = [
-            item.date,
-            item.worship_title,
-            item.song_list,
-            item.leader
-          ];
-
-          if (includeClosing && item.closing_song) {
-            targets.push(item.closing_song);
-          }
-
+          const targets = [item.date, item.worship_title, item.song_list, item.leader];
+          if (includeClosing && item.closing_song) targets.push(item.closing_song);
           if (currentArchiveSubTab === 'members') {
             targets.push(
               item.vocal, item.keyboard1, item.keyboard2,
@@ -1947,11 +2080,9 @@
               item.sound, item.broadcast, item.subtitle, item.video
             );
           }
-
           const matchText = targets.filter(Boolean).join(' ').toLowerCase();
           if (!matchText.includes(keyword)) return false;
         }
-
         return true;
       });
     }
@@ -2016,7 +2147,7 @@
 
                 <div class="action-btn-group" style="margin-top: 12px; gap: 6px;">
                   ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
-                  ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원(연속재생)</a>` : ''}
+                  ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원</a>` : ''}
                   ${item.closing_sheet_url ? `<a href="${item.closing_sheet_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">📄 결단악보</a>` : ''}
                   ${item.closing_youtube_url ? `<a href="${item.closing_youtube_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">▶️ 결단영상</a>` : ''}
                   ${item.monitoring_url ? `<a href="${item.monitoring_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎥 실황</a>` : ''}
@@ -2032,15 +2163,8 @@
       const body = document.getElementById(`acc-body-${idx}`);
       const btn = document.getElementById(`acc-btn-${idx}`);
       if (!body || !btn) return;
-
-      const isOpen = body.classList.contains('open');
-      if (isOpen) {
-        body.classList.remove('open');
-        btn.classList.remove('open');
-      } else {
-        body.classList.add('open');
-        btn.classList.add('open');
-      }
+      body.classList.toggle('open');
+      btn.classList.toggle('open');
     }
 
     function renderMembersArchive(list) {
@@ -2080,7 +2204,6 @@
               <span class="worship-date-badge">${item.date}</span>
               <strong style="font-size: 1rem; margin-left: 6px;">${rawTitle || item.date + ' 라인업'}</strong>
             </div>
-            
             <div class="members-history-grid">
               <div class="members-history-item" style="grid-column: 1 / -1; background: var(--card-sub-bg);">
                 <span>인도자 / 보컬</span>
@@ -2125,9 +2248,7 @@
       leaderSelect.value = currentVal;
     }
 
-    /* ===================================================
-       5. 공지사항 & 업데이트 노트 관리
-    =================================================== */
+    /* 8. 공지사항 모듈 */
     let allNotices = [];
     let currentNoticeSubTab = 'main';
 
@@ -2148,7 +2269,7 @@
         renderNotices();
       } catch (err) {
         console.error('공지사항 로드 오류:', err);
-        if (loadingEl) loadingEl.innerText = '공지사항을 불러오지 못했습니다: ' + err.message;
+        if (loadingEl) loadingEl.innerText = '공지사항 로드 실패: ' + err.message;
       }
     }
 
@@ -2157,11 +2278,8 @@
         const title = item.title || '';
         const match = title.match(/v\d+\.\d+(\.\d+)?/i);
         if (match) {
-          const detectedVersion = match[0];
           const footerVer = document.querySelector('.footer-version');
-          if (footerVer) {
-            footerVer.innerText = `${detectedVersion} (Supabase Engine)`;
-          }
+          if (footerVer) footerVer.innerText = `${match[0]} (Supabase Engine)`;
           break;
         }
       }
@@ -2173,7 +2291,6 @@
       let tagClass = 'tag-general';
       let borderClass = '';
 
-      // 1) 태그 유형 판단
       if (/\[공지\]|공지/i.test(raw)) {
         tag = '공지';
         tagClass = 'tag-notice';
@@ -2192,15 +2309,12 @@
         borderClass = 'border-update';
       }
 
-      // 2) 앞부분의 [공지], [일정], [업데이트], [UI 개선] 등 모든 대괄호 태그 깔끔히 제거
       const cleanTitle = raw.replace(/^\[[^\]]+\]\s*/, '').trim();
-
       return { tag, tagClass, borderClass, cleanTitle };
     }
 
     function formatNoticeDate(isoString) {
-      if (!isoString) return '';
-      return isoString.split('T')[0];
+      return isoString ? isoString.split('T')[0] : '';
     }
 
     function switchNoticeSubTab(subTab) {
@@ -2273,7 +2387,7 @@
         `;
       }).join('');
     }
-    
+
     function renderUpdateNotices() {
       const container = document.getElementById('updateNoticeList');
       if (!container) return;
@@ -2335,31 +2449,21 @@
       const body = document.getElementById(`update-acc-body-${idx}`);
       const btn = document.getElementById(`update-acc-btn-${idx}`);
       if (!body || !btn) return;
-
-      const isOpen = body.classList.contains('open');
-      if (isOpen) {
-        body.classList.remove('open');
-        btn.classList.remove('open');
-      } else {
-        body.classList.add('open');
-        btn.classList.add('open');
-      }
+      body.classList.toggle('open');
+      btn.classList.toggle('open');
     }
 
-    /* ===================================================
-       시프트 명단 관리
-    =================================================== */
+    /* 9. 멤버 모듈 */
     let allMembersList = [];
     let selectedMemberCategory = 'ALL';
 
-    /* Supabase에서 멤버 목록 불러오기 */
     async function loadMembersData() {
       const loadingEl = document.getElementById('membersLoading');
       try {
         const { data, error } = await supabaseClient
           .from('members')
           .select('*')
-          .order('name', { ascending: true }); // 이름순 정렬
+          .order('name', { ascending: true });
 
         if (error) throw error;
 
@@ -2369,11 +2473,10 @@
         renderMembers();
       } catch (err) {
         console.error('명단 로드 실패:', err);
-        if (loadingEl) loadingEl.innerText = '명단을 불러오지 못했습니다: ' + err.message;
+        if (loadingEl) loadingEl.innerText = '명단 로드 실패: ' + err.message;
       }
     }
 
-    /* 카테고리 필터 클릭 */
     function filterMembersCategory(category, btn) {
       selectedMemberCategory = category;
       document.querySelectorAll('.member-cat-btn').forEach(b => b.classList.remove('active'));
@@ -2381,27 +2484,22 @@
       renderMembers();
     }
 
-    /* 검색창 실시간 반응 */
     function handleMemberSearch() {
       renderMembers();
     }
 
-    /* 필터링된 멤버 데이터 가져오기 ('활동 중'인 멤버만) */
     function getFilteredMembers() {
       const keyword = (document.getElementById('memberSearchInput')?.value || '').trim().toLowerCase();
 
       return allMembersList.filter(item => {
-        // 1) 기본 규칙: '활동 중'인 인원만 표시 (공백 제거 후 비교)
         const activeStatus = (item.active || '').trim();
         if (activeStatus !== '활동 중') return false;
 
-        // 2) 카테고리 필터 (Worship, Session, Live Ops, Post Prod)
         if (selectedMemberCategory !== 'ALL') {
           const itemCat = (item.main_category || '').trim().toLowerCase();
           if (itemCat !== selectedMemberCategory.toLowerCase()) return false;
         }
 
-        // 3) 검색어 필터 (이름, 주파트, 부파트, 파트태그)
         if (keyword) {
           const searchSource = [
             item.name,
@@ -2418,7 +2516,6 @@
       });
     }
 
-    /* 멤버 카드 렌더링 */
     function renderMembers() {
       const grid = document.getElementById('membersGrid');
       const countBadge = document.getElementById('memberCountBadge');
@@ -2433,7 +2530,6 @@
       }
 
       grid.innerHTML = filtered.map(item => {
-        // 1) 대분류별 테마 클래스 매핑
         const rawCat = (item.main_category || '').trim().toLowerCase();
         let catColorClass = 'cat-worship';
         let badgeColorClass = 'badge-worship';
@@ -2453,7 +2549,6 @@
           borderColorClass = 'border-postprod';
         }
 
-        // 2) 태그 분리 생성
         let tagsHtml = '';
         if (item.part_tag && item.part_tag.trim() !== '') {
           tagsHtml = item.part_tag.split(/[,\s]+/).map(t => {
@@ -2465,7 +2560,6 @@
           if (item.part_b) tagsHtml += `<span class="member-tag-pill">#${item.part_b}</span>`;
         }
 
-        // 3) 전화번호 버튼 (있을 때만 표시)
         const callNum = (item.call || '').trim();
         const callButtonHtml = callNum ? `
           <a href="tel:${callNum}" class="member-call-btn">
@@ -2494,11 +2588,7 @@
       }).join('');
     }
 
-    /* ===================================================
-       멤버 관리자 설정 (추가, 수정, 삭제)
-    =================================================== */
     function openMemberAdminModal() {
-      // 관리자 권한 확인 (미인증 시 비번 입력 팝업 -> 맞으면 바로 열림)
       checkAdminAuth(() => {
         resetMemberForm();
         renderMemberAdminTable();
@@ -2525,7 +2615,6 @@
       document.getElementById('btnSaveMember').innerText = '저장하기';
     }
 
-    /* 관리자 테이블 렌더링 */
     function renderMemberAdminTable() {
       const tbody = document.getElementById('memberAdminTableBody');
       if (!tbody) return;
@@ -2549,7 +2638,6 @@
       `).join('');
     }
 
-    /* 수정 버튼 클릭 시 폼에 기존 정보 채우기 */
     function editMemberSetup(memberId) {
       const member = allMembersList.find(m => m.member_id === memberId);
       if (!member) return;
@@ -2565,10 +2653,9 @@
 
       document.getElementById('memberFormTitle').innerText = `✏️ 팀원 정보 수정 (${member.name})`;
       document.getElementById('btnSaveMember').innerText = '수정 완료';
-      document.querySelector('.modal-card').scrollTop = 0;
+      document.querySelector('#memberAdminModal .modal-card').scrollTop = 0;
     }
 
-    /* Supabase 저장 (신규 등록 및 업데이트) */
     async function saveMemberData() {
       const memberId = document.getElementById('editMemberId').value;
       const name = document.getElementById('formMemberName').value.trim();
@@ -2596,7 +2683,6 @@
 
       try {
         if (memberId) {
-          // [수정: UPDATE]
           const { error } = await supabaseClient
             .from('members')
             .update(payload)
@@ -2604,7 +2690,6 @@
           if (error) throw error;
           alert(`'${name}' 팀원 정보가 수정되었습니다.`);
         } else {
-          // [추가: INSERT]
           const { error } = await supabaseClient
             .from('members')
             .insert([payload]);
@@ -2612,7 +2697,6 @@
           alert(`'${name}' 팀원이 새로 등록되었습니다.`);
         }
 
-        // 데이터 재로드 후 UI 갱신
         await loadMembersData();
         renderMemberAdminTable();
         resetMemberForm();
@@ -2622,11 +2706,8 @@
       }
     }
 
-    /* Supabase 삭제 (DELETE) */
     async function deleteMemberData(memberId, memberName) {
-      if (!confirm(`정말로 '${memberName}' 팀원을 명단에서 삭제하시겠습니까?`)) {
-        return;
-      }
+      if (!confirm(`정말로 '${memberName}' 팀원을 명단에서 삭제하시겠습니까?`)) return;
 
       try {
         const { error } = await supabaseClient
@@ -2646,91 +2727,10 @@
       }
     }
 
-    /* ===================================================
-       관리자 공통 인증 모듈 (비밀번호: shift2026, 세션 보존)
-    =================================================== */
-    const ADMIN_PASSWORD_HASH = 'shift2026';
-    const SESSION_KEY = 'shift_admin_authenticated';
-
-    // 현재 관리자 로그인 상태인지 확인
-    function isAdminAuthenticated() {
-      return sessionStorage.getItem(SESSION_KEY) === 'true';
-    }
-
-    // 관리자 로그인 처리
-    function authenticateAdmin(inputPw) {
-      if (inputPw === ADMIN_PASSWORD_HASH) {
-        sessionStorage.setItem(SESSION_KEY, 'true');
-        syncAdminUI();
-        return true;
-      } else {
-        alert('비밀번호가 올바르지 않습니다.');
-        return false;
-      }
-    }
-
-    // 관리자 로그아웃 처리
-    function adminLogout() {
-      sessionStorage.removeItem(SESSION_KEY);
-      syncAdminUI();
-      alert('관리자 모드에서 로그아웃되었습니다.');
-    }
-
-    // 관리자 탭 UI 동기화 (로그인 폼 vs 대시보드)
-    function syncAdminUI() {
-      const isAuth = isAdminAuthenticated();
-      const loginForm = document.getElementById('adminLoginForm');
-      const dashboard = document.getElementById('adminDashboard');
-      const pwInput = document.getElementById('adminPasswordInput');
-
-      if (loginForm && dashboard) {
-        if (isAuth) {
-          loginForm.style.display = 'none';
-          dashboard.style.display = 'block';
-          if (pwInput) pwInput.value = '';
-        } else {
-          loginForm.style.display = 'block';
-          dashboard.style.display = 'none';
-        }
-      }
-    }
-
-    // 관리자 탭에서 로그인 버튼 누를 때
-    function handleAdminLoginSubmit() {
-      const pwInput = document.getElementById('adminPasswordInput');
-      const val = pwInput ? pwInput.value.trim() : '';
-      if (!val) {
-        alert('비밀번호를 입력해 주세요.');
-        return;
-      }
-      if (authenticateAdmin(val)) {
-        // 성공 시 대시보드 자동 노출
-      }
-    }
-
-    /* 다른 탭에서 관리자 기능을 열 때 사용하는 공통 권한 가드 함수 */
-    function checkAdminAuth(onSuccessCallback) {
-      if (isAdminAuthenticated()) {
-        if (typeof onSuccessCallback === 'function') onSuccessCallback();
-        return;
-      }
-
-      // 아직 로그인하지 않은 경우 비밀번호 팝업 요청
-      const input = prompt('🔒 관리자 비밀번호를 입력해 주세요:');
-      if (input === null) return; // 취소 누름
-
-      if (authenticateAdmin(input.trim())) {
-        if (typeof onSuccessCallback === 'function') onSuccessCallback();
-      }
-    }
-
-    /* ===================================================
-       익명 의견함 관리 모듈
-    =================================================== */
+    /* 10. 익명의견함 모듈 */
     let allSuggestions = [];
     const MY_SUGGESTIONS_KEY = 'shift_my_suggestion_ids';
 
-    // 로컬 스토리지에서 내가 작성한 ID 목록 가져오기/저장하기
     function getMySuggestionIds() {
       try {
         return JSON.parse(localStorage.getItem(MY_SUGGESTIONS_KEY) || '[]');
@@ -2746,7 +2746,6 @@
       }
     }
 
-    /* Supabase에서 의견함 데이터 조회 */
     async function loadSuggestionBoxData() {
       try {
         const { data, error } = await supabaseClient
@@ -2764,7 +2763,6 @@
       }
     }
 
-    /* 1. 의견 신규 제출 (익명) */
     async function handleFeedbackSubmit(e) {
       e.preventDefault();
 
@@ -2786,33 +2784,25 @@
       try {
         const { data, error } = await supabaseClient
           .from('suggestion_box')
-          .insert([{
-            category,
-            content,
-            status: '접수됨'
-          }])
+          .insert([{ category, content, status: '접수됨' }])
           .select();
 
         if (error) throw error;
 
-        // 생성된 글 ID를 내 기기에 보관 (익명 유지하면서 본인 글 상태 추적)
-        if (data && data.length > 0) {
-          saveMySuggestionId(data[0].id);
-        }
+        if (data && data.length > 0) saveMySuggestionId(data[0].id);
 
         alert('소중한 의견이 익명으로 안전하게 접수되었습니다! 🙏');
         contentEl.value = '';
         await loadSuggestionBoxData();
       } catch (err) {
         console.error('의견 제출 실패:', err);
-        alert('의견 제출 중 오류가 발생했습니다: ' + err.message);
+        alert('오류 발생: ' + err.message);
       } finally {
         btn.disabled = false;
         btn.innerText = '✉️ 익명으로 의견 보내기';
       }
     }
 
-    /* 상태에 따른 CSS 클래스 매핑 */
     function getStatusClass(status) {
       switch (status) {
         case '접수됨': return 'status-received';
@@ -2823,7 +2813,6 @@
       }
     }
 
-    /* 2. 내가 남긴 의견 진행 상황 렌더링 */
     function renderMySuggestions() {
       const section = document.getElementById('myFeedbackSection');
       const container = document.getElementById('myFeedbackList');
@@ -2859,7 +2848,6 @@
       }).join('');
     }
 
-    /* 3. '반영완료' 의견 공개 갤러리 렌더링 */
     function renderCompletedSuggestions() {
       const container = document.getElementById('completedFeedbackList');
       if (!container) return;
@@ -2892,9 +2880,6 @@
       }).join('');
     }
 
-    /* ===================================================
-       관리자용 익명의견함 제어 모달
-    =================================================== */
     function openFeedbackAdminModal() {
       checkAdminAuth(() => {
         renderAdminFeedbackList();
@@ -2922,8 +2907,6 @@
             <span class="status-tag ${getStatusClass(item.status)}">${item.status}</span>
           </div>
           <p style="font-size: 0.92rem; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap;">${item.content}</p>
-
-          <!-- 상태 변경 버튼 그룹 -->
           <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
             <button onclick="updateSuggestionStatus(${item.id}, '접수됨')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">접수됨</button>
             <button onclick="updateSuggestionStatus(${item.id}, '검토중')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #d97706; color: #d97706;">🔍 검토중</button>
@@ -2931,17 +2914,14 @@
             <button onclick="updateSuggestionStatus(${item.id}, '보류')" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #64748b; color: #64748b;">⏸️ 보류</button>
             <button onclick="deleteSuggestion(${item.id})" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444; margin-left: auto;">삭제</button>
           </div>
-
-          <!-- 관리자 코멘트 달기 -->
           <div style="display: flex; gap: 6px;">
-            <input type="text" id="comment-input-${item.id}" value="${item.admin_comment || ''}" placeholder="팀원들에게 보여줄 답변/코멘트 입력..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
-            <button onclick="saveAdminComment(${item.id})" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">코멘트 저장</button>
+            <input type="text" id="comment-input-${item.id}" value="${item.admin_comment || ''}" placeholder="팀원들에게 보여줄 답변 입력..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+            <button onclick="saveAdminComment(${item.id})" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">저장</button>
           </div>
         </div>
       `).join('');
     }
 
-    /* 의견 상태 변경 (검토중, 반영완료, 보류) */
     async function updateSuggestionStatus(id, newStatus) {
       try {
         const { error } = await supabaseClient
@@ -2957,7 +2937,6 @@
       }
     }
 
-    /* 관리자 코멘트 저장 */
     async function saveAdminComment(id) {
       const input = document.getElementById(`comment-input-${id}`);
       const comment = input ? input.value.trim() : '';
@@ -2973,11 +2952,10 @@
         await loadSuggestionBoxData();
         renderAdminFeedbackList();
       } catch (err) {
-        alert('코멘트 저장 실패: ' + err.message);
+        alert('저장 실패: ' + err.message);
       }
     }
 
-    /* 의견 삭제 */
     async function deleteSuggestion(id) {
       if (!confirm('이 의견을 정말 삭제하시겠습니까?')) return;
       try {
@@ -2994,187 +2972,7 @@
       }
     }
 
-        /* ===================================================
-       월간 라인업 일괄 관리 모듈
-    =================================================== */
-    let currentMonthSundays = [];
-    let currentMonthSchedulesMap = {};
-
-    function openMonthLineupModal() {
-      checkAdminAuth(() => {
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const defaultMonth = `${yyyy}-${mm}`;
-
-        const picker = document.getElementById('monthLineupPicker');
-        if (picker) picker.value = defaultMonth;
-
-        loadMonthLineupData(defaultMonth);
-        document.getElementById('monthLineupModal').style.display = 'flex';
-      });
-    }
-
-    function closeMonthLineupModal() {
-      document.getElementById('monthLineupModal').style.display = 'none';
-    }
-
-    // 특정 연/월의 모든 일요일 YYYY-MM-DD 목록 반환
-    function getAllSundaysInMonth(year, month) {
-      const sundays = [];
-      const date = new Date(year, month - 1, 1);
-      while (date.getMonth() === month - 1) {
-        if (date.getDay() === 0) { // 0: 일요일
-          const y = date.getFullYear();
-          const m = String(date.getMonth() + 1).padStart(2, '0');
-          const d = String(date.getDate()).padStart(2, '0');
-          sundays.push(`${y}-${m}-${d}`);
-        }
-        date.setDate(date.getDate() + 1);
-      }
-      return sundays;
-    }
-
-    // 선택한 월의 일요일별 데이터 불러오기
-    async function loadMonthLineupData(yearMonthStr) {
-      if (!yearMonthStr) return;
-      const [y, m] = yearMonthStr.split('-').map(Number);
-      currentMonthSundays = getAllSundaysInMonth(y, m);
-
-      const tbody = document.getElementById('monthLineupTableBody');
-      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
-
-      try {
-        // 해당 월에 등록된 스케줄 조회
-        const { data, error } = await supabaseClient
-          .from('schedules')
-          .select('*')
-          .like('date', `${yearMonthStr}%`);
-
-        if (error) throw error;
-
-        currentMonthSchedulesMap = {};
-        (data || []).forEach(row => {
-          currentMonthSchedulesMap[row.date] = row;
-        });
-
-        renderMonthLineupTable();
-      } catch (err) {
-        console.error('월간 라인업 로드 오류:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 20px;">오류: ${err.message}</td></tr>`;
-      }
-    }
-
-    // 월간 라인업 테이블 렌더링
-    function renderMonthLineupTable() {
-      const tbody = document.getElementById('monthLineupTableBody');
-      if (!tbody) return;
-
-      tbody.innerHTML = currentMonthSundays.map(dateStr => {
-        const item = currentMonthSchedulesMap[dateStr] || {};
-        const isCanceled = /^x_/i.test((item.worship_title || '').trim());
-
-        return `
-          <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
-            <td style="padding: 10px; font-weight: 700; vertical-align: top;">
-              <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
-              ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700;">🚫 예배 없음</div>' : ''}
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_leader_${dateStr}" value="${item.leader || ''}" placeholder="인도자" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <textarea id="m_vocal_${dateStr}" rows="2" placeholder="보컬" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; resize: none;">${item.vocal || ''}</textarea>
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_kb1_${dateStr}" value="${item.keyboard1 || ''}" placeholder="메인건반" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="m_kb2_${dateStr}" value="${item.keyboard2 || ''}" placeholder="세컨건반" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_drum_${dateStr}" value="${item.drum || ''}" placeholder="드럼" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <input type="text" id="m_guitar_${dateStr}" value="${item.guitar || ''}" placeholder="기타" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="m_bass_${dateStr}" value="${item.bass || ''}" placeholder="베이스" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                <input type="text" id="m_sound_${dateStr}" value="${item.sound || ''}" placeholder="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_broadcast_${dateStr}" value="${item.broadcast || ''}" placeholder="방송" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_subtitle_${dateStr}" value="${item.subtitle || ''}" placeholder="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                <input type="text" id="m_video_${dateStr}" value="${item.video || ''}" placeholder="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // 한 달 라인업 일괄 저장 처리
-    async function saveAllMonthLineup() {
-      const saveBtn = document.getElementById('btnSaveMonthLineup');
-      saveBtn.disabled = true;
-      saveBtn.innerText = '저장 중...';
-
-      try {
-        for (const dateStr of currentMonthSundays) {
-          const leader = document.getElementById(`m_leader_${dateStr}`)?.value.trim() || null;
-          const vocal = document.getElementById(`m_vocal_${dateStr}`)?.value.trim() || null;
-          const keyboard1 = document.getElementById(`m_kb1_${dateStr}`)?.value.trim() || null;
-          const keyboard2 = document.getElementById(`m_kb2_${dateStr}`)?.value.trim() || null;
-          const drum = document.getElementById(`m_drum_${dateStr}`)?.value.trim() || null;
-          const guitar = document.getElementById(`m_guitar_${dateStr}`)?.value.trim() || null;
-          const bass = document.getElementById(`m_bass_${dateStr}`)?.value.trim() || null;
-          const sound = document.getElementById(`m_sound_${dateStr}`)?.value.trim() || null;
-          const broadcast = document.getElementById(`m_broadcast_${dateStr}`)?.value.trim() || null;
-          const subtitle = document.getElementById(`m_subtitle_${dateStr}`)?.value.trim() || null;
-          const video = document.getElementById(`m_video_${dateStr}`)?.value.trim() || null;
-
-          const existing = currentMonthSchedulesMap[dateStr];
-
-          const lineupData = {
-            date: dateStr,
-            leader, vocal, keyboard1, keyboard2,
-            drum, guitar, bass, sound, broadcast, subtitle, video
-          };
-
-          if (existing && existing.id) {
-            // 이미 존재하는 주차: UPDATE
-            const { error: updateErr } = await supabaseClient
-              .from('schedules')
-              .update(lineupData)
-              .eq('id', existing.id);
-            if (updateErr) throw updateErr;
-          } else {
-            // 등록되지 않은 새 주차: 기본 예배명과 함께 INSERT
-            lineupData.worship_title = `${dateStr} 주일예배`;
-            const { error: insertErr } = await supabaseClient
-              .from('schedules')
-              .insert([lineupData]);
-            if (insertErr) throw insertErr;
-          }
-        }
-
-        alert('한 달 라인업이 성공적으로 일괄 저장되었습니다! 🎉');
-        closeMonthLineupModal();
-
-        // 메인 콘티 화면 및 아카이브 데이터 실시간 갱신
-        await loadCurrentConti();
-        if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
-          await loadAllArchiveData();
-        }
-      } catch (err) {
-        console.error('월간 라인업 저장 오류:', err);
-        alert('저장 중 오류가 발생했습니다: ' + err.message);
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerText = '한 달 라인업 일괄 저장';
-      }
-    }
-
-    /* ===================================================
-       6. 페이지 로드 시 진입점
-    =================================================== */
+    /* 11. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadCurrentConti();
     });
