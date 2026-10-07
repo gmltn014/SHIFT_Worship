@@ -5162,6 +5162,81 @@ ${details}
       }
     }
 
+    function renderSessionScoreContent(scoreUrl) {
+      const body = document.getElementById('sessionScoreBody');
+      if (!body) {
+        console.error('sessionScoreBody 요소를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 악보 URL이 유효하게 존재하는 경우
+      if (scoreUrl && typeof scoreUrl === 'string' && scoreUrl.trim().length > 0 && scoreUrl !== '-') {
+        const url = scoreUrl.trim();
+        let previewUrl = url;
+        let downloadUrl = url;
+
+        const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          const fileId = fileIdMatch[1];
+          previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+          downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
+
+        body.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 0.88rem; color: #10b981; font-weight: 700;">✅ 등록된 세션 악보가 있습니다</span>
+            <div style="display: flex; gap: 8px;">
+              <a href="${url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; text-decoration: none; padding: 6px 12px; border-radius: 6px;">
+                🔍 드라이브 열기
+              </a>
+              <a href="${downloadUrl}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; text-decoration: none; padding: 6px 12px; border-radius: 6px;">
+                ⬇️ 다운로드
+              </a>
+            </div>
+          </div>
+
+          <div style="width: 100%; height: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color, #334155); background: #000; margin-bottom: 14px;">
+            <iframe src="${previewUrl}" style="width: 100%; height: 100%; border: none;" allow="autoplay"></iframe>
+          </div>
+
+          <details style="font-size: 0.82rem; color: var(--sub-text, #94a3b8); margin-top: 10px;">
+            <summary style="cursor: pointer; font-weight: 600;">🔄 다른 악보 파일로 변경(재업로드)하기</summary>
+            <div style="margin-top: 12px; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+              <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.82rem; width: 100%; box-sizing: border-box; margin-bottom: 8px; color: var(--text-color);">
+              <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="width: 100%; padding: 10px; font-weight: 700; border-radius: 8px;">
+                📤 새 악보로 교체 업로드
+              </button>
+              <div id="sessionUploadStatus" style="font-size: 0.8rem; text-align: center; margin-top: 8px; display: none;"></div>
+            </div>
+          </details>
+        `;
+      } else {
+        // ★ 이번 주차처럼 악보가 없을 때 나타나는 UI
+        body.innerHTML = `
+          <div style="text-align: center; padding: 32px 18px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px dashed var(--border-color, #334155); margin-bottom: 10px;">
+            <div style="font-size: 2.8rem; margin-bottom: 10px; line-height: 1;">📑</div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text-color, #f8fafc);">
+              등록된 세션 악보가 없습니다
+            </h4>
+            <p style="font-size: 0.84rem; color: var(--sub-text, #94a3b8); margin: 0 0 20px 0; line-height: 1.6; word-break: keep-all;">
+              이번 주 세션 악보 파일이 아직 첨부되지 않았습니다.<br>
+              아래에서 악보 파일(PDF 또는 이미지)을 첨부하시면 팀 구글 드라이브에 저장되고 포털에 자동 연동됩니다.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; text-align: left;">
+              <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.82rem; padding: 8px; border: 1px solid var(--border-color, #334155); border-radius: 8px; background: var(--bg-color, #0f172a); color: var(--text-color, #fff); width: 100%; box-sizing: border-box;">
+              
+              <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="padding: 12px; font-size: 0.9rem; font-weight: 700; width: 100%; border-radius: 8px; cursor: pointer;">
+                📤 구글 드라이브에 저장 & 링크 연동
+              </button>
+              
+              <div id="sessionUploadStatus" style="font-size: 0.8rem; text-align: center; margin-top: 6px; display: none;"></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
     /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadCurrentConti();
@@ -5169,20 +5244,20 @@ ${details}
     });
   </script>
 
-  <div id="sessionScoreModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
-  <div class="modal-card" style="background: var(--card-bg, #fff); color: var(--text-color, #1e293b); max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 14px; padding: 20px; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+  <div id="sessionScoreModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 99999; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
+  <div class="modal-card" style="background: var(--card-bg, #1e293b); color: var(--text-color, #f8fafc); max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 22px; box-sizing: border-box; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155);">
     
     <!-- 모달 헤더 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 10px; margin-bottom: 14px;">
-      <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-        <span>🎼</span> <span id="sessionModalTitle">세션 악보</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color, #334155); padding-bottom: 12px; margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <span>🎼</span> <span id="sessionModalTitle">2026-10-11 세션 악보</span>
       </h3>
-      <button type="button" onclick="closeSessionScoreModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--sub-text, #64748b); line-height: 1; padding: 0 4px;">&times;</button>
+      <button type="button" onclick="closeSessionScoreModal()" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--sub-text, #94a3b8); line-height: 1; padding: 0 4px;">&times;</button>
     </div>
 
-    <!-- 모달 본문 영역 -->
-    <div id="sessionScoreBody">
-      <!-- 내용이 주입됩니다 -->
+    <!-- 모달 본문 영역 (반드시 id가 sessionScoreBody 여야 합니다) -->
+    <div id="sessionScoreBody" style="min-height: 180px; width: 100%;">
+      <!-- JS를 통해 안내창 및 업로더가 주입됩니다 -->
     </div>
 
   </div>
