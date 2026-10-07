@@ -3084,6 +3084,9 @@
         const isCanceled = /^x_/i.test(rawTitle);
         const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
         const computedYt = buildYoutubePlaylistUrl(item.youtube_url);
+        
+        // ★ 세션 악보 등록 여부 확인
+        const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
 
         return `
           <div class="archive-item-card" style="${isCanceled ? 'border-left: 4px solid #ef4444;' : ''}">
@@ -3119,18 +3122,72 @@
                     <strong>🕊️ 결단찬양:</strong> ${item.closing_song}
                   </div>` : ''}
 
-                <div class="action-btn-group" style="margin-top: 12px; gap: 6px;">
+                <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
                   ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
                   ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원</a>` : ''}
                   ${item.closing_sheet_url ? `<a href="${item.closing_sheet_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">📄 결단악보</a>` : ''}
                   ${item.closing_youtube_url ? `<a href="${item.closing_youtube_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">▶️ 결단영상</a>` : ''}
                   ${item.monitoring_url ? `<a href="${item.monitoring_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎥 실황</a>` : ''}
+                  
+                  <!-- ★ 세션 악보 버튼 추가 -->
+                  <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                    <span>🎼</span> 세션 악보 ${hasSessionScore ? '✓' : ''}
+                  </button>
                 </div>
               `}
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    /* 아카이브 콘티 목록에서 특정 주차 세션 악보 열기 */
+    async function openArchiveSessionScore(dateStr) {
+      const modal = document.getElementById('sessionScoreModal');
+      const titleEl = document.getElementById('sessionModalTitle');
+      const bodyEl = document.getElementById('sessionScoreBody');
+
+      if (!modal) return;
+
+      modal.style.display = 'flex';
+      if (bodyEl) {
+        bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">악보 정보를 불러오는 중입니다... ⏳</div>';
+      }
+
+      try {
+        const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+        if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+
+        // 해당 날짜의 스케줄 데이터 1건 조회
+        const { data, error } = await client
+          .from('schedules')
+          .select('*')
+          .eq('date', dateStr)
+          .single();
+
+        if (error) throw error;
+
+        // 현재 주차 객체를 해당 과거 주차 객체로 지정 (업로드 시 대상 날짜가 올바르게 전송되도록 설정)
+        currentWeekSchedule = data;
+
+        if (titleEl) {
+          titleEl.innerText = `${data.date} 세션 악보`;
+        }
+
+        // 악보 뷰어 또는 업로드 UI 렌더링
+        renderSessionScoreContent(data.session_score_url || '');
+
+      } catch (err) {
+        console.error('아카이브 세션 악보 로드 실패:', err);
+        if (bodyEl) {
+          bodyEl.innerHTML = `
+            <div style="text-align: center; padding: 24px; color: #ef4444;">
+              악보 정보를 불러오지 못했습니다.<br>
+              <small style="color: var(--sub-text);">${err.message}</small>
+            </div>
+          `;
+        }
+      }
     }
 
     function toggleArchiveAccordion(idx) {
@@ -5236,6 +5293,55 @@ ${details}
         `;
       }
     }
+
+    /* 아카이브 목록 전용: 특정 주차 세션 악보 모달 열기 */
+async function openArchiveSessionScore(dateStr) {
+  const modal = document.getElementById('sessionScoreModal');
+  const titleEl = document.getElementById('sessionModalTitle');
+  const bodyEl = document.getElementById('sessionScoreBody');
+
+  if (!modal) return;
+
+  modal.style.display = 'flex';
+  if (bodyEl) {
+    bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">악보 정보를 불러오는 중입니다... ⏳</div>';
+  }
+
+  try {
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+    if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+
+    // 1. 해당 날짜의 스케줄 1건 조회
+    const { data, error } = await client
+      .from('schedules')
+      .select('*')
+      .eq('date', dateStr)
+      .single();
+
+    if (error) throw error;
+
+    // 2. 현재 작업 대상을 해당 주차 객체로 지정 (업로드 시 올바른 날짜로 들어가도록 세팅)
+    currentWeekSchedule = data;
+
+    if (titleEl) {
+      titleEl.innerText = `${data.date} 세션 악보`;
+    }
+
+    // 3. 악보가 있으면 뷰어, 없으면 업로드 폼 렌더링
+    renderSessionScoreContent(data.session_score_url || '');
+
+  } catch (err) {
+    console.error('아카이브 악보 로드 실패:', err);
+    if (bodyEl) {
+      bodyEl.innerHTML = `
+        <div style="text-align: center; padding: 24px; color: #ef4444;">
+          데이터를 불러오는 중 오류가 발생했습니다.<br>
+          <small style="color: var(--sub-text);">${err.message}</small>
+        </div>
+      `;
+    }
+  }
+}
 
     /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
