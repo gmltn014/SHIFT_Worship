@@ -1965,6 +1965,7 @@
        자바스크립트 완전본
   =================================================== -->
   <script>
+    const SYNC_KEY_STORAGE = 'shift_portal_sync_key';
     /* 0. 기본 테마 & 탭 전환 */
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
@@ -4286,56 +4287,52 @@ ${details}
     
     // 3. 다른 기기의 연동 코드를 입력하여 데이터 가져오기
     async function applySyncKeyFromInput() {
-      const inputEl = document.getElementById('inputSyncKey');
-      const targetKey = inputEl ? inputEl.value.trim().toUpperCase() : '';
+      const inputEl = document.getElementById('syncCodeInput');
+  const code = inputEl ? inputEl.value.trim() : '';
 
-      if (!targetKey) {
-        alert('연동 코드를 입력해 주세요.');
-        return;
-      }
+  if (!code) {
+    alert('동기화 코드를 입력해 주세요.');
+    return;
+  }
 
-      if (!supabaseClient) {
-        alert('서버 연결 상태를 확인해 주세요.');
-        return;
-      }
+  // SYNC_KEY_STORAGE가 선언되지 않았을 경우를 대비한 안전 키 참조
+  const storageKey = (typeof SYNC_KEY_STORAGE !== 'undefined') ? SYNC_KEY_STORAGE : 'shift_portal_sync_key';
 
-      try {
-        const { data, error } = await supabaseClient
-          .from('user_sync')
-          .select('*')
-          .eq('sync_key', targetKey)
-          .maybeSingle();
+  try {
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+    if (!client) throw new Error('데이터베이스 연결에 실패했습니다.');
 
-        if (error) throw error;
-        if (!data) {
-          alert('해당 연동 코드를 찾을 수 없습니다. 코드를 다시 확인해 주세요.');
-          return;
-        }
+    // Supabase에서 해당 동기화 코드 데이터 조회
+    const { data, error } = await client
+      .from('user_sync')
+      .select('*')
+      .eq('sync_code', code)
+      .single();
 
-        // 기존 키를 입력된 키로 교체
-        localStorage.setItem(SYNC_KEY_STORAGE, targetKey);
-
-        // 1) 내가 쓴 의견 ID 병합
-        const remoteIds = Array.isArray(data.my_suggestion_ids) ? data.my_suggestion_ids : [];
-        const localIds = getMySuggestionIds();
-        const mergedIds = Array.from(new Set([...localIds, ...remoteIds]));
-        localStorage.setItem(MY_SUGGESTIONS_KEY, JSON.stringify(mergedIds));
-
-        // 2) 테마 & 글꼴 설정 적용
-        if (data.settings) {
-          if (data.settings.theme) applyTheme(data.settings.theme);
-          if (data.settings.font) changeAppFont(data.settings.font);
-        }
-
-        alert('🎉 기기 동기화가 완료되었습니다!\n이전 기기의 개인 설정과 작성한 의견함 내역을 성공적으로 불러왔습니다.');
-        if (inputEl) inputEl.value = '';
-        openSettingsModal(); // UI 갱신
-        loadSuggestionBoxData(); // 의견함 목록 즉시 새로고침
-      } catch (err) {
-        console.error('동기화 적용 실패:', err);
-        alert('동기화 중 오류가 발생했습니다: ' + err.message);
-      }
+    if (error || !data) {
+      throw new Error('유효하지 않거나 만료된 동기화 코드입니다.');
     }
+
+    // 1. 브라우저 로컬스토리지에 동기화 키 저장
+    localStorage.setItem(storageKey, code);
+
+    // 2. 백업된 환경설정 값(테마, 글꼴 등) 복원
+    if (data.settings) {
+      const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
+      if (settings.theme && typeof applyTheme === 'function') applyTheme(settings.theme);
+      if (settings.font && typeof applyFont === 'function') applyFont(settings.font);
+      localStorage.setItem('shift_theme', settings.theme || 'dark');
+      localStorage.setItem('shift_font', settings.font || 'pretendard');
+    }
+
+    alert('🎉 기기 동기화가 성공적으로 완료되었습니다!');
+    location.reload(); // 설정 적용을 위해 새로고침
+
+  } catch (err) {
+    console.error('동기화 복원 오류:', err);
+    alert('동기화 실패: ' + err.message);
+  }
+}
 
     // 내 코드 복사 헬퍼
     function copyMySyncKey() {
