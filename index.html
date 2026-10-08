@@ -942,7 +942,7 @@
             </div>
             <div class="session-item">
               <span class="session-label">자막</span>
-              <span class="session-name" id="viewSubtitle">-</span>
+              <span class="session-name" id="viewPrompter">-</span>
             </div>
             <div class="session-item">
               <span class="session-label">영상편집</span>
@@ -1532,7 +1532,7 @@
       <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
         <li><strong>예배 및 곡 정보:</strong> 주일 일자, 예배 명칭, 주간 찬양 곡 순서 및 Key 표기, 결단 찬양 확인</li>
         <li><strong>원클릭 사역 링크:</strong> 통합 악보집(PDF/드라이브) 및 유튜브 단일 재생목록 자동 연동</li>
-        <li><strong>세션 라인업:</strong> 인도자, 보컬, 건반(메인/세컨), 드럼, 기타, 베이스, 음향, 방송, <strong>Prompter</strong>, 영상 파트별 섬김이 명단 표기</li>
+        <li><strong>세션 라인업:</strong> 인도자, 보컬, 건반(메인/세컨), 드럼, 기타, 베이스, 음향, 방송, <strong>prompter</strong>, 영상 파트별 섬김이 명단 표기</li>
         <li><strong>공유 유틸리티:</strong> 카톡 공지용 텍스트 클립보드 복사 및 보면대용 카드 이미지 캡처 다운로드</li>
       </ul>
     </div>
@@ -1582,7 +1582,7 @@
         </button>
       </div>
       <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>대분류 필터링:</strong> Worship(인도/싱어), Session(악기), Live Ops(음향/방송/Prompter), Post Prod(영상)</li>
+        <li><strong>대분류 필터링:</strong> Worship(인도/싱어), Session(악기), Live Ops(음향/방송/prompter), Post Prod(영상)</li>
         <li><strong>연락처 바로연결:</strong> 터치 시 해당 팀원에게 통화가 즉시 연결되는 모바일 친화형 다이렉트 버튼 탑재</li>
       </ul>
     </div>
@@ -1883,7 +1883,7 @@
             </div>
             <div>
               <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">자막</label>
-              <select id="adminSubtitle" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
+              <select id="adminPrompter" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;"></select>
             </div>
             <div>
               <label style="font-size: 0.72rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">영상편집</label>
@@ -2500,7 +2500,7 @@
       setSession('viewBass', item.bass);
       setSession('viewSound', item.sound);
       setSession('viewBroadcast', item.broadcast);
-      setSession('viewSubtitle', item.subtitle);
+      setSession('viewPrompter', item.prompter);
       setSession('viewVideo', item.video);
     }
 
@@ -2527,7 +2527,7 @@
       const bass = currentScheduleData?.bass || getText('viewBass');
       const sound = currentScheduleData?.sound || getText('viewSound');
       const broadcast = currentScheduleData?.broadcast || getText('viewBroadcast');
-      const subtitle = currentScheduleData?.subtitle || getText('viewSubtitle');
+      const prompter = currentScheduleData?.prompter || getText('viewPrompter');
       const video = currentScheduleData?.video || getText('viewVideo');
 
       const message = 
@@ -2544,7 +2544,7 @@
 🎸 베이스: ${bass}
 🎚️ 음향: ${sound}
 💻 방송: ${broadcast}
-📑 자막: ${subtitle}
+📑 자막: ${prompter}
 🎬 영상: ${video}
 ━━━━━━━━━━━━━━
 * 변경 사항이 있으신 분은 미리 말씀해 주세요. 은혜의 시간 되길 소망합니다! 🙏`;
@@ -2675,13 +2675,13 @@
           case 'broadcast':
           case '방송':
             return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('카메라');
-          case 'Prompter':
+          case 'prompter':
           case '자막':
-            // 자막, subtitle, ppt 외에도 방송/라이브옵스 파트 인원들이 자막을 겸하는 경우까지 안전하게 포함
-            return source.includes('Prompter') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션') || source.includes('live ops');
-          case 'Video':
+            // 자막, prompter, ppt 외에도 방송/라이브옵스 파트 인원들이 자막을 겸하는 경우까지 안전하게 포함
+            return source.includes('prompter') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션') || source.includes('live ops');
+          case 'video':
           case '영상':
-            return source.includes('Video') || source.includes('영상') || source.includes('편집') || source.includes('미디어') || source.includes('post prod');
+            return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('미디어') || source.includes('post prod');
           default:
             return source.includes(target);
         }
@@ -2889,7 +2889,7 @@
         bass: getVal('adminBass'),
         sound: getVal('adminSound'),
         broadcast: getVal('adminBroadcast'),
-        subtitle: getVal('adminSubtitle'),
+        prompter: getVal('adminPrompter'),
         video: getVal('adminVideo')
       };
 
@@ -3065,8 +3065,8 @@
                 <select id="m_broadcast_${dateStr}" title="방송/중계" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
                   ${generatePartOptionsHtml('broadcast', item.broadcast || '', false)}
                 </select>
-                <select id="m_subtitle_${dateStr}" title="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('Prompter', item.prompter || '', false)}
+                <select id="m_prompter_${dateStr}" title="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                  ${generatePartOptionsHtml('prompter', item.prompter || '', false)}
                 </select>
                 <select id="m_video_${dateStr}" title="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
                   ${generatePartOptionsHtml('Video', item.video || '', false)}
@@ -3103,14 +3103,14 @@
           const bass = document.getElementById(`m_bass_${dateStr}`)?.value.trim() || null;
           const sound = document.getElementById(`m_sound_${dateStr}`)?.value.trim() || null;
           const broadcast = document.getElementById(`m_broadcast_${dateStr}`)?.value.trim() || null;
-          const subtitle = document.getElementById(`m_subtitle_${dateStr}`)?.value.trim() || null;
+          const prompter = document.getElementById(`m_prompter_${dateStr}`)?.value.trim() || null;
           const video = document.getElementById(`m_video_${dateStr}`)?.value.trim() || null;
 
           const existing = currentMonthSchedulesMap[dateStr];
           const lineupData = {
             date: dateStr,
             leader, vocal, keyboard1, keyboard2,
-            drum, guitar, bass, sound, broadcast, subtitle, video
+            drum, guitar, bass, sound, broadcast, prompter, video
           };
 
           if (existing && existing.id) {
@@ -3271,7 +3271,7 @@
             targets.push(
               item.vocal, item.keyboard1, item.keyboard2,
               item.drum, item.guitar, item.bass,
-              item.sound, item.broadcast, item.subtitle, item.video
+              item.sound, item.broadcast, item.prompter, item.video
             );
           }
           const matchText = targets.filter(Boolean).join(' ').toLowerCase();
@@ -3459,7 +3459,7 @@
         }
 
         // Prompter 키 반영
-        const prompterVal = item.Prompter || item.prompter || item.subtitle || '-';
+        const prompterVal = item.Prompter || item.prompter || '-';
 
         return `
           <div class="card" style="margin-bottom: 12px; padding: 16px;">
