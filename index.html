@@ -1003,18 +1003,24 @@
           </div>
           <form onsubmit="handlePublishSnsCard(event)">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-              <div>
-                <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">작성자 이름 / 닉네임</label>
-                <input type="text" id="snsAuthorName" required placeholder="예: 희수" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-              </div>
-              <div>
-                <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">공유 방식</label>
-                <select id="snsIsAnonymous" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-                  <option value="false">👤 실명으로 당당하게 공유</option>
-                  <option value="true">🎭 비밀 닉네임(익명)으로 공유</option>
-                </select>
-              </div>
-            </div>
+  <div>
+    <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">작성자 이름 / 닉네임</label>
+    <div style="display: flex; gap: 6px;">
+      <input type="text" id="snsAuthorName" required placeholder="예: 최찬양, 조방" style="flex: 1; min-width: 0; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+      <!-- 익명 선택 시 노출되는 랜덤 돌리기 버튼 -->
+      <button type="button" id="btnRandomNickname" onclick="generateRandomNickname()" class="btn-action btn-secondary" style="display: none; padding: 6px 10px; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0;" title="다른 닉네임 뽑기">
+        🎲 뽑기
+      </button>
+    </div>
+  </div>
+  <div>
+    <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">공유 방식</label>
+    <select id="snsIsAnonymous" onchange="handleSnsAnonymousChange(this.value)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+      <option value="false">👤 실명으로 당당하게 공유</option>
+      <option value="true">🎭 비밀 닉네임(익명)으로 공유</option>
+    </select>
+  </div>
+</div>
             <div style="margin-bottom: 10px;">
               <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📖 오늘 묵상한 은혜의 말씀 (선택)</label>
               <input type="text" id="snsWordQt" placeholder="예: 시편 23:1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
@@ -4559,6 +4565,83 @@ function openSettingsModal() {
         console.error('SNS 피드 로드 오류:', err);
       }
     }
+
+    /* 찬양팀 맞춤 랜덤 닉네임 단어 풀 */
+const NICKNAME_ADJECTIVES = [
+  // 1. 유쾌 & 장난끼
+  '고음불가', '음치탈출', '절대음감', '박자무시', '삑사리장인',
+  '텐션높은', '야근에지친', '칼퇴꿈나무', '월요병걸린', '배고픈',
+  '카페인충전', '아아중독', '당충전필요', '멘탈바사삭', '영혼탈곡된',
+  '침대와한몸', '이불밖위험', '동공지진난', '발연기하는', '허세가득한',
+
+  // 2. 귀여움 & 포근함
+  '모두를사랑하는', '눈물많은', '소심한', '엉뚱한', '호기심많은',
+  '동글동글한', '말랑말랑한', '포근한', '따뜻한', '해맑은',
+  '우주최강', '숨은고수', '반전매력', '자칭에이스', '귀염뽀짝',
+
+  // 3. 감성 & 분위기
+  '새벽감성', '달빛품은', '바람따라', '비오는날의', '노을빛',
+  '커피향나는', '별빛총총', '산들바람', '잔잔한', '감미로운',
+
+  // 4. 찬양팀 & 사역 유머/위트
+  '은혜충만', '열정가득', '박자타는', '반박자빠른', '한박자느린',
+  '악보잃어버린', '물마시는', '목청터진', '묵상중인', '기도하는'
+];
+
+/* [B] 명사 (캐릭터 / 대상) - 총 60개 */
+const NICKNAME_NOUNS = [
+  // 1. 귀여운 동물 & 생물
+  '쿼카', '카피바라', '판다', '수달', '너구리',
+  '고양이', '강아지', '참새', '뱁새', '펭귄',
+  '다람쥐', '물개', '알파카', '토끼', '호랑이',
+
+  // 2. 음식 & 디저트
+  '붕어빵', '소금빵', '크루아상', '마카롱', '아포가토',
+  '민트초코', '떡볶이', '치즈볼', '감자튀김', '군고구마',
+  '바닐라라떼', '아이스티', '약과', '츄러스', '두쫀쿠',
+
+  // 3. 일상 & 캐릭터
+  '모차르트', '베토벤', '음악천재', '방구석아티스트', '프로자취러',
+  '프로답변러', '골목대장', '탐험가', '여행자', '사색가',
+  '프로참석러', '보부상', '지각대장', '요리왕', '낭만파',
+
+  // 4. 찬양팀 & 교회/사역자
+  '찬양팀원', '청년', '싱어', '예배자', '건반러',
+  '드러머', '기타리스트', '베이스장인', '음향엔지니어', '방송지기',
+  '자막요정', '다윗', '솔로몬', '어린양', '순례자'
+];
+
+// 익명 선택 토글 핸들러
+function handleSnsAnonymousChange(val) {
+  const isAnon = (val === 'true');
+  const btnRandom = document.getElementById('btnRandomNickname');
+  const inputAuthor = document.getElementById('snsAuthorName');
+
+  if (isAnon) {
+    if (btnRandom) btnRandom.style.display = 'inline-flex';
+    inputAuthor.placeholder = '랜덤 닉네임 또는 직접 입력';
+    // 익명 전환 시 즉시 랜덤 닉네임 1회 자동 생성
+    generateRandomNickname();
+  } else {
+    if (btnRandom) btnRandom.style.display = 'none';
+    inputAuthor.placeholder = '예: 최찬양, 조방송';
+    inputAuthor.value = ''; // 실명 입력 대기
+  }
+}
+
+// A + B 조합 랜덤 닉네임 생성
+function generateRandomNickname() {
+  const randAdj = NICKNAME_ADJECTIVES[Math.floor(Math.random() * NICKNAME_ADJECTIVES.length)];
+  const randNoun = NICKNAME_NOUNS[Math.floor(Math.random() * NICKNAME_NOUNS.length)];
+  const generatedName = `${randAdj} ${randNoun}`;
+
+  const inputAuthor = document.getElementById('snsAuthorName');
+  if (inputAuthor) {
+    inputAuthor.value = generatedName;
+    // 글자가 꽂힐 때 시각적인 가벼운 효과
+    inputAuthor.focus();
+  }
+}
 
     async function handlePublishSnsCard(e) {
       e.preventDefault();
