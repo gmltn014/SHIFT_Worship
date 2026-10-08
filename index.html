@@ -681,10 +681,9 @@
       <div class="brand" style="cursor: pointer;" onclick="switchTab('conti', document.querySelectorAll('.tab-btn')[0])">
         SHIFT Worship
       </div>
-      <button id="headerVersionBadge" class="version-bubble" onclick="goToUpdateNotes()" title="업데이트 노트 확인하기">
-  v2.1.0
+      <button id="headerVersionBadge" class="version-bubble" onclick="goToUpdateNotes()" title="업데이트 노트 확인하기" style="display: none;">
 </button>
-    </div>
+</div>
 
     <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
       ⚙️ 설정
@@ -5503,6 +5502,41 @@ async function openArchiveSessionScore(dateStr) {
         </div>
       `;
     }
+  }
+}
+
+    /* 업데이트 노트 최신 버전을 헤더 배지에 자동 연동 */
+function updateHeaderVersionBadge() {
+  const badgeBtn = document.getElementById('headerVersionBadge');
+  if (!badgeBtn) return;
+
+  let latestVersion = '';
+
+  // 1. 업데이트 노트 데이터 배열이 있는 경우 (변수명에 맞게 자동 탐색)
+  const notesData = (typeof UPDATE_NOTES !== 'undefined') ? UPDATE_NOTES :
+                    (typeof updateNotes !== 'undefined') ? updateNotes :
+                    (typeof releaseNotes !== 'undefined') ? releaseNotes : null;
+
+  if (Array.isArray(notesData) && notesData.length > 0) {
+    const firstItem = notesData[0];
+    latestVersion = firstItem.version || 
+                    firstItem.title?.match(/v\d+\.\d+(\.\d+)?/i)?.[0] || '';
+  } 
+  // 2. 만약 공지사항 목록(noticeList 등)에서 가져오는 구조인 경우
+  else if (typeof noticeList !== 'undefined' && Array.isArray(noticeList)) {
+    const updateNotice = noticeList.find(n => /업데이트|배포|v\d+/i.test(n.title));
+    if (updateNotice) {
+      const match = (updateNotice.title + ' ' + updateNotice.content).match(/v\d+\.\d+(\.\d+)?/i);
+      if (match) latestVersion = match[0];
+    }
+  }
+
+  // 3. 최신 버전을 찾으면 버튼에 주입하고 화면에 표시
+  if (latestVersion) {
+    badgeBtn.innerText = latestVersion.startsWith('v') ? latestVersion : `v${latestVersion}`;
+    badgeBtn.style.display = 'inline-flex'; // 또는 'inline-block'
+  } else {
+    badgeBtn.style.display = 'none';
   }
 }
 
