@@ -567,6 +567,40 @@
       font-size: 0.88rem;
       line-height: 1.5;
     }
+
+    /* 알림 벨 빨간 점 깜빡임 애니메이션 */
+.noti-badge-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  border: 2px solid var(--nav-bg);
+  animation: pulse-red 1.5s infinite;
+  display: none;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* 알림 카드 스타일 */
+.noti-item-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.noti-item-card.latest-noti {
+  border-left: 4px solid #ef4444 !important;
+  background: rgba(239, 68, 68, 0.03);
+}
   </style>
 </head>
 <body>
@@ -582,10 +616,15 @@
       </button>
     </div>
 
-    <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
-      ⚙️ 설정
-    </button>
-  </header>
+    <button type="button" class="settings-open-btn" onclick="openNotificationModal()" style="position: relative; padding: 6px 10px;" title="SHIFT 포털 소식 알림">
+    <span>🔔</span>
+    <span id="headerNotiDot" class="noti-badge-dot"></span>
+  </button>
+
+  <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
+    ⚙️ 설정
+  </button>
+</div>
 
   <!-- 탭 메뉴 -->
   <nav class="tab-container">
@@ -737,6 +776,11 @@
           👥 섬김이(라인업) 내역
         </button>
       </div>
+
+      <button id="btnLineupChangeRequest" type="button" class="btn-action btn-secondary" onclick="openLineupChangeModal()" style="display: none; font-size: 0.8rem; padding: 6px 12px; border-color: #ef4444; color: #ef4444; white-space: nowrap;">
+    🚨 라인업 변경 요청
+  </button>
+</div>
 
       <div class="card" style="padding: 14px; margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
@@ -1769,6 +1813,120 @@
     </div>
   </div>
 
+    <!-- 1. 알림함 모달 -->
+<div id="notificationModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 520px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+        <span>🔔</span> SHIFT 포털 알림
+      </h3>
+      <button type="button" onclick="closeNotificationModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+    </div>
+
+    <!-- 안내 문구 -->
+    <div style="background: var(--card-sub-bg); padding: 8px 12px; border-radius: 6px; font-size: 0.75rem; color: var(--sub-text); line-height: 1.4; margin-bottom: 12px;">
+      📢 알림은 최대 10개까지 보관되며, 10개를 초과하면 이전 알림부터 순차 삭제됩니다.
+    </div>
+
+    <!-- 알림 목록 (최신순 렌더링) -->
+    <div id="notificationListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto;">
+      <div style="text-align: center; padding: 30px; color: var(--sub-text);">알림을 불러오는 중입니다...</div>
+    </div>
+
+    <!-- 관리자 로그인 시 알림 작성 버튼 노출 -->
+    <div id="adminNotiSendWrap" style="display: none; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); text-align: right;">
+      <button type="button" class="btn-action btn-primary" onclick="openAdminSendNotiModal()" style="font-size: 0.82rem; padding: 6px 12px;">
+        ✉️ 새 알림 등록 (관리자)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. [관리자 전용] 버튼 선택형 알림 전송 모달 -->
+<div id="adminSendNotiModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">✉️ 관리자 알림 등록</h3>
+      <button type="button" onclick="closeAdminSendNotiModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+    </div>
+
+    <!-- 1단계: 대분류 선택 버튼 그룹 -->
+    <div style="margin-bottom: 12px;">
+      <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 6px;">1. 알림 분류</label>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+        <button type="button" class="member-cat-btn active noti-cat-btn" onclick="selectAdminNotiCategory('콘티', this)">콘티</button>
+        <button type="button" class="member-cat-btn noti-cat-btn" onclick="selectAdminNotiCategory('라인업', this)">라인업</button>
+        <button type="button" class="member-cat-btn noti-cat-btn" onclick="selectAdminNotiCategory('결단찬양', this)">결단찬양</button>
+        <button type="button" class="member-cat-btn noti-cat-btn" onclick="selectAdminNotiCategory('공지/업데이트', this)">공지/업뎃</button>
+      </div>
+    </div>
+
+    <!-- 2단계: 유형 선택 버튼 그룹 (추가 vs 변경 / 업데이트 vs 공지) -->
+    <div style="margin-bottom: 12px;">
+      <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 6px;">2. 작업 유형</label>
+      <div id="notiActionTypeBtnGroup" style="display: flex; gap: 6px;">
+        <button type="button" class="member-cat-btn active noti-action-btn" onclick="selectAdminNotiAction('추가', this)">➕ 추가</button>
+        <button type="button" class="member-cat-btn noti-action-btn" onclick="selectAdminNotiAction('변경', this)">🔄 변경</button>
+      </div>
+    </div>
+
+    <!-- 3단계: 상세 내용 입력창 -->
+    <div style="margin-bottom: 14px;">
+      <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">3. 세부 안내 메시지</label>
+      <input type="text" id="adminNotiCustomMsg" placeholder="예: 10월 11일 주일 3부 예배 콘티가 확정되었습니다." style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem; box-sizing: border-box;">
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn-action btn-secondary" onclick="closeAdminSendNotiModal()" style="font-size: 0.85rem;">취소</button>
+      <button type="button" id="btnSubmitAdminNoti" class="btn-action btn-primary" onclick="submitAdminNotification()" style="font-size: 0.85rem; padding: 8px 18px;">알림 등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. [팀원 전용] 라인업 변경 요청 모달 -->
+<div id="lineupChangeModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: #ef4444; display: flex; align-items: center; gap: 6px;">
+        <span>🚨</span> 라인업 변경 요청
+      </h3>
+      <button type="button" onclick="closeLineupChangeModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+    </div>
+
+    <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 14px; line-height: 1.5;">
+      확정된 라인업이지만 부득이한 사정으로 섬김이 어려울 때 작성해 주세요. 전체 알림함에 긴급 공지로 등록됩니다.
+    </p>
+
+    <form onsubmit="handleLineupChangeRequest(event)">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">이름 (필수)</label>
+          <input type="text" id="reqMemberName" required placeholder="예: 김희수" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">현재 배정 파트</label>
+          <input type="text" id="reqCurrentPart" required placeholder="예: 드럼, 세컨건반" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 0.75rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">변경 대상 주일 일자</label>
+        <input type="date" id="reqTargetDate" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="font-size: 0.75rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">사유 (자세히 적어주시면 대타 조율이 빠릅니다)</label>
+        <textarea id="reqReason" rows="3" required placeholder="예: 갑작스러운 회사 출장으로 인해 이번 주 섬김이 어렵습니다." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; line-height: 1.5; box-sizing: border-box;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn-action btn-secondary" onclick="closeLineupChangeModal()" style="font-size: 0.85rem;">취소</button>
+        <button type="submit" id="btnSubmitLineupReq" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px; background-color: #ef4444;">요청 등록하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+
   <!-- 메인 푸터 -->
   <footer id="mainFooter" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--sub-text); font-size: 0.8rem;">
     <div>© 2026 SHIFT WORSHIP TEAM. All rights reserved.</div>
@@ -2750,25 +2908,28 @@
     }
 
     function switchArchiveSubTab(subTab) {
-      currentArchiveSubTab = subTab;
-      const btnConti = document.getElementById('subtab-btn-conti');
-      const btnMembers = document.getElementById('subtab-btn-members');
-      const listConti = document.getElementById('archiveContiList');
-      const listMembers = document.getElementById('archiveMembersList');
+  currentArchiveSubTab = subTab;
+  const btnConti = document.getElementById('subtab-btn-conti');
+  const btnMembers = document.getElementById('subtab-btn-members');
+  const listConti = document.getElementById('archiveContiList');
+  const listMembers = document.getElementById('archiveMembersList');
+  const btnReq = document.getElementById('btnLineupChangeRequest');
 
-      if (subTab === 'conti') {
-        btnConti.className = 'btn-action btn-primary';
-        btnMembers.className = 'btn-action btn-secondary';
-        listConti.style.display = 'flex';
-        listMembers.style.display = 'none';
-      } else {
-        btnConti.className = 'btn-action btn-secondary';
-        btnMembers.className = 'btn-action btn-primary';
-        listConti.style.display = 'none';
-        listMembers.style.display = 'flex';
-      }
-      renderArchive();
-    }
+  if (subTab === 'conti') {
+    btnConti.className = 'btn-action btn-primary';
+    btnMembers.className = 'btn-action btn-secondary';
+    listConti.style.display = 'flex';
+    listMembers.style.display = 'none';
+    if (btnReq) btnReq.style.display = 'none';
+  } else {
+    btnConti.className = 'btn-action btn-secondary';
+    btnMembers.className = 'btn-action btn-primary';
+    listConti.style.display = 'none';
+    listMembers.style.display = 'flex';
+    if (btnReq) btnReq.style.display = 'inline-flex'; // 라인업 탭에서 버튼 활성화
+  }
+  renderArchive();
+}
 
     function navigateArchiveMonth(delta) {
       isArchiveViewAll = false;
@@ -4810,11 +4971,286 @@ function generateRandomNickname() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+    /* ===================================================
+   인앱 알림 피드 & 라인업 변경 요청 시스템
+=================================================== */
+
+const LAST_READ_NOTI_KEY = 'shift_last_read_noti_id';
+let cachedNotifications = [];
+let selectedNotiCategory = '콘티';
+let selectedNotiAction = '추가';
+
+/* 1. 최신 알림 및 빨간 점 체크 */
+async function checkUnreadNotifications() {
+  if (!supabaseClient) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('portal_notifications')
+      .select('*')
+      .order('id', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+    cachedNotifications = data || [];
+
+    const dotEl = document.getElementById('headerNotiDot');
+    if (!dotEl) return;
+
+    if (cachedNotifications.length > 0) {
+      const latestId = cachedNotifications[0].id;
+      const lastReadId = parseInt(localStorage.getItem(LAST_READ_NOTI_KEY) || '0', 10);
+
+      // 확인하지 않은 더 새로운 알림이 있으면 빨간 점 노출
+      if (latestId > lastReadId) {
+        dotEl.style.display = 'block';
+      } else {
+        dotEl.style.display = 'none';
+      }
+    } else {
+      dotEl.style.display = 'none';
+    }
+  } catch (err) {
+    console.warn('알림 확인 실패:', err);
+  }
+}
+
+/* 2. 알림함 모달 열기 & 읽음 처리 */
+async function openNotificationModal() {
+  const modal = document.getElementById('notificationModal');
+  if (modal) modal.style.display = 'flex';
+
+  // 관리자 여부 확인하여 [새 알림 등록] 버튼 노출
+  const adminWrap = document.getElementById('adminNotiSendWrap');
+  if (adminWrap) {
+    adminWrap.style.display = isAdminAuthenticated() ? 'block' : 'none';
+  }
+
+  await renderNotificationList();
+
+  // 빨간 점 끄기 및 로컬스토리지 최신 ID 업데이트
+  if (cachedNotifications.length > 0) {
+    const latestId = cachedNotifications[0].id;
+    localStorage.setItem(LAST_READ_NOTI_KEY, String(latestId));
+    const dotEl = document.getElementById('headerNotiDot');
+    if (dotEl) dotEl.style.display = 'none';
+  }
+}
+
+function closeNotificationModal() {
+  const modal = document.getElementById('notificationModal');
+  if (modal) modal.style.display = 'none';
+}
+
+/* 3. 알림 목록 렌더링 (최신 알림 좌측 레드 보더) */
+async function renderNotificationList() {
+  const container = document.getElementById('notificationListContainer');
+  if (!container) return;
+
+  if (cachedNotifications.length === 0) {
+    await checkUnreadNotifications();
+  }
+
+  if (cachedNotifications.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">등록된 알림이 없습니다.</div>';
+    return;
+  }
+
+  container.innerHTML = cachedNotifications.map((noti, idx) => {
+    const isLatest = (idx === 0);
+    const dateStr = noti.created_at ? noti.created_at.split('T')[0] : '';
+    const isUrgent = (noti.category === '라인업변경요청');
+
+    let badgeColor = '#3b82f6';
+    if (isUrgent) badgeColor = '#ef4444';
+    else if (noti.category === '콘티') badgeColor = '#10b981';
+    else if (noti.category === '결단찬양') badgeColor = '#8b5cf6';
+
+    return `
+      <div class="noti-item-card ${isLatest ? 'latest-noti' : ''}">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="background: ${badgeColor}; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+              ${noti.category} ${noti.action_type ? `• ${noti.action_type}` : ''}
+            </span>
+            <strong style="font-size: 0.92rem; color: var(--text-color);">${noti.title}</strong>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--sub-text);">${dateStr}</span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-color); line-height: 1.5; white-space: pre-wrap;">
+          ${noti.message}
+        </div>
+        <div style="font-size: 0.72rem; color: var(--sub-text); text-align: right; margin-top: 4px;">
+          작성: ${noti.sender_name || '관리자'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* 4. [관리자] 알림 생성 모달 제어 */
+function openAdminSendNotiModal() {
+  document.getElementById('adminSendNotiModal').style.display = 'flex';
+  selectAdminNotiCategory('콘티', document.querySelector('.noti-cat-btn'));
+}
+
+function closeAdminSendNotiModal() {
+  document.getElementById('adminSendNotiModal').style.display = 'none';
+}
+
+function selectAdminNotiCategory(cat, btn) {
+  selectedNotiCategory = cat;
+  document.querySelectorAll('.noti-cat-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const actionBox = document.getElementById('notiActionTypeBtnGroup');
+  if (cat === '공지/업데이트') {
+    actionBox.innerHTML = `
+      <button type="button" class="member-cat-btn active noti-action-btn" onclick="selectAdminNotiAction('업데이트', this)">📝 업데이트</button>
+      <button type="button" class="member-cat-btn noti-action-btn" onclick="selectAdminNotiAction('공지', this)">📢 일반공지</button>
+    `;
+    selectedNotiAction = '업데이트';
+  } else {
+    actionBox.innerHTML = `
+      <button type="button" class="member-cat-btn active noti-action-btn" onclick="selectAdminNotiAction('추가', this)">➕ 추가</button>
+      <button type="button" class="member-cat-btn noti-action-btn" onclick="selectAdminNotiAction('변경', this)">🔄 변경</button>
+    `;
+    selectedNotiAction = '추가';
+  }
+}
+
+function selectAdminNotiAction(action, btn) {
+  selectedNotiAction = action;
+  document.querySelectorAll('.noti-action-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+/* 5. 알림 전송 공통 로직 (10개 초과 시 오래된 알림 자동 삭제) */
+async function sendNotificationAndTrim({ type, category, action_type, title, message, sender_name }) {
+  if (!supabaseClient) throw new Error('Supabase 미연결');
+
+  // 1) 알림 추가
+  const { error: insErr } = await supabaseClient
+    .from('portal_notifications')
+    .insert([{ type, category, action_type, title, message, sender_name }]);
+
+  if (insErr) throw insErr;
+
+  // 2) 10개 유지: 전체 알림 개수를 조회하여 10개 초과분 삭제
+  try {
+    const { data: allItems } = await supabaseClient
+      .from('portal_notifications')
+      .select('id')
+      .order('id', { ascending: false });
+
+    if (allItems && allItems.length > 10) {
+      const deleteIds = allItems.slice(10).map(item => item.id);
+      await supabaseClient
+        .from('portal_notifications')
+        .delete()
+        .in('id', deleteIds);
+    }
+  } catch (trimErr) {
+    console.warn('알림 정리 실패:', trimErr);
+  }
+}
+
+async function submitAdminNotification() {
+  const customMsg = document.getElementById('adminNotiCustomMsg').value.trim();
+  const btn = document.getElementById('btnSubmitAdminNoti');
+
+  if (!customMsg) {
+    alert('세부 안내 메시지를 입력해 주세요.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = '등록 중...';
+
+  try {
+    const title = `[${selectedNotiCategory}] ${selectedNotiAction} 알림`;
+    await sendNotificationAndTrim({
+      type: 'admin',
+      category: selectedNotiCategory,
+      action_type: selectedNotiAction,
+      title: title,
+      message: customMsg,
+      sender_name: isSuperAdmin() ? '서버 관리자' : '찬양팀 관리자'
+    });
+
+    alert('새 알림이 성공적으로 등록되었습니다!');
+    document.getElementById('adminNotiCustomMsg').value = '';
+    closeAdminSendNotiModal();
+    await checkUnreadNotifications();
+    await renderNotificationList();
+  } catch (err) {
+    alert('알림 등록 실패: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '알림 등록';
+  }
+}
+
+/* 6. [팀원 전용] 라인업 변경 요청 제어 */
+function openLineupChangeModal() {
+  const thisSunday = getThisSundayDateString();
+  const dateInput = document.getElementById('reqTargetDate');
+  if (dateInput) dateInput.value = thisSunday;
+  document.getElementById('lineupChangeModal').style.display = 'flex';
+}
+
+function closeLineupChangeModal() {
+  document.getElementById('lineupChangeModal').style.display = 'none';
+}
+
+async function handleLineupChangeRequest(e) {
+  e.preventDefault();
+  const name = document.getElementById('reqMemberName').value.trim();
+  const part = document.getElementById('reqCurrentPart').value.trim();
+  const targetDate = document.getElementById('reqTargetDate').value;
+  const reason = document.getElementById('reqReason').value.trim();
+  const btn = document.getElementById('btnSubmitLineupReq');
+
+  btn.disabled = true;
+  btn.innerText = '요청 등록 중...';
+
+  try {
+    const title = `🚨 [라인업 변경 요청] ${name} (${part})`;
+    const message = `일시: ${targetDate}\n파트: ${part}\n사유: ${reason}`;
+
+    await sendNotificationAndTrim({
+      type: 'request',
+      category: '라인업변경요청',
+      action_type: '대타요청',
+      title: title,
+      message: message,
+      sender_name: name
+    });
+
+    alert('라인업 변경 요청이 포털 알림에 긴급 등록되었습니다.\n동역자들의 확인을 기다려주세요! 🙏');
+    closeLineupChangeModal();
+
+    // 폼 초기화
+    document.getElementById('reqMemberName').value = '';
+    document.getElementById('reqCurrentPart').value = '';
+    document.getElementById('reqReason').value = '';
+
+    // 헤더 빨간점 즉시 깜빡임 갱신
+    await checkUnreadNotifications();
+  } catch (err) {
+    alert('요청 등록 실패: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '요청 등록하기';
+  }
+}
+
     /* 15. 페이지 시작 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadMembersData();    // 팀원 명단 우선 로드 (라인업 셀렉트 박스 즉시 준비)
       loadCurrentConti();   // 이번 주 콘티 로드
       loadNoticeData();     // 공지사항 및 버전 정보 로드
+      checkUnreadNotifications(); // ★ 새 알림 및 빨간 점 자동 검사
       applyFont(localStorage.getItem('shift_font') || 'pretendard');
     });
   </script>
