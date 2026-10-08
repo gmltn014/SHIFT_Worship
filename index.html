@@ -2688,29 +2688,58 @@
       }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     }
 
-    function generatePartOptionsHtml(partKeyword, selectedValue = '', allowEmpty = true) {
-      const members = getMembersByPart(partKeyword);
-      let html = '';
+    function generatePartOptionsHtml(keyword, selectedValue = '', allowNone = false) {
+  let html = allowNone ? '<option value="X">X (미배치)</option>' : '<option value="">선택안함</option>';
+  
+  if (!allMembersList || !Array.isArray(allMembersList)) {
+    return html;
+  }
 
-      if (allowEmpty) {
-        html += `<option value="X" ${selectedValue === 'X' ? 'selected' : ''}>X (배치 없음)</option>`;
-      } else {
-        html += `<option value="">(선택 안 함)</option>`;
-      }
+  // 검색 키워드 정규화 (소문자)
+  const kw = String(keyword).toLowerCase().trim();
 
-      // 1. 등록된 파트 팀원 목록 렌더링
-      members.forEach(m => {
-        html += `<option value="${m.name}" ${m.name === selectedValue ? 'selected' : ''}>${m.name}</option>`;
-      });
+  // 해당 파트에 맞는 멤버만 정확히 필터링
+  const filteredMembers = allMembersList.filter(m => {
+    // member의 role 또는 part 필드 가져오기
+    const role = String(m.role || m.part || '').toLowerCase();
 
-      // 2. 만약 기존 저장된 값이 팀원 목록에 없는 이름이더라도 꼬리표 없이 이름만 출력
-      if (selectedValue && selectedValue !== 'X' && !members.some(m => m.name === selectedValue)) {
-        html += `<option value="${selectedValue}" selected>${selectedValue}</option>`;
-      }
-
-      return html;
+    // ★ 1. 자막 파트 필터링 (음향/중계 제외하고 자막/프롬프터만 정확히 매칭)
+    if (kw === 'prompter' || kw === 'subtitle' || kw === '자막') {
+      return role.includes('자막') || role.includes('prompter') || role.includes('프롬프터');
     }
 
+    // ★ 2. 영상/중계 파트 필터링
+    if (kw === 'video' || kw === '영상' || kw === '중계') {
+      return role.includes('영상') || role.includes('중계') || role.includes('video') || role.includes('camera');
+    }
+
+    // ★ 3. 음향 파트 필터링
+    if (kw === 'sound' || kw === '음향' || kw === '엔지니어') {
+      return role.includes('음향') || role.includes('sound') || role.includes('엔지니어');
+    }
+
+    // ★ 4. 방송/미디어 통합인 경우
+    if (kw === 'broadcast' || kw === '방송') {
+      return role.includes('방송') || role.includes('broadcast');
+    }
+
+    // 5. 그 외 악기 및 보컬, 인도자 등
+    return role.includes(kw);
+  });
+
+  // 옵션 태그 생성
+  filteredMembers.forEach(m => {
+    const isSelected = (m.name === selectedValue) ? 'selected' : '';
+    html += `<option value="${m.name}" ${isSelected}>${m.name}</option>`;
+  });
+
+  // 만약 선택된 사람이 목록에 없는데 값이 들어가 있는 경우(외부 인원 등) 안전하게 유지
+  if (selectedValue && selectedValue !== 'X' && !filteredMembers.some(m => m.name === selectedValue)) {
+    html += `<option value="${selectedValue}" selected>${selectedValue} (직접입력)</option>`;
+  }
+
+  return html;
+}
     function populateAllLineupSelects(currentItem = {}) {
   // 1. 인도자
   const leaderSel = document.getElementById('adminLeader');
@@ -2746,11 +2775,10 @@
 
   // ★ 자막: 대소문자(Prompter / prompter) 및 subtitle 키 모두 대응
   const prompterVal = currentItem.prompter || currentItem.Prompter || currentItem.subtitle || '';
-  setMedia('adminSubtitle', 'prompter', prompterVal);
+setMedia('adminSubtitle', 'prompter', prompterVal);
 
-  // ★ 영상: 대소문자(Video / video) 모두 대응
-  const videoVal = currentItem.video || currentItem.Video || '';
-  setMedia('adminVideo', 'video', videoVal);
+const videoVal = currentItem.video || currentItem.Video || '';
+setMedia('adminVideo', 'video', videoVal);
 }
 
     function openContiAdminModal() {
