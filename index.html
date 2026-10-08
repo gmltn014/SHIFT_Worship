@@ -601,6 +601,40 @@
   border-left: 4px solid #ef4444 !important;
   background: rgba(239, 68, 68, 0.03);
 }
+
+    /* 기도제목 피드 카드 스타일 */
+.prayer-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+}
+
+/* 긴급 중보기도 카드 (최상단 고정 및 붉은 포인트) */
+.prayer-card.intercessory {
+  border: 2px solid #ef4444 !important;
+  background: rgba(239, 68, 68, 0.03);
+}
+
+/* 기도 댓글 영역 */
+.prayer-comments-wrap {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prayer-comment-item {
+  background: var(--card-sub-bg);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
   </style>
 </head>
 <body>
@@ -929,6 +963,9 @@
         <button id="pg-subtab-sns" class="btn-action btn-secondary" onclick="switchPlaygroundSubTab('sns')" style="font-size: 0.88rem; padding: 7px 14px;">
           📸 SNS 놀이터 (취향표)
         </button>
+        <button id="pg-subtab-prayer" class="btn-action btn-secondary" onclick="switchPlaygroundSubTab('prayer')" style="font-size: 0.88rem; padding: 7px 14px;">
+    🌳 기도제목 숲
+        </button>
         <button id="pg-subtab-music" class="btn-action btn-secondary" onclick="switchPlaygroundSubTab('music')" style="font-size: 0.88rem; padding: 7px 14px;">
           🎵 찬양팀 놀이터
         </button>
@@ -1103,6 +1140,69 @@
           </div>
         </div>
       </div>
+
+      <!-- ================= 4. 기도제목 숲 ================= -->
+<div id="pg-content-prayer" style="display: none;">
+  
+  <!-- 상단 안내 배너 -->
+  <div class="card" style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.08)); border-left: 4px solid #10b981;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🌳 SHIFT 기도제목 숲</h3>
+        <p style="font-size: 0.82rem; color: var(--sub-text); margin: 0;">
+          함께 기도할 제목을 나누고 서로를 위해 기도의 손을 모으는 공간입니다.
+        </p>
+      </div>
+      <button type="button" class="btn-action btn-secondary" onclick="loadPrayerForestData()" style="padding: 4px 10px; font-size: 0.75rem;">🔄 새로고침</button>
+    </div>
+  </div>
+
+  <!-- 1. 기도제목 피드 리스트 (댓글형 피드) -->
+  <div id="prayerFeedList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+    <div class="loading-spinner">기도제목을 불러오는 중입니다...</div>
+  </div>
+
+  <!-- 2. 기도제목 작성창 (하단 고정형 카드) -->
+  <div class="card" style="border: 2px solid var(--accent-color); padding: 18px; margin-bottom: 20px;">
+    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+      <span>✍️</span> 새 기도제목 나누기
+    </h4>
+
+    <form onsubmit="handlePrayerSubmit(event)">
+      <!-- 옵션 선택 바 (실명/익명 + 중보기도 여부) -->
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; background: var(--card-sub-bg); padding: 10px 12px; border-radius: 8px;">
+        
+        <!-- 중보기도 체크박스 -->
+        <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.84rem; font-weight: 700; color: #ef4444; user-select: none;">
+          <input type="checkbox" id="prayerIsIntercessory" onchange="handleIntercessoryToggle(this.checked)" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
+          🚨 긴급 중보기도 요청 (최상단 고정 & 알림 발송)
+        </label>
+
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+          <!-- 작성 방식 선택 -->
+          <select id="prayerIsAnonymous" onchange="handlePrayerAnonChange(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+            <option value="false">👤 실명으로 나눔</option>
+            <option value="true">🎭 익명으로 나눔</option>
+          </select>
+
+          <!-- 작성자 이름 -->
+          <input type="text" id="prayerAuthorName" required placeholder="이름 입력" style="width: 110px; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
+        </div>
+      </div>
+
+      <!-- 본문 입력창 -->
+      <div style="margin-bottom: 12px;">
+        <textarea id="prayerContent" rows="3" required placeholder="기도가 필요한 일, 감사한 마음, 나눔을 솔직하게 적어주세요." style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.9rem; line-height: 1.6; resize: vertical; box-sizing: border-box;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="submit" id="btnSubmitPrayer" class="btn-action btn-primary" style="padding: 8px 20px; font-size: 0.88rem; font-weight: 700;">
+          🌱 기도제목 올리기
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
       <!-- 찬양팀 놀이터 (메트로놈) -->
       <div id="pg-content-music" style="display: none;">
@@ -5246,6 +5346,307 @@ async function handleLineupChangeRequest(e) {
   } finally {
     btn.disabled = false;
     btn.innerText = '요청 등록하기';
+  }
+}
+
+    /* ===================================================
+   🌳 SHIFT 기도제목 숲 모듈
+=================================================== */
+
+const MY_PRAYER_KEYS_STORAGE = 'shift_my_prayer_keys';
+
+// 1. 내가 쓴 글 삭제 식별키 관리 (로컬스토리지)
+function getMyPrayerKeys() {
+  try {
+    return JSON.parse(localStorage.getItem(MY_PRAYER_KEYS_STORAGE) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveMyPrayerKey(key) {
+  const keys = getMyPrayerKeys();
+  if (!keys.includes(key)) {
+    keys.push(key);
+    localStorage.setItem(MY_PRAYER_KEYS_STORAGE, JSON.stringify(keys));
+  }
+}
+
+// 2. 놀이터 서브탭 전환 함수 보강
+function switchPlaygroundSubTab(subTab) {
+  ['game', 'sns', 'prayer', 'music'].forEach(tab => {
+    const btn = document.getElementById(`pg-subtab-${tab}`);
+    const content = document.getElementById(`pg-content-${tab}`);
+    if (btn) btn.className = (tab === subTab) ? 'btn-action btn-primary' : 'btn-action btn-secondary';
+    if (content) content.style.display = (tab === subTab) ? 'block' : 'none';
+  });
+
+  if (subTab === 'game') initGameModule();
+  if (subTab === 'sns') loadSnsFeedData();
+  if (subTab === 'prayer') loadPrayerForestData(); // ★ 기도제목 숲 로드
+  if (subTab !== 'music' && isMetroPlaying) toggleMetronome();
+}
+
+// 3. 중보기도 체크 시 실명 강제 & 안내
+function handleIntercessoryToggle(isIntercessory) {
+  const anonSelect = document.getElementById('prayerIsAnonymous');
+  const authorInput = document.getElementById('prayerAuthorName');
+
+  if (isIntercessory) {
+    anonSelect.value = 'false';
+    anonSelect.disabled = true; // 익명 비활성화
+    authorInput.placeholder = '본인 실명 입력';
+    authorInput.value = '';
+    authorInput.focus();
+    alert('🚨 중보기도 요청은 책임감 있는 중보를 위해 [실명]으로만 등록됩니다.');
+  } else {
+    anonSelect.disabled = false;
+    authorInput.placeholder = '이름 입력';
+  }
+}
+
+function handlePrayerAnonChange(val) {
+  const isAnon = (val === 'true');
+  const authorInput = document.getElementById('prayerAuthorName');
+  if (isAnon) {
+    authorInput.value = '익명의 예배자';
+  } else {
+    authorInput.value = '';
+    authorInput.placeholder = '본인 이름 입력';
+  }
+}
+
+// 4. 기도제목 데이터 로드 및 렌더링 (댓글 조인)
+async function loadPrayerForestData() {
+  const feedEl = document.getElementById('prayerFeedList');
+  if (!feedEl) return;
+
+  try {
+    if (!supabaseClient) return;
+
+    // 기도제목 목록 조회
+    const { data: prayers, error: pError } = await supabaseClient
+      .from('prayer_forest')
+      .select('*')
+      .order('is_intercessory', { ascending: false }) // ★ 중보기도 최상단 정렬
+      .order('created_at', { ascending: false });
+
+    if (pError) throw pError;
+
+    // 댓글 목록 전체 조회
+    const { data: comments, error: cError } = await supabaseClient
+      .from('prayer_comments')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (cError) throw cError;
+
+    if (!prayers || prayers.length === 0) {
+      feedEl.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--sub-text);">아직 등록된 기도제목이 없습니다. 첫 기도의 씨앗을 심어보세요! 🌱</div>';
+      return;
+    }
+
+    const myKeys = getMyPrayerKeys();
+
+    feedEl.innerHTML = prayers.map(p => {
+      const isMyPost = myKeys.includes(p.delete_key);
+      const postComments = (comments || []).filter(c => String(c.prayer_id) === String(p.id));
+      const commentCount = postComments.length;
+
+      // 댓글이 달리면 기도/하트 이모지 배지 표시
+      let prayBadgeHtml = '';
+      if (commentCount > 0) {
+        prayBadgeHtml = `
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.76rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;">
+            🙏 함께 기도 중 (${commentCount}) ❤️
+          </span>
+        `;
+      }
+
+      const dateStr = p.created_at ? p.created_at.split('T')[0] : '';
+
+      return `
+        <div class="prayer-card ${p.is_intercessory ? 'intercessory' : ''}">
+          <!-- 카드 헤더 -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              ${p.is_intercessory ? '<span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;">🚨 긴급 중보기도</span>' : '<span style="background: #10b981; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">🌱 기도제목</span>'}
+              <strong style="font-size: 0.95rem;">${p.author}</strong>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">${dateStr}</span>
+              ${prayBadgeHtml}
+            </div>
+
+            <!-- 본인 작성 글일 경우 삭제 버튼 노출 -->
+            ${isMyPost ? `
+              <button type="button" onclick="deleteMyPrayer(${p.id}, '${p.delete_key}')" style="background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; text-decoration: underline;">
+                삭제
+              </button>
+            ` : ''}
+          </div>
+
+          <!-- 기도 본문 내용 -->
+          <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); white-space: pre-wrap; margin-bottom: 10px;">${p.content}</div>
+
+          <!-- 기도/응원 댓글 토글 버튼 -->
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn-action btn-secondary" onclick="toggleCommentBox(${p.id})" style="padding: 4px 10px; font-size: 0.78rem;">
+              💬 함께 기도하기 (댓글 ${commentCount})
+            </button>
+          </div>
+
+          <!-- 댓글 목록 & 입력창 (기본 토글 또는 노출) -->
+          <div id="commentSection-${p.id}" class="prayer-comments-wrap" style="${commentCount > 0 ? 'display: flex;' : 'display: none;'}">
+            <div id="commentList-${p.id}">
+              ${postComments.map(c => `
+                <div class="prayer-comment-item">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                    <strong style="color: var(--accent-color); font-size: 0.78rem;">${c.author}</strong>
+                    <span style="font-size: 0.68rem; color: var(--sub-text);">${c.created_at ? c.created_at.split('T')[0] : ''}</span>
+                  </div>
+                  <div>${c.comment}</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- 작은 댓글 입력창 -->
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+              <input type="text" id="commentAuthor-${p.id}" placeholder="이름" style="width: 75px; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.78rem;">
+              <input type="text" id="commentText-${p.id}" placeholder="기도로 동역할게요! 🙏" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.8rem;">
+              <button type="button" onclick="submitPrayerComment(${p.id})" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 700; white-space: nowrap;">
+                기도하기
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('기도제목 숲 로드 오류:', err);
+  }
+}
+
+// 5. 새 기도제목 제출 (중보기도 시 인앱 알림 발송 연동)
+async function handlePrayerSubmit(e) {
+  e.preventDefault();
+
+  const author = document.getElementById('prayerAuthorName').value.trim();
+  const isAnon = document.getElementById('prayerIsAnonymous').value === 'true';
+  const isIntercessory = document.getElementById('prayerIsIntercessory').checked;
+  const content = document.getElementById('prayerContent').value.trim();
+  const btn = document.getElementById('btnSubmitPrayer');
+
+  if (!content) {
+    alert('기도제목 내용을 입력해 주세요.');
+    return;
+  }
+
+  // 중보기도 시 실명 재검증
+  if (isIntercessory && (isAnon || !author || author === '익명의 예배자')) {
+    alert('중보기도 요청은 본인 실명으로만 등록 가능합니다.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = '등록 중...';
+
+  // 나만의 고유 삭제키 생성
+  const deleteKey = 'pk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+  try {
+    const { error } = await supabaseClient.from('prayer_forest').insert([{
+      author: isAnon ? '익명의 예배자' : author,
+      is_anonymous: isAnon,
+      is_intercessory: isIntercessory,
+      content,
+      delete_key: deleteKey
+    }]);
+
+    if (error) throw error;
+
+    // 본인 삭제키 저장
+    saveMyPrayerKey(deleteKey);
+
+    // ★ 긴급 중보기도인 경우, 포털 인앱 알림 시스템에 즉시 등록!
+    if (isIntercessory && typeof sendNotificationAndTrim === 'function') {
+      await sendNotificationAndTrim({
+        type: 'request',
+        category: '중보기도',
+        action_type: '긴급요청',
+        title: `🚨 [중보기도 요청] ${author} 팀원의 기도제목`,
+        message: `SHIFT 찬양팀의 멤버가 중보기도를 요청하였습니다. 확인해주세요.\n\n▶ 내용: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+        sender_name: author
+      });
+    }
+
+    alert('소중한 기도제목이 숲에 등록되었습니다. 함께 기도합니다! 🙏');
+    document.getElementById('prayerContent').value = '';
+    if (!isAnon) document.getElementById('prayerAuthorName').value = '';
+    document.getElementById('prayerIsIntercessory').checked = false;
+    handleIntercessoryToggle(false);
+
+    await loadPrayerForestData();
+  } catch (err) {
+    console.error('기도제목 등록 실패:', err);
+    alert('등록 오류: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '🌱 기도제목 올리기';
+  }
+}
+
+// 6. 댓글창 열기/닫기 토글
+function toggleCommentBox(prayerId) {
+  const box = document.getElementById(`commentSection-${prayerId}`);
+  if (!box) return;
+  box.style.display = (box.style.display === 'none') ? 'flex' : 'none';
+}
+
+// 7. 기도 응원 댓글 등록
+async function submitPrayerComment(prayerId) {
+  const authorInput = document.getElementById(`commentAuthor-${prayerId}`);
+  const textInput = document.getElementById(`commentText-${prayerId}`);
+
+  const author = authorInput?.value.trim() || '동역자';
+  const comment = textInput?.value.trim();
+
+  if (!comment) {
+    alert('기도와 격려의 메시지를 입력해 주세요.');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient.from('prayer_comments').insert([{
+      prayer_id: prayerId,
+      author,
+      comment
+    }]);
+
+    if (error) throw error;
+
+    if (textInput) textInput.value = '';
+    await loadPrayerForestData();
+  } catch (err) {
+    alert('댓글 등록 오류: ' + err.message);
+  }
+}
+
+// 8. 본인 기도제목 삭제
+async function deleteMyPrayer(prayerId, deleteKey) {
+  if (!confirm('작성하신 기도제목을 삭제하시겠습니까? (달린 응원 댓글도 함께 삭제됩니다)')) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from('prayer_forest')
+      .delete()
+      .eq('id', prayerId)
+      .eq('delete_key', deleteKey);
+
+    if (error) throw error;
+
+    alert('기도제목이 삭제되었습니다.');
+    await loadPrayerForestData();
+  } catch (err) {
+    alert('삭제 실패: ' + err.message);
   }
 }
 
