@@ -755,6 +755,39 @@
   overflow-y: auto !important;
   box-sizing: border-box !important;
 }
+
+    #monthlyAdminModal,
+#monthlyLineupModal,
+#adminMonthlyModal,
+#monthlyScheduleModal,
+.monthly-admin-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  z-index: 99999 !important;
+  display: none;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* 팝업 내부 카드 규격 */
+#monthlyAdminModal > div,
+#monthlyLineupModal > div,
+#adminMonthlyModal > div,
+#monthlyScheduleModal > div,
+.monthly-admin-modal > div {
+  margin: auto !important;
+  max-width: 650px !important;
+  width: 95% !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
   </style>
 </head>
 <body>
@@ -2685,40 +2718,46 @@
     }
 
     function populateAllLineupSelects(currentItem = {}) {
-      // 1. 인도자
-      const leaderSel = document.getElementById('adminLeader');
-      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('leader', currentItem.leader || '', false);
+  // 1. 인도자
+  const leaderSel = document.getElementById('adminLeader');
+  if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('leader', currentItem.leader || '', false);
 
-      // 2. 보컬 (최대 4명)
-      const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
-      for (let i = 1; i <= 4; i++) {
-        const sel = document.getElementById(`adminVocalSelect${i}`);
-        if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
-      }
+  // 2. 보컬 (최대 4명)
+  const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+  for (let i = 1; i <= 4; i++) {
+    const sel = document.getElementById(`adminVocalSelect${i}`);
+    if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
+  }
 
-      // 3. 악기 세션 (미배치 가능 -> X 허용 true)
-      const setSession = (id, keyword, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
-      };
+  // 3. 악기 세션 (미배치 가능 -> X 허용 true)
+  const setSession = (id, keyword, val) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
+  };
 
-      setSession('adminKeyboard1', 'keyboard', currentItem.keyboard1 || 'X');
-      setSession('adminKeyboard2', 'keyboard', currentItem.keyboard2 || 'X');
-      setSession('adminDrum', 'drum', currentItem.drum || 'X');
-      setSession('adminGuitar', 'guitar', currentItem.guitar || 'X');
-      setSession('adminBass', 'bass', currentItem.bass || 'X');
+  setSession('adminKeyboard1', 'keyboard', currentItem.keyboard1 || 'X');
+  setSession('adminKeyboard2', 'keyboard', currentItem.keyboard2 || 'X');
+  setSession('adminDrum', 'drum', currentItem.drum || 'X');
+  setSession('adminGuitar', 'guitar', currentItem.guitar || 'X');
+  setSession('adminBass', 'bass', currentItem.bass || 'X');
 
-      // 4. ★ 방송/엔지니어 (필수 배치 -> X 제거 false)
-      const setMedia = (id, keyword, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || '', false);
-      };
+  // 4. ★ 방송/엔지니어 (필수 배치 -> X 제거 false)
+  const setMedia = (id, keyword, val) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || '', false);
+  };
 
-      setMedia('adminSound', 'sound', currentItem.sound || '');
-      setMedia('adminBroadcast', 'broadcast', currentItem.broadcast || '');
-      setMedia('adminSubtitle', 'Prompter', currentItem.Prompter || '');
-      setMedia('adminVideo', 'Video', currentItem.Video || '');
-    }
+  setMedia('adminSound', 'sound', currentItem.sound || '');
+  setMedia('adminBroadcast', 'broadcast', currentItem.broadcast || '');
+
+  // ★ 자막: 대소문자(Prompter / prompter) 및 subtitle 키 모두 대응
+  const prompterVal = currentItem.prompter || currentItem.Prompter || currentItem.subtitle || '';
+  setMedia('adminSubtitle', 'prompter', prompterVal);
+
+  // ★ 영상: 대소문자(Video / video) 모두 대응
+  const videoVal = currentItem.video || currentItem.Video || '';
+  setMedia('adminVideo', 'video', videoVal);
+}
 
     function openContiAdminModal() {
       checkAdminAuth(async () => {
