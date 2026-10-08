@@ -2781,17 +2781,50 @@ const videoVal = currentItem.video || currentItem.Video || '';
 setMedia('adminVideo', 'video', videoVal);
 }
 
-    function openContiAdminModal() {
-      checkAdminAuth(async () => {
-        try {
-          await setupContiAdminForm();
-        } catch (e) {
-          console.warn('콘티 폼 설정 중 경고:', e);
+    async function openContiAdminModal() {
+  checkAdminAuth(async () => {
+    try {
+      // 멤버 목록이 비어있으면 먼저 불러오고 대기
+      if (!allMembersList || allMembersList.length === 0) {
+        if (typeof loadMembersData === 'function') {
+          await loadMembersData();
         }
-        const modal = document.getElementById('contiAdminModal');
-        if (modal) modal.style.display = 'flex';
-      });
+      }
+      await setupContiAdminForm();
+    } catch (e) {
+      console.warn('콘티 폼 설정 중 경고:', e);
     }
+    const modal = document.getElementById('contiAdminModal');
+    if (modal) modal.style.display = 'flex';
+  });
+}
+
+/* 월간 라인업 모달 열기 보장 */
+async function openMonthLineupModal() {
+  checkAdminAuth(async () => {
+    // 멤버 목록이 비어있으면 먼저 불러오고 대기
+    if (!allMembersList || allMembersList.length === 0) {
+      if (typeof loadMembersData === 'function') {
+        await loadMembersData();
+      }
+    }
+
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const defaultMonth = `${yyyy}-${mm}`;
+
+    const picker = document.getElementById('monthLineupPicker');
+    if (picker) picker.value = defaultMonth;
+
+    if (typeof loadMonthLineupData === 'function') {
+      await loadMonthLineupData(defaultMonth);
+    }
+    
+    const modal = document.getElementById('monthLineupModal');
+    if (modal) modal.style.display = 'flex';
+  });
+}
 
     function closeContiAdminModal() {
       document.getElementById('contiAdminModal').style.display = 'none';
@@ -3805,13 +3838,14 @@ setMedia('adminVideo', 'video', videoVal);
     let selectedMemberCategory = 'ALL';
 
     async function loadMembersData() {
-      const loadingEl = document.getElementById('membersLoading');
-      try {
-        const { data, error } = await supabaseClient
-          .from('members')
-          .select('*')
-          .order('name', { ascending: true });
-
+  const { data, error } = await supabaseClient
+    .from('members') // 또는 team_members, user_profiles 등
+    .select('*')
+    .order('name');
+  if (data) {
+    allMembersList = data;
+  }
+}
         if (error) throw error;
 
         allMembersList = data || [];
