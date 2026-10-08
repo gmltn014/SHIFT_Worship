@@ -609,6 +609,40 @@
   word-break: break-all !important;
   overflow-wrap: break-word !important;
 }
+
+    /* 설정 모달 모바일 반응형 최적화 */
+#settingsModal .modal-card {
+  max-width: 520px;
+  width: 92%;
+  box-sizing: border-box;
+}
+
+/* 설정 항목 내부의 좌우 배치 요소들을 모바일에서 자연스럽게 줄바꿈 */
+#settingsModal .setting-row,
+#settingsModal .setting-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* 폭이 좁으면 자동 줄바꿈 */
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color, #334155);
+}
+
+@media (max-width: 480px) {
+  #settingsModal .setting-row,
+  #settingsModal .setting-item {
+    align-items: flex-start;
+  }
+  
+  /* 버전 정보나 버튼이 오른쪽 끝으로 밀려 튀어나가는 것 방지 */
+  #settingsModal .version-badge,
+  #settingsModal .setting-action {
+    margin-top: 4px;
+    align-self: flex-start;
+  }
+}
   </style>
 </head>
 <body>
@@ -4222,94 +4256,67 @@ ${details}
        기기 동기화 엔진 (변수 순서 꼬임 완전 방지 버전)
     =================================================== */
 
-    // 1. 고유 연동 키 발급/조회 (외부 const에 의존하지 않고 직접 처리)
-    function getOrCreateSyncKey() {
-      var key = localStorage.getItem('shift_user_sync_key');
-      if (!key) {
-        var randNum = Math.floor(1000 + Math.random() * 9000);
-        var randAlpha = Math.random().toString(36).substring(2, 5).toUpperCase();
-        key = 'SHIFT-' + randNum + randAlpha;
-        localStorage.setItem('shift_user_sync_key', key);
-      }
-      return key;
-    }
+    async function generateAndSaveMySyncCode() {
+      const codeDisplay = document.getElementById('mySyncCodeDisplay');
+      if (codeDisplay) codeDisplay.innerText = '코드 발급 중... ⏳';
 
-    // 2. 클라우드 백업 함수
-    async function pushSyncDataToCloud() {
-      // Supabase 클라이언트가 아직 없으면 조용히 종료
-      if (!window.supabaseClient) return;
+      // 8자리 랜덤 영문/숫자 코드 생성 (예: SH-7A9B)
+      const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase() +
+                        Math.random().toString(36).substring(2, 6).toUpperCase();
+      const newSyncCode = 'SH-' + randomStr.substring(0, 6);
+
+      // 현재 기기의 설정 값 수집
+      const currentSettings = {
+        theme: localStorage.getItem('shift_theme') || 'dark',
+        font: localStorage.getItem('shift_font') || 'pretendard',
+        updated_at: new Date().toISOString()
+      };
 
       try {
-        var key = getOrCreateSyncKey();
-        var currentTheme = localStorage.getItem('shift_theme') || 'light';
-        var currentFont = localStorage.getItem('shift_font') || 'system';
-        var mySuggestionIds = typeof getMySuggestionIds === 'function' ? getMySuggestionIds() : [];
+        const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+        if (!client) throw new Error('Supabase 클라이언트를 찾을 수 없습니다.');
 
-        var payload = {
-          sync_key: key,
-          settings: {
-            theme: currentTheme,
-            font: currentFont
-          },
-          my_suggestion_ids: mySuggestionIds,
-          updated_at: new Date().toISOString()
-        };
+        // ★ 핵심: 생성하자마자 user_sync 테이블에 반드시 INSERT/UPSERT 저장!
+        const { error } = await client
+          .from('user_sync')
+          .upsert([{
+            sync_code: newSyncCode,
+            settings: currentSettings,
+            created_at: new Date().toISOString()
+          }], { onConflict: 'sync_code' });
 
-        await supabaseClient.from('user_sync').upsert(payload);
-      } catch (e) {
-        // 백그라운드 동기화 실패는 조용히 무시
+        if (error) throw error;
+
+        // 내 로컬스토리지에도 저장
+        localStorage.setItem(SYNC_KEY_STORAGE, newSyncCode);
+
+        if (codeDisplay) {
+          codeDisplay.innerText = newSyncCode;
+        }
+        alert(`✅ 새 동기화 코드가 클라우드에 등록되었습니다!\n[ ${newSyncCode} ]\n다른 기기에서 이 코드를 입력해 주세요.`);
+
+      } catch (err) {
+        console.error('동기화 코드 발급 및 DB 저장 실패:', err);
+        if (codeDisplay) codeDisplay.innerText = '발급 실패';
+        alert('동기화 코드 등록 실패: ' + err.message + '\nSupabase user_sync 테이블 권한(RLS)을 확인해 주세요.');
       }
     }
 
-    /* 3. 폰트 변경 함수 */
-    function changeAppFont(fontKey, skipCloudSync) {
-      var fontStack = '';
-      switch (fontKey) {
-        case 'score':
-          fontStack = '"S-CoreDream-3Light", -apple-system, sans-serif';
-          break;
-        case 'serif':
-          fontStack = '"Noto Serif KR", serif';
-          break;
-        case 'system':
-        default:
-          fontStack = '-apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-          break;
-      }
-      document.documentElement.style.setProperty('--app-font', fontStack);
-      localStorage.setItem('shift_font', fontKey);
-
-      // 사용자가 직접 설정을 바꿀 때만 클라우드에 백업 (첫 로드 시 실행 방지)
-      if (!skipCloudSync) {
-        pushSyncDataToCloud();
-      }
-    }
-
-    // 첫 페이지 로드 시에는 두 번째 인자로 true를 넘겨 백업 요청을 건너뜁니다.
-    function initAppFont() {
-      var savedFont = localStorage.getItem('shift_font') || 'system';
-      changeAppFont(savedFont, true);
-    }
-    initAppFont();
-    
+    /* [기능 B] 다른 기기에서 코드 입력 후 불러오기 */
     async function handleApplySyncCode(event) {
       if (event && event.preventDefault) event.preventDefault();
-      console.log('동기화 불러오기 버튼 클릭됨');
 
-      // 1. 입력창 탐색 (ID 및 플레이스홀더 다중 폴백)
       const inputEl = document.getElementById('syncCodeInput') || 
                       document.getElementById('inputSyncCode') || 
-                      document.getElementById('targetSyncCode') || 
-                      document.getElementById('deviceSyncCode') ||
                       document.querySelector('input[placeholder*="동기화"]');
 
       if (!inputEl) {
-        alert('동기화 코드 입력창을 찾지 못했습니다.');
-        console.error('sync input element not found');
+        alert('동기화 입력창을 찾을 수 없습니다.');
         return;
       }
 
-      const code = inputEl.value ? inputEl.value.trim() : '';
+      // 대소문자 무관 비교 및 공백 제거
+      const code = inputEl.value ? inputEl.value.trim().toUpperCase() : '';
 
       if (!code) {
         alert('동기화 코드를 입력해 주세요.');
@@ -4317,38 +4324,35 @@ ${details}
         return;
       }
 
-      // 2. 버튼 상태 제어
-      const btn = document.getElementById('btnRestoreSync') || (event && event.target);
-      const originalText = btn ? btn.innerText : '불러오기';
+      const btn = event ? event.target : document.getElementById('btnRestoreSync');
       if (btn) {
         btn.disabled = true;
-        btn.innerText = '동기화 중...';
+        btn.innerText = '조회 중...';
       }
-
-      const storageKey = (typeof SYNC_KEY_STORAGE !== 'undefined') ? SYNC_KEY_STORAGE : 'shift_portal_sync_key';
 
       try {
         const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
         if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
 
-        // 3. Supabase user_sync 테이블에서 코드 일치 데이터 조회
+        // 대소문자 유연한 매칭을 위해 ilike 사용
         const { data, error } = await client
           .from('user_sync')
           .select('*')
-          .eq('sync_code', code)
-          .single();
+          .ilike('sync_code', code)
+          .maybeSingle();
 
-        if (error || !data) {
-          throw new Error('유효하지 않거나 일치하는 동기화 코드가 없습니다.');
+        if (error) throw error;
+
+        if (!data) {
+          throw new Error(`[ ${code} ]에 해당하는 동기화 기록이 서버에 없습니다.\n코드를 생성한 기기에서 발급이 완료되었는지 확인해 주세요.`);
         }
 
-        // 4. 로컬스토리지에 동기화 키 저장
-        localStorage.setItem(storageKey, code);
+        // 로컬 키 저장
+        localStorage.setItem(SYNC_KEY_STORAGE, data.sync_code);
 
-        // 5. 환경설정 복원 (테마, 글꼴, 즐겨찾기 등)
+        // 설정 복원
         if (data.settings) {
           const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
-          
           if (settings.theme) {
             localStorage.setItem('shift_theme', settings.theme);
             if (typeof applyTheme === 'function') applyTheme(settings.theme);
@@ -4357,12 +4361,9 @@ ${details}
             localStorage.setItem('shift_font', settings.font);
             if (typeof applyFont === 'function') applyFont(settings.font);
           }
-          if (settings.my_parts) {
-            localStorage.setItem('shift_my_parts', JSON.stringify(settings.my_parts));
-          }
         }
 
-        alert('🎉 기기 동기화가 완료되었습니다! 설정을 적용하기 위해 포털을 새로고침합니다.');
+        alert('🎉 기기 동기화가 성공적으로 완료되었습니다! 설정을 적용합니다.');
         location.reload();
 
       } catch (err) {
@@ -4371,11 +4372,11 @@ ${details}
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerText = originalText;
+          btn.innerText = '불러오기';
         }
       }
     }
-
+    
     // 내 코드 복사 헬퍼
     function copyMySyncKey() {
       const key = getOrCreateSyncKey();
