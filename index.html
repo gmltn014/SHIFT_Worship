@@ -3589,6 +3589,51 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    /* 업데이트 목록에서 최신 버전을 감지해 헤더 배지에 반영 */
+    function syncHeaderVersionFromNotes() {
+      const badgeBtn = document.getElementById('headerVersionBadge');
+      if (!badgeBtn) return;
+
+      let latestVersion = '';
+
+      // 1. 공지/업데이트 데이터 배열 탐색 (UPDATE_NOTES, updateNotes, noticeList 등)
+      const listData = (typeof UPDATE_NOTES !== 'undefined') ? UPDATE_NOTES :
+                       (typeof updateList !== 'undefined') ? updateList :
+                       (typeof noticeList !== 'undefined') ? noticeList : null;
+
+      if (Array.isArray(listData) && listData.length > 0) {
+        for (const item of listData) {
+          const text = (item.version || '') + ' ' + (item.title || '') + ' ' + (item.content || '');
+          const match = text.match(/v\d+\.\d+(\.\d+)?/i);
+          if (match) {
+            latestVersion = match[0];
+            break;
+          }
+        }
+      }
+
+      // 2. 만약 DOM에 이미 렌더링된 텍스트에서 찾는 경우 (폴백)
+      if (!latestVersion) {
+        const updateArea = document.getElementById('updateList') || 
+                           document.getElementById('updateNotesList') || 
+                           document.querySelector('.update-note-card');
+        if (updateArea) {
+          const match = updateArea.innerText.match(/v\d+\.\d+(\.\d+)?/i);
+          if (match) latestVersion = match[0];
+        }
+      }
+
+      // 3. 최신 버전이 확인되면 텍스트를 주입하고 노출 (깜빡임 모션 없음)
+      if (latestVersion) {
+        badgeBtn.innerText = latestVersion.startsWith('v') ? latestVersion : `v${latestVersion}`;
+        badgeBtn.style.display = 'inline-flex';
+      } else {
+        // 아직 로드되지 않았으면 기본적으로 v2.3.0 등으로 안전하게 fallback
+        badgeBtn.innerText = 'v2.3.0';
+        badgeBtn.style.display = 'inline-flex';
+      }
+    }
+
     /* 9. 멤버 모듈 */
     let allMembersList = [];
     let selectedMemberCategory = 'ALL';
