@@ -2007,79 +2007,91 @@
     }
 
     function getMembersByPart(partKeyword) {
-      if (!allMembersList || allMembersList.length === 0) return [];
-      const target = (partKeyword || '').toLowerCase().trim();
+  if (!allMembersList || allMembersList.length === 0) return [];
+  const target = (partKeyword || '').toLowerCase().trim();
 
-      return allMembersList.filter(m => {
-        if ((m.active || '').trim() !== '활동 중') return false;
-        if (!target || target === 'all') return true;
+  return allMembersList.filter(m => {
+    if ((m.active || '').trim() !== '활동 중') return false;
+    if (!target || target === 'all') return true;
 
-        const source = [m.main_category, m.main_part, m.part_b, m.part_tag, m.role, m.part]
-          .filter(Boolean).join(' ').toLowerCase();
+    // ★ 대분류(main_category: Live Ops 등)를 제외하고 실제 세부 파트 명칭만 결합
+    const source = [m.main_part, m.part_b, m.part_tag, m.role, m.part]
+      .filter(Boolean).join(' ').toLowerCase();
 
-        switch (target) {
-          case 'leader':
-          case '리더':
-            return source.includes('leader') || source.includes('리더') || source.includes('인도');
-          case 'vocal':
-          case '보컬':
-            return source.includes('vocal') || source.includes('보컬') || source.includes('싱어');
-          case 'keyboard':
-          case '건반':
-            return source.includes('keyboard') || source.includes('건반') || source.includes('피아노') || source.includes('신디');
-          case 'drum':
-          case '드럼':
-            return source.includes('drum') || source.includes('드럼');
-          case 'guitar':
-          case '기타':
-            return source.includes('guitar') || source.includes('기타') || source.includes('어쿠스틱') || source.includes('일렉');
-          case 'bass':
-          case '베이스':
-            return source.includes('bass') || source.includes('베이스');
-          case 'sound':
-          case '음향':
-            return source.includes('sound') || source.includes('음향') || source.includes('엔지니어') || source.includes('믹서') || source.includes('live ops');
-          case 'broadcast':
-          case '방송':
-            return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('live ops');
-          case 'prompter':
-          case '자막':
-          case 'subtitle':
-            return source.includes('prompter') || source.includes('자막') || source.includes('ppt') || source.includes('live ops') || source.includes('프롬프터');
-          case 'video':
-          case '영상':
-            return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('post prod');
-          default:
-            return source.includes(target);
-        }
-      }).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
+    switch (target) {
+      case 'leader':
+      case '리더':
+        return source.includes('leader') || source.includes('리더') || source.includes('인도');
+
+      case 'vocal':
+      case '보컬':
+        return source.includes('vocal') || source.includes('보컬') || source.includes('싱어');
+
+      case 'keyboard':
+      case '건반':
+        return source.includes('keyboard') || source.includes('건반') || source.includes('피아노') || source.includes('신디');
+
+      case 'drum':
+      case '드럼':
+        return source.includes('drum') || source.includes('드럼');
+
+      case 'guitar':
+      case '기타':
+        return source.includes('guitar') || source.includes('기타') || source.includes('어쿠스틱') || source.includes('일렉');
+
+      case 'bass':
+      case '베이스':
+        return source.includes('bass') || source.includes('베이스');
+
+      // ★ 음향 전용: 음향, sound, 믹서, 엔지니어만 정확히 매칭 (중계/자막 제외)
+      case 'sound':
+      case '음향':
+        return source.includes('sound') || source.includes('음향') || source.includes('믹서') || source.includes('엔지니어');
+
+      // ★ 방송/중계 전용: 방송, 중계, broadcast, 카메라만 매칭 (음향/자막 제외)
+      case 'broadcast':
+      case '방송':
+      case '중계':
+        return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('카메라');
+
+      // ★ 자막 전용: 자막, prompter, subtitle, ppt, 프롬프터만 매칭 (음향/중계 제외)
+      case 'prompter':
+      case '자막':
+      case 'subtitle':
+        return source.includes('prompter') || source.includes('자막') || source.includes('subtitle') || source.includes('ppt') || source.includes('프롬프터');
+
+      // ★ 영상편집 전용
+      case 'video':
+      case '영상':
+        return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('미디어');
+
+      default:
+        return source.includes(target);
     }
+  }).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
+}
 
     function generatePartOptionsHtml(keyword, selectedValue = '', allowNone = false) {
-      let html = allowNone ? '<option value="X">X (미배치)</option>' : '<option value="">선택안함</option>';
-      
-      const cleanSelectedVal = String(selectedValue || '').replace(/\s*\(직접입력\)$/, '').trim();
-      let matchedMembers = getMembersByPart(keyword);
+  let html = allowNone ? '<option value="X">X (미배치)</option>' : '<option value="">선택안함</option>';
+  
+  const cleanSelectedVal = String(selectedValue || '').replace(/\s*\(직접입력\)$/, '').trim();
+  const matchedMembers = getMembersByPart(keyword);
 
-      // 만약 특정 파트로 필터링했는데 0명이면 전체 활동 중인 멤버 표시
-      if (matchedMembers.length === 0) {
-        matchedMembers = allMembersList.filter(m => (m.active || '').trim() === '활동 중');
-      }
+  // ★ 해당 파트 멤버들만 정확히 드롭다운 목록으로 추가
+  let isValueMatched = false;
+  matchedMembers.forEach(m => {
+    const isSelected = (m.name === cleanSelectedVal) ? 'selected' : '';
+    if (isSelected) isValueMatched = true;
+    html += `<option value="${m.name}" ${isSelected}>${m.name}</option>`;
+  });
 
-      let isValueMatched = false;
-      matchedMembers.forEach(m => {
-        const isSelected = (m.name === cleanSelectedVal) ? 'selected' : '';
-        if (isSelected) isValueMatched = true;
-        html += `<option value="${m.name}" ${isSelected}>${m.name}</option>`;
-      });
+  // 기존에 저장된 사람이 해당 파트 목록에 없더라도(외부 지원/파트 변경자) 값 보존
+  if (cleanSelectedVal && cleanSelectedVal !== 'X' && !isValueMatched) {
+    html += `<option value="${cleanSelectedVal}" selected>${cleanSelectedVal}</option>`;
+  }
 
-      // 기존 저장값이 목록에 없는 외부/이전 인원일 경우 단정하게 추가
-      if (cleanSelectedVal && cleanSelectedVal !== 'X' && !isValueMatched) {
-        html += `<option value="${cleanSelectedVal}" selected>${cleanSelectedVal}</option>`;
-      }
-
-      return html;
-    }
+  return html;
+}
 
     function populateAllLineupSelects(currentItem = {}) {
       const leaderSel = document.getElementById('adminLeader');
