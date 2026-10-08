@@ -4107,7 +4107,6 @@
 
 /* 2. 동기화 코드 복사 함수 (모바일/HTTPS 제약 완벽 대응 폴백 탑재) */
 async function copySyncCode() {
-  // 화면의 텍스트 또는 로컬스토리지에서 코드 가져오기
   const codeDisplay = document.getElementById('mySyncCodeDisplay') || 
                       document.getElementById('syncCodeDisplay') || 
                       document.querySelector('.sync-code-text');
@@ -4117,47 +4116,89 @@ async function copySyncCode() {
     code = localStorage.getItem('shift_portal_sync_key') || '';
   }
 
+  // 코드가 아예 없다면 새로 생성
   if (!code || code === '-') {
-    alert('복사할 동기화 코드가 없습니다. 창을 다시 열어주세요.');
-    return;
+    const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    code = 'SHIFT-' + randPart;
+    localStorage.setItem('shift_portal_sync_key', code);
+    if (codeDisplay) codeDisplay.innerText = code;
   }
 
-  let copied = false;
+  // 복사 버튼 상태 변경 (사용자 피드백)
+  const copyBtn = event ? event.target : null;
+  const originalBtnText = copyBtn ? copyBtn.innerText : '📋 코드 복사';
+  if (copyBtn) {
+    copyBtn.disabled = true;
+    copyBtn.innerText = '☁️ 저장 중...';
+  }
 
-  // 방법 A: 최신 Clipboard API 시도
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    try {
-      await navigator.clipboard.writeText(code);
-      copied = true;
-    } catch (err) {
-      console.warn('Clipboard API 실패, 레거시 폴백으로 전환:', err);
+  try {
+    // 1. Supabase 클라이언트 확인
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+    if (!client) throw new Error('Supabase 클라이언트를 찾을 수 없습니다.');
+
+    // 2. 현재 기기의 로컬 설정값 수집
+    const currentSettings = {
+      theme: localStorage.getItem('shift_theme') || 'dark',
+      font: localStorage.getItem('shift_font') || 'pretendard',
+      updated_at: new Date().toISOString()
+    };
+
+    // 3. ★ 핵심: user_sync 테이블에 강제 저장 (UPSERT)
+    const { data, error } = await client
+      .from('user_sync')
+      .upsert([{
+        sync_code: code,
+        settings: currentSettings,
+        created_at: new Date().toISOString()
+      }], { onConflict: 'sync_code' });
+
+    if (error) {
+      // RLS 정책 문제 등으로 저장이 튕겨 나갔을 때 정확한 에러 출력
+      throw new Error(`DB 저장 실패: ${error.message}`);
     }
-  }
 
-  // 방법 B: 모바일 및 브라우저 보안 제약 대응용 textarea 가상 복사 (확실한 폴백)
-  if (!copied) {
-    try {
-      const tempTextArea = document.createElement('textarea');
-      tempTextArea.value = code;
-      tempTextArea.style.position = 'fixed';
-      tempTextArea.style.left = '-9999px';
-      tempTextArea.style.top = '0';
-      document.body.appendChild(tempTextArea);
-      tempTextArea.focus();
-      tempTextArea.select();
-      copied = document.execCommand('copy');
-      document.body.removeChild(tempTextArea);
-    } catch (e) {
-      console.error('레거시 복사 실패:', e);
+    console.log('✅ Supabase user_sync 저장 완료:', code);
+
+    // 4. 저장이 성공했으므로 클립보드 복사 진행
+    let copied = false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(code);
+        copied = true;
+      } catch (clipErr) {
+        console.warn('Clipboard API 실패, 폴백 시도:', clipErr);
+      }
     }
-  }
 
-  // 결과 안내문 출력
-  if (copied) {
-    alert(`📋 동기화 코드가 복사되었습니다!\n[ ${code} ]\n\n다른 기기(노트북 등)의 설정창에서 붙여넣어 주세요.`);
-  } else {
-    // 브라우저가 클립보드를 완전히 차단한 경우 수동 안내
-    prompt('코드를 길게 눌러 직접 복사해 주세요:', code);
+    if (!copied) {
+      try {
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = code;
+        tempTextArea.style.position = 'fixed';
+        tempTextArea.style.left = '-9999px';
+        tempTextArea.style.top = '0';
+        document.body.appendChild(tempTextArea);
+        tempTextArea.focus();
+        tempTextArea.select();
+        copied = document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+      } catch (e) {
+        console.error('레거시 복사 에러:', e);
+      }
+    }
+
+    // 5. 완료 안내
+    alert(`🎉 [ ${code} ]\n클라우드 서버에 안전하게 등록 및 복사되었습니다!\n\n이제 다른 기기(노트북 등)에서 붙여넣고 [불러오기]를 눌러주세요.`);
+
+  } catch (err) {
+    console.error('동기화 코드 저장 오류:', err);
+    alert(`⚠️ 서버 저장 중 문제가 발생했습니다.\n\n내용: ${err.message}\n(Supabase의 RLS 권한 또는 테이블 설정을 확인해 주세요.)`);
+  } finally {
+    if (copyBtn) {
+      copyBtn.disabled = false;
+      copyBtn.innerText = originalBtnText;
+    }
   }
 }
 
