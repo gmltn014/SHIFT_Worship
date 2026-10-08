@@ -4173,6 +4173,7 @@ async function copySyncCode(event) {
     code = localStorage.getItem('shift_portal_sync_key') || '';
   }
 
+  // 코드가 없으면 새로 발급
   if (!code || code === '-') {
     const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
     code = 'SHIFT-' + randPart;
@@ -4191,14 +4192,29 @@ async function copySyncCode(event) {
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
     if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
 
-    // 현재 기기의 설정 데이터
+    // [핵심] 로컬스토리지에 저장되어 있는 내가 작성한 건의글 ID 목록 수집
+    let mySuggestionIds = [];
+    try {
+      const storedIds = localStorage.getItem('shift_my_suggestions') || 
+                        localStorage.getItem('my_suggestion_ids');
+      if (storedIds) {
+        mySuggestionIds = JSON.parse(storedIds);
+        if (!Array.isArray(mySuggestionIds)) mySuggestionIds = [];
+      }
+    } catch (e) {
+      console.warn('건의글 ID 파싱 건너뜀:', e);
+      mySuggestionIds = [];
+    }
+
+    // settings JSON 안에 건의글 ID 목록을 포함시킴 (DB 열 추가 불필요!)
     const currentSettings = {
       theme: localStorage.getItem('shift_theme') || 'dark',
       font: localStorage.getItem('shift_font') || 'pretendard',
+      my_suggestion_ids: mySuggestionIds,
       updated_at: new Date().toISOString()
     };
 
-    // ★ 정리된 user_sync 테이블 구조에 맞춰 upsert
+    // Supabase user_sync 테이블에 저장 (upsert)
     const { error } = await client
       .from('user_sync')
       .upsert({
@@ -4211,16 +4227,16 @@ async function copySyncCode(event) {
       throw new Error(`[${error.code || 'ERR'}] ${error.message}`);
     }
 
-    console.log('✅ Supabase user_sync 저장 성공:', code);
+    console.log('✅ Supabase user_sync 저장 성공:', code, currentSettings);
 
-    // 클립보드 복사 실행 (모바일/HTTPS 폴백 대응)
+    // 모바일/브라우저 클립보드 복사 실행
     let copied = false;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(code);
         copied = true;
       } catch (clipErr) {
-        console.warn('Clipboard API 폴백 시도:', clipErr);
+        console.warn('Clipboard API 폴백:', clipErr);
       }
     }
 
@@ -4237,10 +4253,10 @@ async function copySyncCode(event) {
       document.body.removeChild(tempTextArea);
     }
 
-    alert(`🎉 [ ${code} ]\n클라우드에 안전하게 저장 및 복사되었습니다!\n\n이제 다른 기기(노트북 등)에서 붙여넣고 [불러오기]를 눌러주세요.`);
+    alert(`🎉 [ ${code} ]\n설정과 작성한 건의글 기록이 클라우드에 백업 및 복사되었습니다!\n\n다른 기기에서 붙여넣고 [불러오기]를 눌러주세요.`);
 
   } catch (err) {
-    console.error('동기화 코드 저장 오류:', err);
+    console.error('동기화 저장 오류:', err);
     alert(`⚠️ 서버 저장 실패\n\n${err.message}`);
   } finally {
     if (copyBtn) {
@@ -4502,7 +4518,7 @@ ${details}
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
     if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
 
-    // sync_code 컬럼으로 매칭 조회
+    // sync_code 기준 단일 행 조회
     const { data, error } = await client
       .from('user_sync')
       .select('*')
@@ -4515,23 +4531,32 @@ ${details}
       throw new Error(`[ ${code} ]에 해당하는 동기화 기록이 서버에 없습니다.\n코드를 생성한 기기에서 [코드 복사]를 먼저 눌러 저장해 주세요.`);
     }
 
-    // 1. 불러온 코드를 내 로컬 기기 키로도 저장
+    // 내 기기 로컬스토리지에 동기화 키 저장
     localStorage.setItem('shift_portal_sync_key', data.sync_code);
 
-    // 2. 환경설정(테마, 글꼴 등) 복원 적용
+    // settings 복원
     if (data.settings) {
       const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
+      
+      // 1) 테마 복원
       if (settings.theme) {
         localStorage.setItem('shift_theme', settings.theme);
         if (typeof applyTheme === 'function') applyTheme(settings.theme);
       }
+      // 2) 글꼴 복원
       if (settings.font) {
         localStorage.setItem('shift_font', settings.font);
         if (typeof applyFont === 'function') applyFont(settings.font);
       }
+      // 3) [핵심] 내가 작성했던 건의글 ID 목록 복원!
+      if (settings.my_suggestion_ids && Array.isArray(settings.my_suggestion_ids)) {
+        localStorage.setItem('shift_my_suggestions', JSON.stringify(settings.my_suggestion_ids));
+        localStorage.setItem('my_suggestion_ids', JSON.stringify(settings.my_suggestion_ids));
+        console.log('복원된 건의글 ID들:', settings.my_suggestion_ids);
+      }
     }
 
-    alert('🎉 기기 동기화가 성공적으로 완료되었습니다! 설정을 적용하기 위해 포털을 새로고침합니다.');
+    alert('🎉 기기 동기화가 완료되었습니다!\n개인 설정 및 건의글 처리 현황 조회를 위해 포털을 새로고침합니다.');
     location.reload();
 
   } catch (err) {
@@ -4541,6 +4566,83 @@ ${details}
     if (btn) {
       btn.disabled = false;
       btn.innerText = originalBtnText;
+    }
+  }
+}
+
+    async function submitSuggestion(category, content) {
+  // 폼 입력값 검증 (인자가 없으면 DOM에서 직접 탐색)
+  const catInput = category || (document.getElementById('suggestionCategory') ? document.getElementById('suggestionCategory').value : '일반');
+  const contentInput = content || (document.getElementById('suggestionContent') ? document.getElementById('suggestionContent').value.trim() : '');
+
+  if (!contentInput) {
+    alert('건의 내용을 입력해 주세요.');
+    return;
+  }
+
+  const submitBtn = document.getElementById('btnSubmitSuggestion');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = '등록 중...';
+  }
+
+  try {
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+    if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+
+    // suggestion_box 테이블에 새 건의글 INSERT (.select()를 붙여 새로 생긴 id를 반환받음)
+    const { data, error } = await client
+      .from('suggestion_box')
+      .insert([{
+        category: catInput,
+        content: contentInput,
+        status: '대기',
+        admin_comment: '',
+        created_at: new Date().toISOString()
+      }])
+      .select();
+
+    if (error) throw error;
+
+    // 새로 생성된 글의 ID를 로컬스토리지에 추가
+    if (data && data.length > 0) {
+      const newPostId = data[0].id;
+      
+      let mySuggestions = [];
+      try {
+        const stored = localStorage.getItem('shift_my_suggestions') || localStorage.getItem('my_suggestion_ids');
+        if (stored) mySuggestions = JSON.parse(stored);
+        if (!Array.isArray(mySuggestions)) mySuggestions = [];
+      } catch (e) {
+        mySuggestions = [];
+      }
+
+      if (!mySuggestions.includes(newPostId)) {
+        mySuggestions.push(newPostId);
+      }
+
+      // 두 로컬 키 모두에 안전하게 저장
+      localStorage.setItem('shift_my_suggestions', JSON.stringify(mySuggestions));
+      localStorage.setItem('my_suggestion_ids', JSON.stringify(mySuggestions));
+      console.log('내 건의글 목록에 새 ID 추가 완료:', newPostId);
+    }
+
+    alert('익명의견이 정상적으로 등록되었습니다.\n작성하신 의견의 진행 상황은 이 기기(및 동기화된 기기)에서 확인하실 수 있습니다.');
+
+    // 입력폼 초기화
+    const inputArea = document.getElementById('suggestionContent');
+    if (inputArea) inputArea.value = '';
+
+    // 의견함 목록 새로고침 함수가 있다면 실행
+    if (typeof loadSuggestions === 'function') loadSuggestions();
+
+  } catch (err) {
+    console.error('건의글 등록 실패:', err);
+    alert('등록 중 오류가 발생했습니다: ' + err.message);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = '보내기';
     }
   }
 }
