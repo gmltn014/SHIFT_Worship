@@ -97,7 +97,8 @@
       font-family: monospace, -apple-system, sans-serif;
       cursor: pointer;
       line-height: 1.2;
-      transition: all 0.15s ease-in-out;
+      transition: none !important;
+      animation: none !important;
       user-select: none;
     }
 
@@ -317,28 +318,52 @@
       font-size: 0.95rem;
     }
 
-    .site-footer {
-      text-align: center;
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border-color);
-      color: var(--sub-text);
+    /* 모달 오버레이 공통 스타일 (화면 중앙 강제 고정) */
+    .modal-overlay,
+    #contiAdminModal,
+    #monthLineupModal,
+    #sessionScoreModal,
+    #settingsModal,
+    #memberAdminModal,
+    #feedbackAdminModal,
+    #updateNoteModal,
+    #pushBroadcastModal {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      z-index: 99999 !important;
+      display: none;
+      justify-content: center !important;
+      align-items: center !important;
+      padding: 16px !important;
+      box-sizing: border-box !important;
     }
 
-    .footer-title {
-      font-size: 0.88rem;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      margin-bottom: 4px;
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      margin: auto !important;
+      box-sizing: border-box;
     }
 
-    .footer-version {
-      font-size: 0.78rem;
-      opacity: 0.8;
-      font-family: monospace, -apple-system, sans-serif;
+    @media (max-width: 600px) {
+      .modal-card {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 16px 14px !important;
+      }
     }
 
-    /* 아카이브 카드 */
     .archive-item-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -399,7 +424,6 @@
       font-weight: 600;
     }
 
-    /* 공지사항 카드 */
     .notice-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -430,7 +454,6 @@
     .border-update { border-left: 4px solid #3b82f6 !important; }
     .border-ui { border-left: 4px solid #f59e0b !important; }
 
-    /* 멤버 탭 */
     .member-cat-btn {
       background-color: var(--card-sub-bg);
       color: var(--sub-text);
@@ -452,22 +475,18 @@
     .cat-worship { color: #8b5cf6 !important; border-color: #8b5cf6 !important; }
     .badge-worship { background-color: rgba(139, 92, 246, 0.15) !important; color: #8b5cf6 !important; }
     .border-worship { border-left: 4px solid #8b5cf6 !important; }
-    .btn-worship.active { background-color: #8b5cf6 !important; border-color: #8b5cf6 !important; color: #fff !important; }
 
     .cat-session { color: #f43f5e !important; border-color: #f43f5e !important; }
     .badge-session { background-color: rgba(244, 63, 94, 0.15) !important; color: #f43f5e !important; }
     .border-session { border-left: 4px solid #f43f5e !important; }
-    .btn-session.active { background-color: #f43f5e !important; border-color: #f43f5e !important; color: #fff !important; }
 
     .cat-liveops { color: #f59e0b !important; border-color: #f59e0b !important; }
     .badge-liveops { background-color: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; }
     .border-liveops { border-left: 4px solid #f59e0b !important; }
-    .btn-liveops.active { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
 
     .cat-postprod { color: #06b6d4 !important; border-color: #06b6d4 !important; }
     .badge-postprod { background-color: rgba(6, 182, 212, 0.15) !important; color: #06b6d4 !important; }
     .border-postprod { border-left: 4px solid #06b6d4 !important; }
-    .btn-postprod.active { background-color: #06b6d4 !important; border-color: #06b6d4 !important; color: #fff !important; }
 
     .member-card {
       background-color: var(--card-bg);
@@ -527,7 +546,6 @@
       transition: background 0.15s;
     }
 
-    /* 의견함 상태 */
     .status-tag {
       display: inline-block;
       font-size: 0.75rem;
@@ -549,239 +567,6 @@
       font-size: 0.88rem;
       line-height: 1.5;
     }
-
-    /* 팝업 모달 */
-    .modal-overlay {
-  display: none;
-  flex-direction: column; /* 자식 요소들을 무조건 상하 정렬 */
-  justify-content: center;
-  align-items: center;
-}
-
-/* 모바일 전용 모달 카드 최적화 */
-@media (max-width: 600px) {
-  #settingsModal .modal-card {
-    width: 94% !important;
-    max-width: 94% !important;
-    margin: auto;
-    padding: 18px 14px !important;
-  }
-}
-    .modal-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      width: 100%;
-      max-width: 580px;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    /* 업데이트 노트 모바일 넘침 방지 */
-.update-note-card {
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important; /* 내부 요소가 바깥으로 삐져나가는 것 차단 */
-  word-break: break-word !important;
-}
-
-/* 주요 변경 내역 위아래 구분선 정돈 */
-.update-note-divider {
-  border: 0 !important;
-  border-top: 1px solid var(--border-color) !important;
-  width: 100% !important;
-  margin: 14px 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* 주요 변경 내역 박스 */
-.update-changes-box {
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 12px 14px !important;
-  border-radius: 8px !important;
-  background: var(--card-sub-bg) !important;
-  border: 1px solid var(--border-color) !important;
-  word-break: break-word !important;
-}
-
-    /* 공지사항 본문 내용이 화면 바깥으로 삐져나가지 않도록 자동 줄바꿈 강제 */
-#tab-notice,
-#noticeList,
-.notice-content,
-.card p,
-.card pre {
-  word-break: break-all !important;
-  overflow-wrap: break-word !important;
-}
-
-    /* 설정 모달 모바일 반응형 최적화 */
-#settingsModal .modal-card {
-  max-width: 520px;
-  width: 92%;
-  box-sizing: border-box;
-}
-
-/* 설정 항목 내부의 좌우 배치 요소들을 모바일에서 자연스럽게 줄바꿈 */
-#settingsModal .setting-row,
-#settingsModal .setting-item {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap; /* 폭이 좁으면 자동 줄바꿈 */
-  gap: 8px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color, #334155);
-}
-
-@media (max-width: 480px) {
-  #settingsModal .setting-row,
-  #settingsModal .setting-item {
-    align-items: flex-start;
-  }
-  
-  /* 버전 정보나 버튼이 오른쪽 끝으로 밀려 튀어나가는 것 방지 */
-  #settingsModal .version-badge,
-  #settingsModal .setting-action {
-    margin-top: 4px;
-    align-self: flex-start;
-  }
-}
-
-    /* 설정 모달 모바일 가로 넘침 완벽 방지 */
-#settingsModal .modal-card {
-  width: 92% !important;
-  max-width: 480px !important;
-  box-sizing: border-box !important;
-  overflow-x: hidden !important; /* 가로 삐져나옴 강제 차단 */
-}
-
-/* 모든 입력창과 버튼이 부모 폭을 초과하지 못하도록 제한 */
-#settingsModal input,
-#settingsModal select,
-#settingsModal button {
-  box-sizing: border-box;
-}
-
-/* 동기화 입력창 영역 유동 너비 보장 */
-#settingsModal input[id*="sync"],
-#settingsModal input[placeholder*="동기화"] {
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-}
-
-    #headerVersionBadge {
-  transition: none !important; /* 글자가 바뀌며 늘어나거나 튀는 트랜지션 강제 끄기 */
-  animation: none !important;
-}
-
-    .conti-score-btn-group .btn-score-action {
-  line-height: 1.2 !important;
-  box-sizing: border-box !important;
-  transition: all 0.2s ease;
-}
-
-.conti-score-btn-group .btn-score-action:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-@media (max-width: 480px) {
-  .conti-score-btn-group {
-    gap: 6px !important;
-  }
-  .conti-score-btn-group .btn-score-action {
-    padding: 9px 8px !important;
-    font-size: 0.78rem !important; /* 좁은 폰에서도 한 줄 유지 */
-  }
-}
-
-    #sessionScoreModal,
-#sessionScoresModal,
-#sessionModal,
-.session-score-modal,
-#contiManageModal,
-#adminContiModal {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  z-index: 99999 !important;
-  justify-content: center !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
-  padding: 16px !important;
-}
-
-/* 모달 내부 컨텐츠 카드 규격 */
-#sessionScoreModal > div,
-#sessionScoresModal > div,
-#sessionModal > div,
-#contiManageModal > div,
-#adminContiModal > div {
-  margin: auto !important;
-  max-width: 550px !important;
-  width: 92% !important;
-  max-height: 85vh !important;
-  overflow-y: auto !important;
-}
-
-    #contiAdminModal,
-#sessionScoreModal {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  z-index: 99999 !important;
-  display: none;
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 16px !important;
-  box-sizing: border-box !important;
-}
-
-/* 팝업 내부 카드 규격 */
-#contiAdminModal > div,
-#sessionScoreModal > div {
-  margin: auto !important;
-  max-width: 550px !important;
-  width: 94% !important;
-  max-height: 85vh !important;
-  overflow-y: auto !important;
-  box-sizing: border-box !important;
-}
-
-    #monthLineupModal {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  z-index: 99999 !important;
-  display: none;
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 16px !important;
-  box-sizing: border-box !important;
-}
-
-/* 팝업 내부 카드 규격 */
-#monthLineupModal > div,
-#monthLineupModal .modal-card,
-#monthLineupModal .modal-content {
-  margin: auto !important;
-  max-width: 650px !important;
-  width: 95% !important;
-  max-height: 85vh !important;
-  overflow-y: auto !important;
-  box-sizing: border-box !important;
-}
   </style>
 </head>
 <body>
@@ -793,9 +578,9 @@
         SHIFT Worship
       </div>
       <button id="headerVersionBadge" class="version-bubble" onclick="goToUpdateNotes()" title="업데이트 노트 확인하기">
-  v2.2.0
-</button>
-</div>
+        v2.2.0
+      </button>
+    </div>
 
     <button class="settings-open-btn" onclick="openSettingsModal()" title="포털 환경설정">
       ⚙️ 설정
@@ -821,68 +606,57 @@
       <div id="contiLoading" class="loading-spinner">데이터를 불러오는 중입니다...</div>
 
       <div id="contiContainer" style="display: none;">
-  <div class="card">
-    
-    <!-- 1. 헤더: 예배 정보 (좌측) + 콘티 관리 버튼 (우측 상단 유지) -->
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-  <div>
-    <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
-    <h2 class="worship-title" id="viewWorshipTitle" style="margin: 4px 0 0 0;">예배명을 불러옵니다</h2>
-  </div>
-  <div class="conti-admin-actions" style="flex-shrink: 0;">
-    <!-- ★ 원래 함수명 openContiAdminModal() 로 연결 -->
-    <button type="button" class="btn-action btn-secondary" onclick="openContiAdminModal()" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-      ⚙️ 콘티 관리
-    </button>
-  </div>
-</div>
+        <div class="card">
+          <!-- 헤더: 날짜/예배명 + 콘티 관리 버튼 우측 상단 고정 -->
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
+            <div>
+              <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
+              <h2 class="worship-title" id="viewWorshipTitle" style="margin: 4px 0 0 0;">예배명을 불러옵니다</h2>
+            </div>
+            <div class="conti-admin-actions" style="flex-shrink: 0;">
+              <button type="button" class="btn-action btn-secondary" onclick="openContiAdminModal()" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                ⚙️ 콘티 관리
+              </button>
+            </div>
+          </div>
 
-    <!-- 곡 목록 -->
-    <div class="song-box">
-      <h4>📋 찬양 콘티 곡 목록</h4>
-      <div class="song-list-content" id="viewSongList">등록된 곡 목록이 없습니다.</div>
-    </div>
+          <!-- 곡 목록 -->
+          <div class="song-box">
+            <h4>📋 찬양 콘티 곡 목록</h4>
+            <div class="song-list-content" id="viewSongList">등록된 곡 목록이 없습니다.</div>
+          </div>
 
-    <!-- 결단 찬양 -->
-    <div class="song-box" style="margin-top: 10px;">
-      <h4>🕊️ 결단 찬양: <span id="viewClosingSong" style="font-weight: 700; color: var(--accent-color);">-</span></h4>
-      <div class="action-btn-group" style="margin-top: 8px;">
-        <a id="btnClosingSheet" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
-          📄 결단찬양 악보
-        </a>
-        <a id="btnClosingYoutube" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
-          ▶️ 결단찬양 영상
-        </a>
-      </div>
-    </div>
+          <!-- 결단 찬양 -->
+          <div class="song-box" style="margin-top: 10px;">
+            <h4>🕊️ 결단 찬양: <span id="viewClosingSong" style="font-weight: 700; color: var(--accent-color);">-</span></h4>
+            <div class="action-btn-group" style="margin-top: 8px;">
+              <a id="btnClosingSheet" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
+                📄 결단찬양 악보
+              </a>
+              <a id="btnClosingYoutube" href="#" target="_blank" class="btn-action btn-secondary" style="display: none;">
+                ▶️ 결단찬양 영상
+              </a>
+            </div>
+          </div>
 
-    <!-- 2. 하단 액션 버튼 그룹: 전체 악보 + 세션 악보 + 음원/모니터링 통합 -->
-    <div class="action-btn-group" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
-      
-      <!-- 콘티 전체 악보 열기 -->
-      <a id="btnSheet" href="#" target="_blank" class="btn-action btn-primary" style="display: none; flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; justify-content: center; text-align: center; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px;">
-        📑 콘티 전체 악보 열기
-      </a>
+          <!-- 하단 악보 및 미디어 버튼 그룹 (전체 악보 + 세션 악보 5:5 비율 배치) -->
+          <div class="action-btn-group" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
+            <a id="btnSheet" href="#" target="_blank" class="btn-action btn-primary" style="display: none; flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; justify-content: center; text-align: center; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px;">
+              📑 콘티 전체 악보 열기
+            </a>
+            <button type="button" id="btnSessionScores" class="btn-action btn-secondary" onclick="openSessionScoreModal()" style="flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px; cursor: pointer;">
+              <span>🎼</span> 세션 악보
+            </button>
+            <a id="btnYoutube" href="#" target="_blank" class="btn-action btn-secondary" style="display: none; flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; justify-content: center; text-align: center; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px;">
+              🎧 콘티 유튜브 음원
+            </a>
+            <a id="btnMonitoring" href="#" target="_blank" class="btn-action btn-secondary" style="display: none; flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; justify-content: center; text-align: center; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px;">
+              🎥 실황 모니터링
+            </a>
+          </div>
+        </div>
 
-      <!-- [이동 완료] 세션 악보 버튼 (전체 악보와 나란히 배치 및 크기 규격 통일) -->
-      <button type="button" id="btnSessionScores" class="btn-action btn-secondary" onclick="openSessionScoreModal()" style="flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px; cursor: pointer;">
-        <span>🎼</span> 세션 악보
-      </button>
-
-      <!-- 콘티 유튜브 음원 -->
-      <a id="btnYoutube" href="#" target="_blank" class="btn-action btn-secondary" style="display: none; flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; justify-content: center; text-align: center; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px;">
-        🎧 콘티 유튜브 음원
-      </a>
-
-      <!-- 실황 모니터링 -->
-      <a id="btnMonitoring" href="#" target="_blank" class="btn-action btn-secondary" style="display: none; flex: 1 1 calc(50% - 4px); min-width: 140px; box-sizing: border-box; justify-content: center; text-align: center; white-space: nowrap; font-size: 0.84rem; padding: 10px 8px;">
-        🎥 실황 모니터링
-      </a>
-
-    </div>
-  </div>
-</div>
-
+        <!-- 세션 라인업 영역 -->
         <div class="lineup-header-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px 0;">
           <div class="section-title" style="margin: 0;">
             <span>👥 이번 주 세션 라인업</span>
@@ -1100,7 +874,6 @@
 
     <!-- 6. SHIFT 놀이터 탭 -->
     <section id="tab-playground" class="tab-content">
-      <!-- 서브탭 네비게이션 -->
       <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; overflow-x: auto; white-space: nowrap;">
         <button id="pg-subtab-game" class="btn-action btn-primary" onclick="switchPlaygroundSubTab('game')" style="font-size: 0.88rem; padding: 7px 14px;">
           🎲 게임 놀이터
@@ -1113,7 +886,7 @@
         </button>
       </div>
 
-      <!-- ================= 1. 게임 놀이터 ================= -->
+      <!-- 게임 놀이터 -->
       <div id="pg-content-game" style="display: block;">
         <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; white-space: nowrap;">
           <button class="member-cat-btn active" onclick="switchGameMode('roulette', this)">🎡 룰렛 게임</button>
@@ -1123,7 +896,6 @@
 
         <!-- 룰렛 게임 카드 -->
         <div id="game-panel-roulette" class="card" style="text-align: center;">
-          <!-- 룰렛 모드 전환 탭 (벌칙 룰렛 vs 랜덤 멤버 룰렛) -->
           <div style="display: inline-flex; background: var(--card-sub-bg); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-color);">
             <button id="btnModePenalty" type="button" class="btn-action btn-primary" onclick="setRouletteType('penalty')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
               🎯 1. 벌칙 룰렛 (1인 벌칙 뽑기)
@@ -1133,7 +905,6 @@
             </button>
           </div>
 
-          <!-- 룰렛 캔버스 뷰 -->
           <div style="position: relative; display: inline-block; margin-bottom: 16px;">
             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 22px solid #ef4444; z-index: 5;"></div>
             <canvas id="rouletteCanvas" width="320" height="320" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 4px solid var(--border-color);"></canvas>
@@ -1145,7 +916,6 @@
             </button>
           </div>
 
-          <!-- [설정 구역 A] 벌칙 룰렛 설정 (대상자 1명 + 벌칙 항목들) -->
           <div id="rouletteSetupPenalty" style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
             <div style="margin-bottom: 10px;">
               <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 벌칙을 받을 대상 멤버</label>
@@ -1157,13 +927,11 @@
             </div>
           </div>
 
-          <!-- [설정 구역 B] 랜덤 멤버 룰렛 설정 (벌칙 1개 + 참여 멤버 체크박스) -->
           <div id="rouletteSetupMember" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
             <div style="margin-bottom: 12px;">
               <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">⚡ 적용할 벌칙/역할</label>
               <input type="text" id="rouletteFixedPenaltyInput" value="오늘의 간식 쏘기 ☕" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
             </div>
-
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 룰렛 참가 멤버 선택</label>
@@ -1181,7 +949,6 @@
         <div id="game-panel-draw" class="card" style="display: none; text-align: center;">
           <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📦 박진감 제비뽑기</h3>
           <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 16px;">카드를 한 장씩 뒤집어 당첨과 꽝을 확인하세요!</p>
-
           <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
             <div>
               <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">총 인원수</label>
@@ -1195,60 +962,50 @@
               <button type="button" class="btn-action btn-primary" onclick="initDrawCards()" style="padding: 7px 16px; font-size: 0.85rem;">제비 섞기</button>
             </div>
           </div>
-
           <div id="drawCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-width: 500px; margin: 0 auto;"></div>
         </div>
 
-        <!-- 사다리타기 카드 (체크박스 명단 연동) -->
+        <!-- 사다리타기 카드 -->
         <div id="game-panel-ladder" class="card" style="display: none;">
           <div style="text-align: center; margin-bottom: 16px;">
             <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🪜 미니 사다리타기</h3>
             <p style="font-size: 0.82rem; color: var(--sub-text);">참가 팀원을 체크하고 결과 항목을 지정해 사다리를 타보세요.</p>
           </div>
-
           <div style="display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
-            <!-- 팀원 체크박스 선택 -->
             <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 사다리 참가자 선택</label>
-                <div style="display: flex; gap: 6px;">
+                <div style="display: gap: 6px;">
                   <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
                   <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
                 </div>
               </div>
               <div id="ladderMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 130px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
             </div>
-
-            <!-- 결과 항목 -->
             <div>
-              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 결과/벌칙 목록 (쉼표 구분 - 참가자 수와 동일하게 자동 배정)</label>
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 결과/벌칙 목록 (쉼표 구분)</label>
               <input type="text" id="ladderResultsInput" value="당첨, 통과, 간식, 통과, 청소, 통과" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
-
             <button type="button" class="btn-action btn-primary" onclick="buildAndStartLadder()" style="justify-content: center; padding: 10px; font-size: 0.95rem;">
               🪜 사다리 생성 및 매칭 시작
             </button>
-
             <div id="ladderResultBox" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
           </div>
         </div>
       </div>
 
-      <!-- ================= 2. SNS 놀이터 ================= -->
+      <!-- SNS 놀이터 -->
       <div id="pg-content-sns" style="display: none;">
-        <!-- 작성 카드 -->
         <div class="card" style="margin-bottom: 16px;">
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📸 나의 SHIFT 찬양 취향표 작성</h3>
-            <p style="font-size: 0.82rem; color: var(--sub-text);">3가지 항목 중 원하는 항목만 자유롭게 작성해 보세요. 입력한 항목만 깔끔하게 카드에 렌더링됩니다.</p>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">원하는 항목만 자유롭게 작성해 보세요.</p>
           </div>
-
           <form onsubmit="handlePublishSnsCard(event)">
-            <!-- 작성자 & 표기 방식 -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
               <div>
                 <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">작성자 이름 / 닉네임</label>
-                <input type="text" id="snsAuthorName" required placeholder="예: 희수, 드럼치는청년" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+                <input type="text" id="snsAuthorName" required placeholder="예: 희수" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
               </div>
               <div>
                 <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">공유 방식</label>
@@ -1258,98 +1015,30 @@
                 </select>
               </div>
             </div>
-
-            <!-- 내용 입력 3종 (선택적) -->
             <div style="margin-bottom: 10px;">
               <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📖 오늘 묵상한 은혜의 말씀 (선택)</label>
-              <input type="text" id="snsWordQt" placeholder="예: 시편 23:1 - 여호와는 나의 목자시니 내게 부족함이 없으리로다" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <input type="text" id="snsWordQt" placeholder="예: 시편 23:1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
-
             <div style="margin-bottom: 10px;">
               <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 내 인생 가장 좋아하는 찬양 (선택)</label>
-              <input type="text" id="snsFavSongs" placeholder="예: 주의 친절한 팔에, 은혜, 꽃들도" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <input type="text" id="snsFavSongs" placeholder="예: 은혜, 꽃들도" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
-
             <div style="margin-bottom: 12px;">
               <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎧 최근 푹 빠진 추천 찬양 (선택)</label>
               <input type="text" id="snsRecSong" placeholder="예: 나의 하나님 - 위러브" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
             </div>
-
-            <!-- 인스타 카드 배경 이미지 첨부 설정 -->
-            <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 14px;">
-              <label style="font-size: 0.8rem; font-weight: 700; display: block; margin-bottom: 6px;">🖼️ 인스타 스토리 배경 사진 커스텀 (선택)</label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div>
-                  <span style="font-size: 0.72rem; color: var(--sub-text); display: block; margin-bottom: 2px;">📁 갤러리/파일에서 첨부</span>
-                  <input type="file" id="snsBgFileInput" accept="image/*" onchange="handleSnsBgFile(this)" style="font-size: 0.75rem; width: 100%;">
-                </div>
-                <div>
-                  <span style="font-size: 0.72rem; color: var(--sub-text); display: block; margin-bottom: 2px;">🌐 이미지 URL 입력</span>
-                  <input type="url" id="snsBgUrlInput" placeholder="https://..." oninput="handleSnsBgUrl(this.value)" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.78rem;">
-                </div>
-              </div>
-            </div>
-
-            <!-- 색상 및 액션 버튼 -->
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포스트잇 포인트 색:</span>
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포인트 색:</span>
                 <input type="color" id="snsCardColor" value="#3b82f6" style="border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent;">
               </div>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" class="btn-action btn-secondary" onclick="previewAndDownloadInstaCard()" style="font-size: 0.82rem; padding: 7px 14px;">
-                  🖼️ 인스타 스토리 이미지 생성
-                </button>
-                <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px;">
-                  📌 놀이터 보드에 게시
-                </button>
-              </div>
+              <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px;">
+                📌 놀이터 보드에 게시
+              </button>
             </div>
           </form>
         </div>
 
-        <!-- 인스타 스토리 캡처 템플릿 (9:16 비율) -->
-        <div id="instaCardCaptureWrap" style="position: fixed; left: -9999px; top: 0;">
-          <div id="instaStoryCard" style="width: 420px; min-height: 700px; padding: 40px 30px; border-radius: 24px; position: relative; overflow: hidden; background-color: #0f172a; color: #ffffff; display: flex; flex-direction: column; justify-content: space-between; background-size: cover; background-position: center;">
-            <!-- 반투명 다크 오버레이 (배경 이미지 위 가독성 보장) -->
-            <div id="instaCardOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.92) 100%); z-index: 1;"></div>
-
-            <!-- 카드 실 내용 -->
-            <div style="position: relative; z-index: 2;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 14px; margin-bottom: 24px;">
-                <span style="font-size: 0.95rem; font-weight: 800; letter-spacing: 1.5px; color: #38bdf8;">SHIFT WORSHIP</span>
-                <span style="font-size: 0.8rem; opacity: 0.8; font-weight: 600;">찬양 취향표</span>
-              </div>
-              <h2 id="cardPreviewAuthor" style="font-size: 1.6rem; font-weight: 800; margin-bottom: 26px; color: #f8fafc;">OOO의 찬양 노트</h2>
-              
-              <div id="cardPreviewItemsGroup" style="display: flex; flex-direction: column; gap: 18px;">
-                <!-- 1. 말씀 -->
-                <div id="cardWrapWord" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 18px; border-radius: 14px; border-left: 4px solid #38bdf8;">
-                  <span style="font-size: 0.78rem; text-transform: uppercase; color: #7dd3fc; font-weight: 700; display: block; margin-bottom: 6px;">📖 오늘 품은 말씀</span>
-                  <p id="cardPreviewWord" style="font-size: 0.98rem; line-height: 1.55; font-weight: 500;"></p>
-                </div>
-
-                <!-- 2. 인생 찬양 -->
-                <div id="cardWrapFav" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 18px; border-radius: 14px; border-left: 4px solid #f43f5e;">
-                  <span style="font-size: 0.78rem; text-transform: uppercase; color: #fda4af; font-weight: 700; display: block; margin-bottom: 6px;">🕊️ 내 인생의 찬양</span>
-                  <p id="cardPreviewFav" style="font-size: 0.98rem; line-height: 1.6; font-weight: 500;"></p>
-                </div>
-
-                <!-- 3. 추천곡 -->
-                <div id="cardWrapRec" style="background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); padding: 18px; border-radius: 14px; border-left: 4px solid #f59e0b;">
-                  <span style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 700; display: block; margin-bottom: 6px;">🎧 요즘 빠져있는 추천 찬양</span>
-                  <p id="cardPreviewRec" style="font-size: 0.98rem; line-height: 1.55; font-weight: 500;"></p>
-                </div>
-              </div>
-            </div>
-
-            <div style="position: relative; z-index: 2; text-align: center; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 18px; margin-top: 24px; font-size: 0.8rem; opacity: 0.75; letter-spacing: 0.5px;">
-              Sing Higher and Imagine Forever. Thanks God.
-            </div>
-          </div>
-        </div>
-
-        <!-- 팀원 공유 포스트잇 피드 -->
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h4 style="font-size: 1.05rem; font-weight: 700;">📌 팀원들이 공유한 찬양 취향표 피드</h4>
@@ -1361,12 +1050,11 @@
         </div>
       </div>
 
-      <!-- ================= 3. 찬양팀 놀이터 ================= -->
+      <!-- 찬양팀 놀이터 (메트로놈) -->
       <div id="pg-content-music" style="display: none;">
         <div class="card" style="text-align: center; max-width: 520px; margin: 0 auto; padding: 28px 20px;">
           <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">🥁 비주얼 탭 메트로놈</h3>
           <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 24px;">빛나는 비주얼 링과 탭 템포로 연습실 박자를 직관적으로 맞춰보세요.</p>
-
           <div style="position: relative; width: 140px; height: 140px; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: center;">
             <div id="metronomePulseRing" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--accent-color); transition: transform 0.08s ease, opacity 0.08s ease; opacity: 0.2; transform: scale(0.9);"></div>
             <div style="display: flex; flex-direction: column; align-items: center;">
@@ -1374,7 +1062,6 @@
               <span style="font-size: 0.75rem; font-weight: 700; color: var(--sub-text); margin-top: 4px;">BPM</span>
             </div>
           </div>
-
           <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px;">
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(-5)" style="padding: 6px 14px; font-weight: 700;">-5</button>
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(-1)" style="padding: 6px 12px; font-weight: 700;">-1</button>
@@ -1382,7 +1069,6 @@
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(1)" style="padding: 6px 12px; font-weight: 700;">+1</button>
             <button class="btn-action btn-secondary" onclick="adjustMetroBpm(5)" style="padding: 6px 14px; font-weight: 700;">+5</button>
           </div>
-
           <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 24px;">
             <button type="button" id="btnToggleMetro" class="btn-action btn-primary" onclick="toggleMetronome()" style="padding: 10px 32px; font-size: 1rem; border-radius: 30px;">
               ▶️ 시작하기
@@ -1390,13 +1076,6 @@
             <button type="button" class="btn-action btn-secondary" onclick="handleTapTempo()" style="padding: 10px 24px; font-size: 0.95rem; border-radius: 30px;">
               👆 탭 템포 (Tap)
             </button>
-          </div>
-
-          <div style="display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--sub-text);">
-            <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-              <input type="checkbox" id="metroSoundToggle" checked style="accent-color: var(--accent-color);">
-              비프음 소리 켜기 (무음 시 화면 깜빡임만 작동)
-            </label>
           </div>
         </div>
       </div>
@@ -1407,9 +1086,7 @@
       <div id="adminLoginForm" class="card" style="max-width: 420px; margin: 40px auto; text-align: center; padding: 32px 24px;">
         <div style="font-size: 2.5rem; margin-bottom: 12px;">🔒</div>
         <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">SHIFT 포털 관리자 인증</h3>
-        <p style="font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px;">
-          관리자 비밀번호를 입력해 주세요.
-        </p>
+        <p style="font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px;">관리자 비밀번호를 입력해 주세요.</p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <input type="password" id="adminPasswordInput" placeholder="관리자 비밀번호 입력" onkeydown="if(event.key==='Enter') handleAdminLoginSubmit()" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.95rem; text-align: center;">
           <button class="btn-action btn-primary" onclick="handleAdminLoginSubmit()" style="justify-content: center; padding: 10px; font-size: 0.95rem;">
@@ -1434,238 +1111,68 @@
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">👥 팀원 명단 관리</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">팀원 추가, 파트 수정, 활동 상태 변경</p>
           </div>
-          
           <div class="card" style="cursor: pointer;" onclick="openContiAdminModal();">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📅 예배 콘티 및 라인업 (주간)</h4>
-            <p style="font-size: 0.82rem; color: var(--sub-text);">이번 주 또는 특정 주차 콘티 및 세션 배정</p>
+            <p style="font-size: 0.82rem; color: var(--sub-text);">이번 주 콘티 및 세션 배정</p>
           </div>
-
           <div class="card" style="cursor: pointer;" onclick="openMonthLineupModal();">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">🗓️ 월간 세션 라인업 일괄 관리</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">한 달 전체 일요일 세션 일괄 배정 및 수정</p>
           </div>
-
           <div class="card" style="cursor: pointer;" onclick="switchTab('feedback', document.querySelectorAll('.tab-btn')[4]); openFeedbackAdminModal();">
             <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📮 익명의견함 관리</h4>
             <p style="font-size: 0.82rem; color: var(--sub-text);">건의 상태 변경 및 답변 작성</p>
           </div>
         </div>
 
-        <!-- 서버 최고관리자 (Super Admin) 전용 구역 -->
+        <!-- Super Admin 구역 -->
         <div id="superAdminSection" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--accent-color);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="background: #3b82f6; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">SUPER ADMIN</span>
-              <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 최고관리자 제어판</h4>
-            </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <span style="background: #3b82f6; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">SUPER ADMIN</span>
+            <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 최고관리자 제어판</h4>
           </div>
-
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
             <div class="card" style="border-color: #3b82f6; cursor: pointer;" onclick="openUpdateNoteCreatorModal()">
               <h4 style="font-size: 1rem; color: #2563eb; margin-bottom: 6px;">📝 새 업데이트 노트 작성 및 배포</h4>
-              <p style="font-size: 0.82rem; color: var(--sub-text);">버전명과 패치 내역을 규격화된 양식으로 DB에 바로 등록합니다.</p>
+              <p style="font-size: 0.82rem; color: var(--sub-text);">버전명과 패치 내역을 DB에 바로 등록합니다.</p>
             </div>
-
             <div class="card" style="border-color: #3b82f6; cursor: pointer;" onclick="openPushBroadcasterModal()">
               <h4 style="font-size: 1rem; color: #2563eb; margin-bottom: 6px;">📢 실시간 브라우저 알림 발송</h4>
-              <p style="font-size: 0.82rem; color: var(--sub-text);">콘티 등록/공지 업데이트를 팀원들에게 푸시 알림으로 전송합니다.</p>
+              <p style="font-size: 0.82rem; color: var(--sub-text);">팀원들에게 푸시 알림을 전송합니다.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= 7. 위키 가이드 탭 ================= -->
-<section id="tab-wiki" class="tab-content" style="display: none;">
-  <!-- 헤더 배너 -->
-  <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.08)); border-left: 5px solid var(--accent-color); margin-bottom: 16px;">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-      <span style="font-size: 1.6rem;">📖</span>
-      <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">SHIFT Worship 포털 가이드</h2>
-    </div>
-    <p style="font-size: 0.85rem; color: var(--sub-text); line-height: 1.5; margin: 0;">
-      포털의 모든 기능과 사역 편의 도구를 정리한 안내서입니다. 각 탭의 바로가기 버튼을 누르면 해당 화면으로 즉시 이동합니다.
-    </p>
-  </div>
-
-  <!-- 목차 네비게이션 (빠른 바로가기 칩) -->
-  <div class="card" style="padding: 14px; margin-bottom: 16px;">
-    <span style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 8px;">🚀 빠른 탭 바로가기</span>
-    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('thisweek')" style="padding: 5px 10px; font-size: 0.78rem;">
-        1. 이번 주 콘티 ↗
-      </button>
-      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('archive')" style="padding: 5px 10px; font-size: 0.78rem;">
-        2. 아카이브 ↗
-      </button>
-      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('notice')" style="padding: 5px 10px; font-size: 0.78rem;">
-        3. 공지사항 ↗
-      </button>
-      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('members')" style="padding: 5px 10px; font-size: 0.78rem;">
-        4. 시프트 명단 ↗
-      </button>
-      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('feedback')" style="padding: 5px 10px; font-size: 0.78rem;">
-        5. 익명의견함 ↗
-      </button>
-      <button type="button" class="btn-action btn-secondary" onclick="jumpToPortalTab('playground')" style="padding: 5px 10px; font-size: 0.78rem;">
-        6. SHIFT 놀이터 ↗
-      </button>
-      <button type="button" class="btn-action btn-secondary" onclick="openSettingsModal()" style="padding: 5px 10px; font-size: 0.78rem;">
-        ⚙️ 환경설정 ↗
-      </button>
-    </div>
-  </div>
-
-  <!-- 위키 카드 리스트 -->
-  <div style="display: flex; flex-direction: column; gap: 14px;">
-
-    <!-- 1. 이번 주 콘티 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>🎼</span> 1. 이번 주 콘티 (This Week)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('thisweek')" style="padding: 4px 10px; font-size: 0.75rem;">
-          이동하기 ➔
-        </button>
+    <!-- 8. 위키 가이드 탭 -->
+    <section id="tab-wiki" class="tab-content" style="display: none;">
+      <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.08)); border-left: 5px solid var(--accent-color); margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <span style="font-size: 1.6rem;">📖</span>
+          <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">SHIFT Worship 포털 가이드</h2>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--sub-text); line-height: 1.5; margin: 0;">
+          포털의 모든 기능과 사역 편의 도구를 정리한 안내서입니다.
+        </p>
       </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>예배 및 곡 정보:</strong> 주일 일자, 예배 명칭, 주간 찬양 곡 순서 및 Key 표기, 결단 찬양 확인</li>
-        <li><strong>원클릭 사역 링크:</strong> 통합 악보집(PDF/드라이브) 및 유튜브 단일 재생목록 자동 연동</li>
-        <li><strong>세션 라인업:</strong> 인도자, 보컬, 건반(메인/세컨), 드럼, 기타, 베이스, 음향, 방송, <strong>prompter</strong>, 영상 파트별 섬김이 명단 표기</li>
-        <li><strong>공유 유틸리티:</strong> 카톡 공지용 텍스트 클립보드 복사 및 보면대용 카드 이미지 캡처 다운로드</li>
-      </ul>
-    </div>
-
-    <!-- 2. 아카이브 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>📚</span> 2. 아카이브 (Archive)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('archive')" style="padding: 4px 10px; font-size: 0.75rem;">
-          이동하기 ➔
-        </button>
-      </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>서브 탭:</strong> 과거 모든 예배 콘티 기록과 주차별 세션 섬김이 라인업 내역 분리 조회</li>
-        <li><strong>세션 악보:</strong> 세션 악보 첨부 및 열람, 다운로드 가능</li>
-        <li><strong>건반 라인업:</strong> 메인 건반과 세컨 건반 섬김이를 두 줄로 깔끔하게 분리 표시</li>
-        <li><strong>다차원 탐색:</strong> 월별 네비게이션, 전체 기간 모아보기, 인도자 필터링 및 곡명 통합 검색 지원</li>
-      </ul>
-    </div>
-
-    <!-- 3. 공지사항 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>📢</span> 3. 공지사항 (Notice)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('notice')" style="padding: 4px 10px; font-size: 0.75rem;">
-          이동하기 ➔
-        </button>
-      </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>주요 공지 & 일정:</strong> 연습 일정, 수련회, 모임 등 중요한 팀 공지 확인 (상단 고정 공지 지원)</li>
-        <li><strong>배포 업데이트 노트:</strong> 버전별(`vX.X.X`) 신규 추가 기능과 개선 패치 내역 모바일 최적화 열람</li>
-      </ul>
-    </div>
-
-    <!-- 4. 시프트 명단 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>👥</span> 4. 시프트 명단 (Members)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('members')" style="padding: 4px 10px; font-size: 0.75rem;">
-          이동하기 ➔
-        </button>
-      </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>대분류 필터링:</strong> Worship(인도/싱어), Session(악기), Live Ops(음향/방송/prompter), Post Prod(영상)</li>
-        <li><strong>연락처 바로연결:</strong> 터치 시 해당 팀원에게 통화가 즉시 연결되는 모바일 친화형 다이렉트 버튼 탑재</li>
-      </ul>
-    </div>
-
-    <!-- 5. 익명의견함 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>📬</span> 5. 익명의견함 (Feedback)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('feedback')" style="padding: 4px 10px; font-size: 0.75rem;">
-          이동하기 ➔
-        </button>
-      </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>100% 완전 익명:</strong> 개인/기기 정보 없이 건의사항(콘티/장비/일정 등)을 편안하게 접수</li>
-        <li><strong>내 의견 현황 추적:</strong> 접수 시 기기 내부 저장소를 통해 진행 상태와 답변을 확인</li>
-        <li><strong>반영 피드 공유:</strong> 실제 팀 운영에 반영 완료된 피드백 공유</li>
-      </ul>
-    </div>
-
-    <!-- 6. SHIFT 놀이터 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>🎡</span> 6. SHIFT 놀이터 (Playground)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="jumpToPortalTab('playground')" style="padding: 4px 10px; font-size: 0.75rem;">
-          이동하기 ➔
-        </button>
-      </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>게임 놀이터:</strong> 
-          <br>• 벌칙 룰렛(특정 1인 벌칙 뽑기) & 랜덤 룰렛(팀원 체크박스로 벌칙 수행자 뽑기)
-          <br>• 박진감 제비뽑기 & 팀원 체크박스 연동 사다리타기
-        </li>
-        <li><strong>SNS 놀이터:</strong>
-          <br>• 말씀, 인생 찬양, 추천곡 중 원하는 항목만 선택 작성 가능
-          <br>• 갤러리 배경 사진을 첨부한 9:16 인스타 스토리 카드 다운로드 지원
-          <br>• 추천 찬양 바로듣기(유튜브 검색 링크) 기능이 탑재된 실시간 포스트잇 피드
-        </li>
-        <li><strong>찬양팀 놀이터:</strong> 시각적 펄스 링과 탭 템포(Tap)를 지원하는 비주얼 메트로놈 탑재</li>
-      </ul>
-    </div>
-
-    <!-- 7. 환경설정 -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span>⚙️</span> 포털 환경설정 (Settings Hub)
-        </h3>
-        <button type="button" class="btn-action btn-primary" onclick="openSettingsModal()" style="padding: 4px 10px; font-size: 0.75rem;">
-          설정 열기 ➔
-        </button>
-      </div>
-      <ul style="font-size: 0.85rem; line-height: 1.6; margin: 0; padding-left: 18px; color: var(--text-color);">
-        <li><strong>테마 & 글꼴:</strong> 다크/라이트 테마 전환 및 Pretendard / S-Core Dream / 명조 폰트 지원</li>
-        <li><strong>연습 편의:</strong> 콘티 확인 중 화면 절전 꺼짐을 막아주는 화면 켜짐 유지(Wake Lock)</li>
-        <li><strong>🔔 알림 토글:</strong> 새 공지 및 콘티 등록 시 브라우저 알림 수신 설정</li>
-        <li><strong>내 기기 기억(동기화):</strong> 고유 식별 키를 통한 스마트폰 ↔ PC 무계정 설정 동기화</li>
-      </ul>
-    </div>
-
-  </div>
-</section>
+    </section>
   </main>
 
   <!-- ===================================================
-       모달창 모음
+       모달 모음 (모두 최상위 독립 레이어로 배치)
   =================================================== -->
 
   <!-- 1. 멤버 관리자 모달 -->
-  <div id="memberAdminModal" class="modal-overlay" style="display: none;">
+  <div id="memberAdminModal" class="modal-overlay">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
         <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 팀원 명단 관리</h3>
-        <button onclick="closeMemberAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        <button onclick="closeMemberAdminModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
-
       <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
         <h4 id="memberFormTitle" style="font-size: 0.95rem; margin-bottom: 10px; font-weight: 700;">➕ 새 팀원 등록</h4>
         <input type="hidden" id="editMemberId" value="">
-        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           <div>
             <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">이름 (필수)</label>
@@ -1681,7 +1188,6 @@
             </select>
           </div>
         </div>
-
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           <div>
             <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">주 파트</label>
@@ -1692,7 +1198,6 @@
             <input type="text" id="formMemberPartB" placeholder="예: Vocal" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
           </div>
         </div>
-
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           <div>
             <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">파트 태그</label>
@@ -1709,18 +1214,15 @@
             </select>
           </div>
         </div>
-
         <div style="margin-bottom: 12px;">
           <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">연락처</label>
           <input type="text" id="formMemberCall" placeholder="010-0000-0000" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
         </div>
-
         <div style="display: flex; justify-content: flex-end; gap: 6px;">
           <button type="button" class="btn-action btn-secondary" onclick="resetMemberForm()" style="font-size: 0.8rem; padding: 6px 12px;">초기화</button>
           <button type="button" id="btnSaveMember" class="btn-action btn-primary" onclick="saveMemberData()" style="font-size: 0.8rem; padding: 6px 16px;">저장하기</button>
         </div>
       </div>
-
       <h4 style="font-size: 0.95rem; margin-bottom: 8px; font-weight: 700;">📋 등록된 전체 팀원 목록</h4>
       <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
@@ -1740,11 +1242,11 @@
   </div>
 
   <!-- 2. 의견함 관리자 모달 -->
-  <div id="feedbackAdminModal" class="modal-overlay" style="display: none;">
+  <div id="feedbackAdminModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 650px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
         <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 익명의견함 관리 (관리자)</h3>
-        <button onclick="closeFeedbackAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        <button onclick="closeFeedbackAdminModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
       <div id="adminFeedbackList" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
         <div class="loading-spinner">의견 목록을 불러오는 중입니다...</div>
@@ -1753,17 +1255,14 @@
   </div>
 
   <!-- 3. 주간 콘티 및 라인업 관리 모달 -->
-  <div id="contiAdminModal" class="modal-overlay" style="display: none; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.75) !important; z-index: 99999 !important; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
-  
-  <!-- 모달 내부 카드 -->
-  <div class="modal-card" style="background: var(--card-bg, #1e293b); color: var(--text-color, #fff); width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; border-radius: 16px; padding: 20px; box-sizing: border-box; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155); margin: auto;">
+  <div id="contiAdminModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
         <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ 콘티 및 라인업 등록/수정</h3>
-        <button type="button" onclick="closeContiAdminModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        <button type="button" onclick="closeContiAdminModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
 
       <form id="contiAdminForm" onsubmit="handleSaveConti(event)">
-        <!-- 기본 정보 -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div>
             <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배 일자</label>
@@ -1775,7 +1274,6 @@
           </div>
         </div>
 
-        <!-- 콘티 곡 목록 (최대 6곡) -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <label style="font-size: 0.88rem; font-weight: 700;">📋 찬양 콘티 곡 목록</label>
@@ -1794,13 +1292,11 @@
           <div id="adminSongInputsContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
-        <!-- 결단 찬양 -->
         <div style="margin-bottom: 12px;">
           <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 결단 찬양 (곡명 및 코드)</label>
           <input type="text" id="adminClosingSong" placeholder="예: 꽃들도 (G)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
         </div>
 
-        <!-- 유튜브 음원 링크 -->
         <div style="margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">🎧 유튜브 음원 링크</label>
@@ -1808,10 +1304,9 @@
               ⚡ 11자리 코드 자동 추출
             </button>
           </div>
-          <textarea id="adminYoutubeUrl" rows="2" placeholder="유튜브 영상 링크 또는 재생목록 링크를 입력하세요." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; font-family: monospace;"></textarea>
+          <textarea id="adminYoutubeUrl" rows="2" placeholder="유튜브 링크 입력" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; font-family: monospace;"></textarea>
         </div>
 
-        <!-- 악보 / 실황 링크 -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
           <div>
             <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📑 전체 악보 링크</label>
@@ -1823,13 +1318,9 @@
           </div>
         </div>
 
-        <!-- 세션 라인업 (전 파트 드롭다운) -->
+        <!-- 세션 라인업 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px;">
-          <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
-            <span>👥 세션 라인업 배정</span>
-            <span style="font-size: 0.75rem; font-weight: normal; color: var(--sub-text);">(미배치 시 'X' 선택)</span>
-          </div>
-
+          <div style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">👥 세션 라인업 배정</div>
           <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px;">
             <div>
               <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 2px;">인도자</label>
@@ -1901,14 +1392,14 @@
   </div>
 
   <!-- 4. 월간 라인업 일괄 관리 모달 -->
-  <div id="monthLineupModal" class="modal-overlay" style="display: none;">
+  <div id="monthLineupModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 960px; width: 95%;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <h3 style="font-size: 1.15rem; font-weight: 700;">🗓️ 월간 세션 라인업 일괄 관리</h3>
           <input type="month" id="monthLineupPicker" onchange="loadMonthLineupData(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; font-weight: 600;">
         </div>
-        <button onclick="closeMonthLineupModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        <button onclick="closeMonthLineupModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
 
       <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; max-height: 55vh; margin-bottom: 14px;">
@@ -1936,140 +1427,57 @@
   </div>
 
   <!-- 5. 환경설정 모달 -->
-  <!-- ============================================== -->
-<!-- 2. 설정 모달 (푸터와 완전히 분리된 독립 컨테이너) -->
-<!-- ============================================== -->
-<div id="settingsModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.75); z-index: 99999; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
-  
-  <!-- 모달 내부 카드: 반드시 flex-direction 컬럼 설정 & 모바일 너비 100% 보장 -->
-  <div class="modal-card" style="background: var(--card-bg, #1e293b); color: var(--text-color, #f8fafc); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 22px; box-sizing: border-box; box-shadow: 0 20px 40px rgba(0,0,0,0.6); border: 1px solid var(--border-color, #334155); display: flex; flex-direction: column;">
-    
-    <!-- 모달 헤더 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color, #334155); padding-bottom: 12px; margin-bottom: 16px;">
-      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <span>⚙️</span> 환경설정 및 기기 동기화
-      </h3>
-      <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--sub-text, #94a3b8); line-height: 1; padding: 0 4px;">&times;</button>
-    </div>
-
-    <!-- 모달 본문: 설정 항목들 -->
-    <div class="settings-content" style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
-      
-      <!-- 테마 설정 -->
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-        <label for="settingThemeSelect" style="font-size: 0.9rem; font-weight: 600;">테마 모드</label>
-        <select id="settingThemeSelect" onchange="changeTheme(this.value)" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color, #334155); background: var(--bg-color, #0f172a); color: var(--text-color, #fff); font-size: 0.85rem;">
-          <option value="dark">다크 모드</option>
-          <option value="light">라이트 모드</option>
-        </select>
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span>⚙️</span> 환경설정 및 기기 동기화
+        </h3>
+        <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--sub-text); line-height: 1;">&times;</button>
       </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label style="font-size: 0.82rem; font-weight: 600;">기본 글꼴</label>
-            <select id="settingFontSelect" onchange="changeAppFont(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
-              <option value="system">기본 고딕 (Pretendard)</option>
-              <option value="score">에스코어 드림 (또렷한 고딕)</option>
-              <option value="serif">나눔명조 (단정한 명조)</option>
-            </select>
-          </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 0.88rem; font-weight: 600;">테마 모드</label>
+          <select id="settingThemeSelect" onchange="applyTheme(this.value)" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            <option value="light">라이트 모드</option>
+            <option value="dark">다크 모드</option>
+          </select>
         </div>
 
-        <!-- 2. 연습 & 예배 편의 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">📱 연습 & 예배 편의</h4>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <label style="font-size: 0.82rem; font-weight: 600; display: block;">화면 켜짐 유지 (Wake Lock)</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면 절전 꺼짐을 방지합니다.</span>
-            </div>
-            <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
-          </div>
-        </div>
-
-        <!-- ★ [복구] 3. 브라우저 알림 설정 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🔔 알림</h4>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <label style="font-size: 0.82rem; font-weight: 600; display: block;">새 공지 & 콘티 알림</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">새로운 소식이나 콘티 등록 시 브라우저 알림을 받습니다.</span>
-            </div>
-            <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
-          </div>
-        </div>
-
-        <!-- 4. [NEW] 내 기기 기억하기 & 기기 간 동기화 -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <h4 style="font-size: 0.88rem; font-weight: 700;">🔄 내 기기 기억 & 동기화</h4>
             <span style="font-size: 0.72rem; color: var(--accent-color); font-weight: 600;">100% 익명 유지</span>
           </div>
-          <p style="font-size: 0.75rem; color: var(--sub-text); line-height: 1.5; margin-bottom: 12px;">
-            휴대폰, PC, 노트북을 번갈아 접속해도 <strong>작성한 익명의견 처리현황</strong>과 <strong>개인 설정</strong>을 그대로 불러올 수 있습니다.
+          <p style="font-size: 0.75rem; color: var(--sub-text); line-height: 1.5; margin-bottom: 10px;">
+            휴대폰, PC를 번갈아 접속해도 <strong>작성한 익명의견 처리현황</strong>을 그대로 복원합니다.
           </p>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; background: rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid var(--border-color);">
+            <span id="mySyncCodeDisplay" style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #38bdf8;">-</span>
+            <button type="button" class="btn-action btn-secondary" onclick="copySyncCode(event)" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer; white-space: nowrap;">
+              📋 코드 복사
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px; width: 100%; margin-top: 8px;">
+            <input type="text" id="syncCodeInput" placeholder="동기화 코드 입력" style="flex: 1; min-width: 0; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            <button type="button" id="btnRestoreSync" onclick="handleApplySyncCode(event)" class="btn-action btn-primary" style="padding: 9px 14px; font-size: 0.85rem; font-weight: 700; white-space: nowrap;">
+              불러오기
+            </button>
+          </div>
+        </div>
 
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; padding: 10px 14px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-color);">
-  <!-- 코드가 출력되는 영역: id="mySyncCodeDisplay" -->
-  <span id="mySyncCodeDisplay" style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #38bdf8; letter-spacing: 1px;">
-    -
-  </span>
-
-  <!-- 복사 버튼: onclick="copySyncCode()" -->
-  <button type="button" class="btn-action btn-secondary" onclick="copySyncCode()" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer; white-space: nowrap;">
-    📋 코드 복사
-  </button>
-</div>
-
-          <!-- 다른 기기 코드 입력 -->
-          <div style="display: flex; gap: 8px; width: 100%; box-sizing: border-box; margin-top: 8px; align-items: stretch;">
-  <!-- 입력창: flex: 1 과 min-width: 0 이 핵심입니다 -->
-  <input type="text" 
-         id="syncCodeInput" 
-         placeholder="동기화 코드 8자리 입력" 
-         style="flex: 1; min-width: 0; width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color, #334155); background: var(--bg-color, #0f172a); color: var(--text-color, #fff); font-size: 0.85rem; box-sizing: border-box;">
-  
-  <!-- 불러오기 버튼: 폭을 차지하지 않고 카드 내부에 딱 맞게 고정 -->
-  <button type="button" 
-          id="btnRestoreSync" 
-          onclick="handleApplySyncCode(event)" 
-          class="btn-action btn-primary" 
-          style="flex-shrink: 0; padding: 10px 14px; font-size: 0.85rem; font-weight: 700; white-space: nowrap; border-radius: 8px; cursor: pointer;">
-    불러오기
-  </button>
-</div>
-
-        <!-- 5. [NEW] 홈 화면에 앱 설치 (PWA) -->
         <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
               <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 2px;">📲 홈 화면에 앱 설치</h4>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">스마트폰 홈 화면에 아이콘을 추가해 바로 접속하세요.</span>
+              <span style="font-size: 0.72rem; color: var(--sub-text);">스마트폰 홈 화면에 바로가기 아이콘을 추가합니다.</span>
             </div>
-            <button type="button" class="btn-action btn-secondary" onclick="triggerPWAInstall()" style="padding: 6px 12px; font-size: 0.8rem; flex-shrink: 0; border-color: var(--accent-color); color: var(--accent-color);">
+            <button type="button" class="btn-action btn-secondary" onclick="triggerPWAInstall()" style="padding: 6px 12px; font-size: 0.8rem; border-color: var(--accent-color); color: var(--accent-color);">
               ➕ 앱 추가
             </button>
           </div>
         </div>
-
-        <!-- 6. 앱 동기화 & 보안 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">⚡ 동기화 & 보안</h4>
-          
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span style="font-size: 0.82rem;">최신 코드 새로고침 (캐시 삭제)</span>
-            <button type="button" class="btn-action btn-secondary" onclick="forceAppRefresh()" style="padding: 5px 10px; font-size: 0.75rem;">
-              🔄 캐시 초기화
-            </button>
-          </div>
-
-          <div id="settingAdminStatusRow" style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-color);">
-            <span style="font-size: 0.82rem;" id="settingAdminStatusText">관리자 모드: 미인증</span>
-            <button type="button" id="settingAdminLogoutBtn" class="btn-action btn-secondary" onclick="adminLogoutFromSettings()" style="display: none; padding: 5px 10px; font-size: 0.75rem; border-color: #ef4444; color: #ef4444;">
-              🚪 로그아웃
-            </button>
-          </div>
-        </div>
-
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
@@ -2078,19 +1486,31 @@
     </div>
   </div>
 
-  <!-- 6. [서버 관리자] 업데이트 노트 등록 모달 -->
-  <div id="updateNoteModal" class="modal-overlay" style="display: none;">
+  <!-- 6. 세션 악보 모달 (단 1개만 정의) -->
+  <div id="sessionScoreModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 640px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span>🎼</span> <span id="sessionModalTitle">세션 악보</span>
+        </h3>
+        <button type="button" onclick="closeSessionScoreModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--sub-text); line-height: 1;">&times;</button>
+      </div>
+      <div id="sessionScoreBody" style="min-height: 180px; width: 100%;"></div>
+    </div>
+  </div>
+
+  <!-- 7. 업데이트 노트 발행 모달 -->
+  <div id="updateNoteModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 540px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
         <h3 style="font-size: 1.15rem; font-weight: 700;">📝 새 업데이트 노트 발행</h3>
-        <button onclick="closeUpdateNoteModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        <button onclick="closeUpdateNoteModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
-
       <form onsubmit="handleCreateUpdateNote(event)">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div>
-            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">버전명 (예: v2.1.0)</label>
-            <input type="text" id="newVersionTag" required placeholder="v2.1.0" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">버전명 (예: v2.2.0)</label>
+            <input type="text" id="newVersionTag" required placeholder="v2.2.0" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
           </div>
           <div>
             <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">분류 태그</label>
@@ -2101,33 +1521,29 @@
             </select>
           </div>
         </div>
-
         <div style="margin-bottom: 12px;">
           <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">업데이트 한 줄 요약</label>
           <input type="text" id="newVersionSummary" required placeholder="예: 전 파트 라인업 드롭다운 도입" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">
         </div>
-
         <div style="margin-bottom: 16px;">
           <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">세부 변경 내역</label>
-          <textarea id="newVersionContent" rows="6" required placeholder="1. 주간/월간 라인업 선택창 파트별 드롭다운 전환&#10;2. 세션 미배치 X 옵션 추가&#10;3. 서버 최고관리자 기능 도입" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem; line-height: 1.6;"></textarea>
+          <textarea id="newVersionContent" rows="6" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem; line-height: 1.6;"></textarea>
         </div>
-
         <div style="display: flex; justify-content: flex-end; gap: 8px;">
           <button type="button" class="btn-action btn-secondary" onclick="closeUpdateNoteModal()" style="font-size: 0.85rem;">취소</button>
-          <button type="submit" id="btnPublishNote" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px;">공지사항에 등록 & 배포</button>
+          <button type="submit" id="btnPublishNote" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 8px 18px;">등록 및 배포</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 7. [서버 관리자] 실시간 웹 알림 발송 모달 -->
-  <div id="pushBroadcastModal" class="modal-overlay" style="display: none;">
+  <!-- 8. 브라우저 푸시 발송 모달 -->
+  <div id="pushBroadcastModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 480px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
         <h3 style="font-size: 1.15rem; font-weight: 700;">📢 실시간 알림 발송</h3>
-        <button onclick="closePushBroadcasterModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+        <button onclick="closePushBroadcasterModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text);">&times;</button>
       </div>
-
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <div>
           <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">알림 제목</label>
@@ -2135,49 +1551,29 @@
         </div>
         <div>
           <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">알림 내용</label>
-          <textarea id="pushBodyInput" rows="3" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">새로운 주차의 찬양 콘티와 세션 라인업이 업로드되었습니다. 포털에서 확인해 주세요!</textarea>
+          <textarea id="pushBodyInput" rows="3" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.88rem;">새로운 주차의 찬양 콘티와 세션 라인업이 업로드되었습니다.</textarea>
         </div>
         <button type="button" class="btn-action btn-primary" onclick="broadcastInstantNotification()" style="justify-content: center; padding: 10px; font-size: 0.9rem;">
-          🚀 알림 발송 테스트
+          🚀 알림 발송
         </button>
       </div>
     </div>
   </div>
 
-  <div id="sessionScoreModal" class="modal-overlay" style="display: none; z-index: 10001;">
-  <div class="modal-card" style="max-width: 640px; width: 95%;">
-    
-    <!-- 모달 헤더 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
-      <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px;">
-        <span>🎼</span> <span id="sessionModalTitle">세션 악보</span>
-      </h3>
-      <button type="button" onclick="closeSessionScoreModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text); line-height: 1;">&times;</button>
+  <!-- 메인 푸터 -->
+  <footer id="mainFooter" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--sub-text); font-size: 0.8rem;">
+    <div>© 2026 SHIFT WORSHIP TEAM. All rights reserved.</div>
+    <div style="margin-top: 6px; font-size: 0.75rem; opacity: 0.8;">
+      v2.2.0 | 문의 및 피드백: 익명의견함
     </div>
-
-    <!-- 모달 본문 영역 (동적 렌더링) -->
-    <div id="sessionScoreBody">
-      <!-- 악보가 있을 때와 없을 때의 내용이 JS로 주입됩니다 -->
-    </div>
-
-  </div>
-</div>
-
-  <!-- ============================================== -->
-<!-- 1. 메인 푸터 (모달 바깥, 페이지 본문 최하단에 위치) -->
-<!-- ============================================== -->
-<footer id="mainFooter" class="portal-footer" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color, #334155); color: var(--sub-text, #94a3b8); font-size: 0.8rem; box-sizing: border-box;">
-  <div>© 2026 SHIFT WORSHIP TEAM. All rights reserved.</div>
-  <div style="margin-top: 6px; font-size: 0.75rem; opacity: 0.8;">
-    v2.2.0 | 문의 및 피드백: 익명의견함
-  </div>
-</footer>
+  </footer>
 
   <!-- ===================================================
        자바스크립트 완전본
   =================================================== -->
   <script>
     const SYNC_KEY_STORAGE = 'shift_portal_sync_key';
+
     /* 0. 기본 테마 & 탭 전환 */
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
@@ -2188,8 +1584,7 @@
       document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-      const tabs = ['thisweek', 'archive', 'notice', 'members', 'feedback', 'playground', 'wiki'];
-
+      const tabs = ['conti', 'archive', 'notice', 'members', 'feedback', 'playground', 'admin', 'wiki'];
       tabs.forEach(t => {
         const sec = document.getElementById(`tab-${t}`);
         if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
@@ -2199,30 +1594,12 @@
       if (target) target.classList.add('active');
       if (clickedBtn) clickedBtn.classList.add('active');
 
-      if (tabId === 'archive' && typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length === 0) {
-        loadAllArchiveData();
-      }
-      if (tabId === 'notice' && typeof allNotices !== 'undefined' && allNotices.length === 0) {
-        loadNoticeData();
-      }
-      if (tabId === 'members' && typeof allMembersList !== 'undefined' && allMembersList.length === 0) {
-        loadMembersData();
-      }
-      if (tabId === 'feedback') {
-        loadSuggestionBoxData();
-      }
-      if (tabId === 'admin') {
-        syncAdminUI();
-      }
-      if (tabId === 'playground') {
-        drawRouletteWheel();
-      }
-      if (tabId === 'playground') {
-        initGameModule();
-      }
-      if (tabId === 'playground') {
-        initGameModule();
-      }
+      if (tabId === 'archive' && allScheduleArchive.length === 0) loadAllArchiveData();
+      if (tabId === 'notice' && allNotices.length === 0) loadNoticeData();
+      if (tabId === 'members' && allMembersList.length === 0) loadMembersData();
+      if (tabId === 'feedback') loadSuggestionBoxData();
+      if (tabId === 'admin') syncAdminUI();
+      if (tabId === 'playground') initGameModule();
     }
 
     applyTheme(localStorage.getItem('shift_theme') || 'light');
@@ -2240,7 +1617,7 @@
 
     let currentScheduleData = null;
 
-    /* 2. 관리자 인증 가드 (서버 관리자 gmltn014 / 일반 관리자 shift2026) */
+    /* 2. 관리자 인증 가드 */
     const GENERAL_ADMIN_PW = 'shift2026';
     const SUPER_ADMIN_PW = 'gmltn014';
     const SESSION_KEY = 'shift_admin_authenticated';
@@ -2294,15 +1671,12 @@
           loginForm.style.display = 'none';
           dashboard.style.display = 'block';
           if (pwInput) pwInput.value = '';
-
           if (roleBadge) {
             roleBadge.innerText = isSuper ? 'SUPER ADMIN' : '일반 관리자';
             roleBadge.style.background = isSuper ? '#3b82f6' : '#d1fae5';
             roleBadge.style.color = isSuper ? '#ffffff' : '#047857';
           }
-          if (superSec) {
-            superSec.style.display = isSuper ? 'block' : 'none';
-          }
+          if (superSec) superSec.style.display = isSuper ? 'block' : 'none';
         } else {
           loginForm.style.display = 'block';
           dashboard.style.display = 'none';
@@ -2344,14 +1718,12 @@
       const now = new Date();
       const dayOfWeek = now.getDay();
       const daysUntilSunday = (7 - dayOfWeek) % 7;
-      
       const thisSunday = new Date(now);
       thisSunday.setDate(now.getDate() + daysUntilSunday);
 
       const yyyy = thisSunday.getFullYear();
       const mm = String(thisSunday.getMonth() + 1).padStart(2, '0');
       const dd = String(thisSunday.getDate()).padStart(2, '0');
-
       return `${yyyy}-${mm}-${dd}`;
     }
 
@@ -2361,13 +1733,12 @@
       const containerEl = document.getElementById('contiContainer');
 
       if (!supabaseClient) {
-        if (loadingEl) loadingEl.innerText = 'Supabase 라이브러리를 불러오지 못했습니다.';
+        if (loadingEl) loadingEl.innerText = 'Supabase 클라이언트를 초기화하지 못했습니다.';
         return;
       }
 
       try {
         const thisSundayStr = getThisSundayDateString();
-
         const { data: sundayData, error: sundayError } = await supabaseClient
           .from('schedules')
           .select('*')
@@ -2395,23 +1766,19 @@
           renderContiView(latestData[0]);
           if (loadingEl) loadingEl.style.display = 'none';
           if (containerEl) containerEl.style.display = 'block';
-          
           const dateBadge = document.getElementById('viewWorshipDate');
-          if (dateBadge) {
-            dateBadge.innerText = `${latestData[0].date} (최근 주차)`;
-          }
+          if (dateBadge) dateBadge.innerText = `${latestData[0].date} (최근 주차)`;
         } else {
-          if (loadingEl) loadingEl.innerText = '등록된 예배 일정이 없습니다. 콘티 관리 버튼으로 일정을 추가해 주세요.';
+          if (loadingEl) loadingEl.innerText = '등록된 예배 일정이 없습니다. 콘티 관리 버튼으로 추가해 주세요.';
         }
       } catch (err) {
         console.error('콘티 로드 실패:', err);
         if (loadingEl) loadingEl.innerText = '데이터 로드 오류: ' + err.message;
       }
     }
-    
+
     function renderContiView(item) {
       if (!item) return;
-
       currentScheduleData = item;
 
       const rawTitle = (item.worship_title || '').trim();
@@ -2440,17 +1807,13 @@
       if (dateEl) dateEl.innerText = item.date || '';
 
       if (isCanceled) {
-        if (titleEl) {
-          titleEl.innerHTML = `<span style="color: #ef4444;">🚫 [예배 없음]</span> ${cancelReason || '예배 일정이 취소되었습니다.'}`;
-        }
-        
+        if (titleEl) titleEl.innerHTML = `<span style="color: #ef4444;">🚫 [예배 없음]</span> ${cancelReason || '예배 일정이 취소되었습니다.'}`;
         cancelNoticeEl.innerHTML = `
           <div style="font-size: 2rem; margin-bottom: 8px;">🚫</div>
           <h3 style="font-size: 1.15rem; font-weight: 700; color: #ef4444; margin-bottom: 6px;">해당 주차는 예배가 없습니다</h3>
           <p style="font-size: 0.95rem; color: var(--sub-text);"><strong>안내 사유:</strong> ${cancelReason || '사유 미입력'}</p>
         `;
         cancelNoticeEl.style.display = 'block';
-
         if (songBox) songBox.style.display = 'none';
         if (closingBox) closingBox.style.display = 'none';
         if (actionGroup) actionGroup.style.display = 'none';
@@ -2500,8 +1863,8 @@
       setSession('viewBass', item.bass);
       setSession('viewSound', item.sound);
       setSession('viewBroadcast', item.broadcast);
-      setSession('viewPrompter', item.prompter);
-      setSession('viewVideo', item.video);
+      setSession('viewPrompter', item.prompter || item.Prompter);
+      setSession('viewVideo', item.video || item.Video);
     }
 
     function copyLineupText() {
@@ -2512,7 +1875,6 @@
 
       const dateStr = currentScheduleData?.date || getText('viewWorshipDate');
       const titleStr = currentScheduleData?.worship_title || getText('viewWorshipTitle');
-
       const kb1 = currentScheduleData?.keyboard1 || getText('viewKeyboard1');
       const kb2 = currentScheduleData?.keyboard2 || getText('viewKeyboard2');
       const kbParts = [];
@@ -2520,38 +1882,25 @@
       if (kb2 && !['X', 'x', '-'].includes(kb2)) kbParts.push(`${kb2} (세컨)`);
       const kbText = kbParts.length > 0 ? kbParts.join(', ') : '-';
 
-      const leader = currentScheduleData?.leader || getText('viewLeader');
-      const vocal = currentScheduleData?.vocal || getText('viewVocal');
-      const drum = currentScheduleData?.drum || getText('viewDrum');
-      const guitar = currentScheduleData?.guitar || getText('viewGuitar');
-      const bass = currentScheduleData?.bass || getText('viewBass');
-      const sound = currentScheduleData?.sound || getText('viewSound');
-      const broadcast = currentScheduleData?.broadcast || getText('viewBroadcast');
-      const prompter = currentScheduleData?.prompter || getText('viewPrompter');
-      const video = currentScheduleData?.video || getText('viewVideo');
-
       const message = 
 `[${titleStr}] SHIFT 세션 라인업 안내 🕊️
-(we will Sing Higher and Imagine Forever. Thanks God.)
-
 📅 일시: ${dateStr}
 ━━━━━━━━━━━━━━
-🎤 인도: ${leader}
-👥 보컬: ${vocal}
+🎤 인도: ${currentScheduleData?.leader || getText('viewLeader')}
+👥 보컬: ${currentScheduleData?.vocal || getText('viewVocal')}
 🎹 건반: ${kbText}
-🥁 드럼: ${drum}
-🎸 기타: ${guitar}
-🎸 베이스: ${bass}
-🎚️ 음향: ${sound}
-💻 방송: ${broadcast}
-📑 자막: ${prompter}
-🎬 영상: ${video}
-━━━━━━━━━━━━━━
-* 변경 사항이 있으신 분은 미리 말씀해 주세요. 은혜의 시간 되길 소망합니다! 🙏`;
+🥁 드럼: ${currentScheduleData?.drum || getText('viewDrum')}
+🎸 기타: ${currentScheduleData?.guitar || getText('viewGuitar')}
+🎸 베이스: ${currentScheduleData?.bass || getText('viewBass')}
+🎚️ 음향: ${currentScheduleData?.sound || getText('viewSound')}
+💻 방송: ${currentScheduleData?.broadcast || getText('viewBroadcast')}
+📑 자막: ${currentScheduleData?.prompter || currentScheduleData?.Prompter || getText('viewPrompter')}
+🎬 영상: ${currentScheduleData?.video || currentScheduleData?.Video || getText('viewVideo')}
+━━━━━━━━━━━━━━`;
 
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(message).then(() => {
-          alert('📋 이번 주 라인업이 복사되었습니다!\n단톡방에 붙여넣기(Ctrl+V) 하세요.');
+          alert('📋 이번 주 라인업이 복사되었습니다!\n단톡방에 붙여넣기 하세요.');
         }).catch(() => fallbackCopy(message));
       } else {
         fallbackCopy(message);
@@ -2568,7 +1917,7 @@
       textArea.select();
       try {
         document.execCommand('copy');
-        alert('📋 이번 주 라인업이 복사되었습니다!\n단톡방에 붙여넣기(Ctrl+V) 하세요.');
+        alert('📋 이번 주 라인업이 복사되었습니다!');
       } catch (err) {
         alert('복사에 실패했습니다.');
       }
@@ -2578,7 +1927,6 @@
     function downloadLineupImage() {
       const captureEl = document.getElementById('lineupCaptureArea');
       if (!captureEl) return;
-
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const dateStr = currentScheduleData?.date || document.getElementById('viewWorshipDate')?.innerText || '예배';
 
@@ -2630,32 +1978,51 @@
         if (id && !videoIds.includes(id)) videoIds.push(id);
       });
 
-      if (videoIds.length > 1) {
-        return `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`;
-      }
-      if (videoIds.length === 1) {
-        return `https://www.youtube.com/watch?v=${videoIds[0]}`;
-      }
+      if (videoIds.length > 1) return `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`;
+      if (videoIds.length === 1) return `https://www.youtube.com/watch?v=${videoIds[0]}`;
       return trimmed;
     }
 
-    /* 5. 파트별 드롭다운 헬퍼 및 주간 콘티 모달 */
+    /* 5. 멤버 데이터 로딩 및 파트별 드롭다운 헬퍼 */
+    let allMembersList = [];
+
+    async function loadMembersData() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('members')
+          .select('*')
+          .order('name');
+
+        if (error) throw error;
+        allMembersList = data || [];
+
+        const loadingEl = document.getElementById('membersLoading');
+        if (loadingEl) loadingEl.style.display = 'none';
+        renderMembers();
+      } catch (err) {
+        console.error('명단 로드 실패:', err);
+        const loadingEl = document.getElementById('membersLoading');
+        if (loadingEl) loadingEl.innerText = '명단 로드 실패: ' + err.message;
+      }
+    }
+
     function getMembersByPart(partKeyword) {
       if (!allMembersList || allMembersList.length === 0) return [];
-
       const target = (partKeyword || '').toLowerCase().trim();
 
       return allMembersList.filter(m => {
         if ((m.active || '').trim() !== '활동 중') return false;
         if (!target || target === 'all') return true;
 
-        const source = [m.main_category, m.main_part, m.part_b, m.part_tag]
+        const source = [m.main_category, m.main_part, m.part_b, m.part_tag, m.role, m.part]
           .filter(Boolean).join(' ').toLowerCase();
 
         switch (target) {
           case 'leader':
+          case '리더':
             return source.includes('leader') || source.includes('리더') || source.includes('인도');
           case 'vocal':
+          case '보컬':
             return source.includes('vocal') || source.includes('보컬') || source.includes('싱어');
           case 'keyboard':
           case '건반':
@@ -2671,163 +2038,99 @@
             return source.includes('bass') || source.includes('베이스');
           case 'sound':
           case '음향':
-            return source.includes('sound') || source.includes('음향') || source.includes('엔지니어') || source.includes('믹서');
+            return source.includes('sound') || source.includes('음향') || source.includes('엔지니어') || source.includes('믹서') || source.includes('live ops');
           case 'broadcast':
           case '방송':
-            return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('카메라');
+            return source.includes('broadcast') || source.includes('방송') || source.includes('중계') || source.includes('live ops');
           case 'prompter':
           case '자막':
-            // 자막, prompter, ppt 외에도 방송/라이브옵스 파트 인원들이 자막을 겸하는 경우까지 안전하게 포함
-            return source.includes('prompter') || source.includes('자막') || source.includes('ppt') || source.includes('프레젠테이션') || source.includes('live ops');
+          case 'subtitle':
+            return source.includes('prompter') || source.includes('자막') || source.includes('ppt') || source.includes('live ops') || source.includes('프롬프터');
           case 'video':
           case '영상':
-            return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('미디어') || source.includes('post prod');
+            return source.includes('video') || source.includes('영상') || source.includes('편집') || source.includes('post prod');
           default:
             return source.includes(target);
         }
-      }).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+      }).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
     }
 
     function generatePartOptionsHtml(keyword, selectedValue = '', allowNone = false) {
-  let html = allowNone ? '<option value="X">X (미배치)</option>' : '<option value="">선택안함</option>';
-  
-  if (!allMembersList || !Array.isArray(allMembersList)) {
-    return html;
-  }
+      let html = allowNone ? '<option value="X">X (미배치)</option>' : '<option value="">선택안함</option>';
+      
+      const cleanSelectedVal = String(selectedValue || '').replace(/\s*\(직접입력\)$/, '').trim();
+      let matchedMembers = getMembersByPart(keyword);
 
-  // 검색 키워드 정규화 (소문자)
-  const kw = String(keyword).toLowerCase().trim();
+      // 만약 특정 파트로 필터링했는데 0명이면 전체 활동 중인 멤버 표시
+      if (matchedMembers.length === 0) {
+        matchedMembers = allMembersList.filter(m => (m.active || '').trim() === '활동 중');
+      }
 
-  // 해당 파트에 맞는 멤버만 정확히 필터링
-  const filteredMembers = allMembersList.filter(m => {
-    // member의 role 또는 part 필드 가져오기
-    const role = String(m.role || m.part || '').toLowerCase();
+      let isValueMatched = false;
+      matchedMembers.forEach(m => {
+        const isSelected = (m.name === cleanSelectedVal) ? 'selected' : '';
+        if (isSelected) isValueMatched = true;
+        html += `<option value="${m.name}" ${isSelected}>${m.name}</option>`;
+      });
 
-    // ★ 1. 자막 파트 필터링 (음향/중계 제외하고 자막/프롬프터만 정확히 매칭)
-    if (kw === 'prompter' || kw === 'subtitle' || kw === '자막') {
-      return role.includes('자막') || role.includes('prompter') || role.includes('프롬프터');
+      // 기존 저장값이 목록에 없는 외부/이전 인원일 경우 단정하게 추가
+      if (cleanSelectedVal && cleanSelectedVal !== 'X' && !isValueMatched) {
+        html += `<option value="${cleanSelectedVal}" selected>${cleanSelectedVal}</option>`;
+      }
+
+      return html;
     }
 
-    // ★ 2. 영상/중계 파트 필터링
-    if (kw === 'video' || kw === '영상' || kw === '중계') {
-      return role.includes('영상') || role.includes('중계') || role.includes('video') || role.includes('camera');
-    }
-
-    // ★ 3. 음향 파트 필터링
-    if (kw === 'sound' || kw === '음향' || kw === '엔지니어') {
-      return role.includes('음향') || role.includes('sound') || role.includes('엔지니어');
-    }
-
-    // ★ 4. 방송/미디어 통합인 경우
-    if (kw === 'broadcast' || kw === '방송') {
-      return role.includes('방송') || role.includes('broadcast');
-    }
-
-    // 5. 그 외 악기 및 보컬, 인도자 등
-    return role.includes(kw);
-  });
-
-  // 옵션 태그 생성
-  filteredMembers.forEach(m => {
-    const isSelected = (m.name === selectedValue) ? 'selected' : '';
-    html += `<option value="${m.name}" ${isSelected}>${m.name}</option>`;
-  });
-
-  // 만약 선택된 사람이 목록에 없는데 값이 들어가 있는 경우(외부 인원 등) 안전하게 유지
-  if (selectedValue && selectedValue !== 'X' && !filteredMembers.some(m => m.name === selectedValue)) {
-    html += `<option value="${selectedValue}" selected>${selectedValue} (직접입력)</option>`;
-  }
-
-  return html;
-}
     function populateAllLineupSelects(currentItem = {}) {
-  // 1. 인도자
-  const leaderSel = document.getElementById('adminLeader');
-  if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('leader', currentItem.leader || '', false);
+      const leaderSel = document.getElementById('adminLeader');
+      if (leaderSel) leaderSel.innerHTML = generatePartOptionsHtml('leader', currentItem.leader || '', false);
 
-  // 2. 보컬 (최대 4명)
-  const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
-  for (let i = 1; i <= 4; i++) {
-    const sel = document.getElementById(`adminVocalSelect${i}`);
-    if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
-  }
+      const rawVocals = (currentItem.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+      for (let i = 1; i <= 4; i++) {
+        const sel = document.getElementById(`adminVocalSelect${i}`);
+        if (sel) sel.innerHTML = generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false);
+      }
 
-  // 3. 악기 세션 (미배치 가능 -> X 허용 true)
-  const setSession = (id, keyword, val) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
-  };
+      const setSession = (id, keyword, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || 'X', true);
+      };
 
-  setSession('adminKeyboard1', 'keyboard', currentItem.keyboard1 || 'X');
-  setSession('adminKeyboard2', 'keyboard', currentItem.keyboard2 || 'X');
-  setSession('adminDrum', 'drum', currentItem.drum || 'X');
-  setSession('adminGuitar', 'guitar', currentItem.guitar || 'X');
-  setSession('adminBass', 'bass', currentItem.bass || 'X');
+      setSession('adminKeyboard1', 'keyboard', currentItem.keyboard1 || 'X');
+      setSession('adminKeyboard2', 'keyboard', currentItem.keyboard2 || 'X');
+      setSession('adminDrum', 'drum', currentItem.drum || 'X');
+      setSession('adminGuitar', 'guitar', currentItem.guitar || 'X');
+      setSession('adminBass', 'bass', currentItem.bass || 'X');
 
-  // 4. ★ 방송/엔지니어 (필수 배치 -> X 제거 false)
-  const setMedia = (id, keyword, val) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || '', false);
-  };
+      const setMedia = (id, keyword, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = generatePartOptionsHtml(keyword, val || '', false);
+      };
 
-  setMedia('adminSound', 'sound', currentItem.sound || '');
-  setMedia('adminBroadcast', 'broadcast', currentItem.broadcast || '');
-
-  // ★ 자막: 대소문자(Prompter / prompter) 및 subtitle 키 모두 대응
-  const prompterVal = currentItem.prompter || currentItem.Prompter || currentItem.subtitle || '';
-setMedia('adminSubtitle', 'prompter', prompterVal);
-
-const videoVal = currentItem.video || currentItem.Video || '';
-setMedia('adminVideo', 'video', videoVal);
-}
+      setMedia('adminSound', 'sound', currentItem.sound || '');
+      setMedia('adminBroadcast', 'broadcast', currentItem.broadcast || '');
+      setMedia('adminPrompter', 'prompter', currentItem.prompter || currentItem.Prompter || currentItem.subtitle || '');
+      setMedia('adminVideo', 'video', currentItem.video || currentItem.Video || '');
+    }
 
     async function openContiAdminModal() {
-  checkAdminAuth(async () => {
-    try {
-      // 멤버 목록이 비어있으면 먼저 불러오고 대기
-      if (!allMembersList || allMembersList.length === 0) {
-        if (typeof loadMembersData === 'function') {
-          await loadMembersData();
+      checkAdminAuth(async () => {
+        try {
+          if (!allMembersList || allMembersList.length === 0) {
+            await loadMembersData();
+          }
+          await setupContiAdminForm();
+        } catch (e) {
+          console.warn('콘티 폼 설정 중 경고:', e);
         }
-      }
-      await setupContiAdminForm();
-    } catch (e) {
-      console.warn('콘티 폼 설정 중 경고:', e);
+        const modal = document.getElementById('contiAdminModal');
+        if (modal) modal.style.display = 'flex';
+      });
     }
-    const modal = document.getElementById('contiAdminModal');
-    if (modal) modal.style.display = 'flex';
-  });
-}
-
-/* 월간 라인업 모달 열기 보장 */
-async function openMonthLineupModal() {
-  checkAdminAuth(async () => {
-    // 멤버 목록이 비어있으면 먼저 불러오고 대기
-    if (!allMembersList || allMembersList.length === 0) {
-      if (typeof loadMembersData === 'function') {
-        await loadMembersData();
-      }
-    }
-
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const defaultMonth = `${yyyy}-${mm}`;
-
-    const picker = document.getElementById('monthLineupPicker');
-    if (picker) picker.value = defaultMonth;
-
-    if (typeof loadMonthLineupData === 'function') {
-      await loadMonthLineupData(defaultMonth);
-    }
-    
-    const modal = document.getElementById('monthLineupModal');
-    if (modal) modal.style.display = 'flex';
-  });
-}
 
     function closeContiAdminModal() {
-      document.getElementById('contiAdminModal').style.display = 'none';
+      const modal = document.getElementById('contiAdminModal');
+      if (modal) modal.style.display = 'none';
     }
 
     function generateSongInputFields(count, initialSongs = []) {
@@ -2849,7 +2152,7 @@ async function openMonthLineupModal() {
 
     async function setupContiAdminForm() {
       if (!allMembersList || allMembersList.length === 0) {
-        if (typeof loadMembersData === 'function') await loadMembersData();
+        await loadMembersData();
       }
 
       const thisSundayStr = getThisSundayDateString();
@@ -2940,7 +2243,6 @@ async function openMonthLineupModal() {
         youtube_url: youtube_url || null,
         sheet_url: sheet_url || null,
         monitoring_url: monitoring_url || null,
-
         leader: getVal('adminLeader'),
         vocal: vocal,
         keyboard1: getVal('adminKeyboard1'),
@@ -2974,9 +2276,6 @@ async function openMonthLineupModal() {
 
         closeContiAdminModal();
         await loadCurrentConti();
-        if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
-          await loadAllArchiveData();
-        }
       } catch (err) {
         console.error('콘티 저장 오류:', err);
         alert('저장에 실패했습니다: ' + err.message);
@@ -2986,12 +2285,16 @@ async function openMonthLineupModal() {
       }
     }
 
-    /* 6. 월간 세션 일괄 관리 모듈 */
+    /* 6. 월간 라인업 일괄 관리 모듈 */
     let currentMonthSundays = [];
     let currentMonthSchedulesMap = {};
 
-    function openMonthLineupModal() {
-      checkAdminAuth(() => {
+    async function openMonthLineupModal() {
+      checkAdminAuth(async () => {
+        if (!allMembersList || allMembersList.length === 0) {
+          await loadMembersData();
+        }
+
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -3000,13 +2303,15 @@ async function openMonthLineupModal() {
         const picker = document.getElementById('monthLineupPicker');
         if (picker) picker.value = defaultMonth;
 
-        loadMonthLineupData(defaultMonth);
-        document.getElementById('monthLineupModal').style.display = 'flex';
+        await loadMonthLineupData(defaultMonth);
+        const modal = document.getElementById('monthLineupModal');
+        if (modal) modal.style.display = 'flex';
       });
     }
 
     function closeMonthLineupModal() {
-      document.getElementById('monthLineupModal').style.display = 'none';
+      const modal = document.getElementById('monthLineupModal');
+      if (modal) modal.style.display = 'none';
     }
 
     function getAllSundaysInMonth(year, month) {
@@ -3033,11 +2338,8 @@ async function openMonthLineupModal() {
       if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--sub-text);">데이터를 조회 중입니다...</td></tr>';
 
       try {
-        // ★ 핵심: 팀원 명단이 로드되지 않았다면 명단 로드가 끝날 때까지 반드시 대기!
         if (!allMembersList || allMembersList.length === 0) {
-          if (typeof loadMembersData === 'function') {
-            await loadMembersData();
-          }
+          await loadMembersData();
         }
 
         const { data, error } = await supabaseClient
@@ -3052,7 +2354,6 @@ async function openMonthLineupModal() {
           currentMonthSchedulesMap[row.date] = row;
         });
 
-        // 명단 데이터가 100% 준비된 상태에서 테이블 렌더링 실행
         renderMonthLineupTable();
       } catch (err) {
         console.error('월간 라인업 로드 오류:', err);
@@ -3079,36 +2380,34 @@ async function openMonthLineupModal() {
         }
         vocalHtml += '</div>';
 
+        const prompterVal = item.prompter || item.Prompter || item.subtitle || '';
+        const videoVal = item.video || item.Video || '';
+
         return `
           <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
             <td style="padding: 10px 8px; font-weight: 700; vertical-align: top; text-align: center;">
               <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
               ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
             </td>
-            <!-- 인도자 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_leader_${dateStr}" style="width: 100%; min-width: 85px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
                 ${generatePartOptionsHtml('leader', item.leader || '', false)}
               </select>
             </td>
-            <!-- 보컬 -->
             <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
-            <!-- 건반 (세션 파트는 X 허용 true) -->
             <td style="padding: 6px; vertical-align: top;">
-              <select id="m_kb1_${dateStr}" onchange="checkMonthlyKeyboardDuplicate('${dateStr}', 'kb1')" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <select id="m_kb1_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
                 ${generatePartOptionsHtml('keyboard', item.keyboard1 || 'X', true)}
               </select>
-              <select id="m_kb2_${dateStr}" onchange="checkMonthlyKeyboardDuplicate('${dateStr}', 'kb2')" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+              <select id="m_kb2_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
                 ${generatePartOptionsHtml('keyboard', item.keyboard2 || 'X', true)}
               </select>
             </td>
-            <!-- 드럼 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_drum_${dateStr}" style="width: 100%; min-width: 80px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
                 ${generatePartOptionsHtml('drum', item.drum || 'X', true)}
               </select>
             </td>
-            <!-- 기타 / 베이스 -->
             <td style="padding: 6px; vertical-align: top;">
               <select id="m_guitar_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
                 ${generatePartOptionsHtml('guitar', item.guitar || 'X', true)}
@@ -3117,7 +2416,6 @@ async function openMonthLineupModal() {
                 ${generatePartOptionsHtml('bass', item.bass || 'X', true)}
               </select>
             </td>
-            <!-- ★ 방송/엔지니어 (X배치없음 제거: 세 번째 인자 false 적용) -->
             <td style="padding: 6px; vertical-align: top;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                 <select id="m_sound_${dateStr}" title="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
@@ -3127,10 +2425,10 @@ async function openMonthLineupModal() {
                   ${generatePartOptionsHtml('broadcast', item.broadcast || '', false)}
                 </select>
                 <select id="m_prompter_${dateStr}" title="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('prompter', item.prompter || '', false)}
+                  ${generatePartOptionsHtml('prompter', prompterVal, false)}
                 </select>
                 <select id="m_video_${dateStr}" title="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('Video', item.video || '', false)}
+                  ${generatePartOptionsHtml('video', videoVal, false)}
                 </select>
               </div>
             </td>
@@ -3138,7 +2436,7 @@ async function openMonthLineupModal() {
         `;
       }).join('');
     }
-    
+
     async function saveAllMonthLineup() {
       const saveBtn = document.getElementById('btnSaveMonthLineup');
       saveBtn.disabled = true;
@@ -3147,13 +2445,10 @@ async function openMonthLineupModal() {
       try {
         for (const dateStr of currentMonthSundays) {
           const leader = document.getElementById(`m_leader_${dateStr}`)?.value.trim() || null;
-
           const vocalArr = [];
           for (let i = 1; i <= 4; i++) {
             const val = document.getElementById(`m_vocal_${dateStr}_${i}`)?.value.trim();
-            if (val && val !== 'X' && !vocalArr.includes(val)) {
-              vocalArr.push(val);
-            }
+            if (val && val !== 'X' && !vocalArr.includes(val)) vocalArr.push(val);
           }
           const vocal = vocalArr.length > 0 ? vocalArr.join(', ') : null;
 
@@ -3187,9 +2482,6 @@ async function openMonthLineupModal() {
         alert('한 달 라인업이 일괄 저장되었습니다! 🎉');
         closeMonthLineupModal();
         await loadCurrentConti();
-        if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
-          await loadAllArchiveData();
-        }
       } catch (err) {
         console.error('월간 라인업 저장 오류:', err);
         alert('저장 중 오류: ' + err.message);
@@ -3215,7 +2507,6 @@ async function openMonthLineupModal() {
           .order('date', { ascending: false });
 
         if (error) throw error;
-
         allScheduleArchive = data || [];
         if (loadingEl) loadingEl.style.display = 'none';
 
@@ -3365,8 +2656,6 @@ async function openMonthLineupModal() {
         const isCanceled = /^x_/i.test(rawTitle);
         const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
         const computedYt = buildYoutubePlaylistUrl(item.youtube_url);
-        
-        // ★ 세션 악보 등록 여부 확인
         const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
 
         return `
@@ -3397,20 +2686,13 @@ async function openMonthLineupModal() {
                   <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
                   <div style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>
                 </div>
-
                 ${item.closing_song ? `
                   <div style="margin: 8px 0; font-size: 0.88rem;">
                     <strong>🕊️ 결단찬양:</strong> ${item.closing_song}
                   </div>` : ''}
-
                 <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
                   ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
                   ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원</a>` : ''}
-                  ${item.closing_sheet_url ? `<a href="${item.closing_sheet_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">📄 결단악보</a>` : ''}
-                  ${item.closing_youtube_url ? `<a href="${item.closing_youtube_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">▶️ 결단영상</a>` : ''}
-                  ${item.monitoring_url ? `<a href="${item.monitoring_url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎥 실황</a>` : ''}
-                  
-                  <!-- ★ 세션 악보 버튼 추가 -->
                   <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
                     <span>🎼</span> 세션 악보 ${hasSessionScore ? '✓' : ''}
                   </button>
@@ -3420,55 +2702,6 @@ async function openMonthLineupModal() {
           </div>
         `;
       }).join('');
-    }
-
-    /* 아카이브 콘티 목록에서 특정 주차 세션 악보 열기 */
-    async function openArchiveSessionScore(dateStr) {
-      const modal = document.getElementById('sessionScoreModal');
-      const titleEl = document.getElementById('sessionModalTitle');
-      const bodyEl = document.getElementById('sessionScoreBody');
-
-      if (!modal) return;
-
-      modal.style.display = 'flex';
-      if (bodyEl) {
-        bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">악보 정보를 불러오는 중입니다... ⏳</div>';
-      }
-
-      try {
-        const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-        if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-
-        // 해당 날짜의 스케줄 데이터 1건 조회
-        const { data, error } = await client
-          .from('schedules')
-          .select('*')
-          .eq('date', dateStr)
-          .single();
-
-        if (error) throw error;
-
-        // 현재 주차 객체를 해당 과거 주차 객체로 지정 (업로드 시 대상 날짜가 올바르게 전송되도록 설정)
-        currentWeekSchedule = data;
-
-        if (titleEl) {
-          titleEl.innerText = `${data.date} 세션 악보`;
-        }
-
-        // 악보 뷰어 또는 업로드 UI 렌더링
-        renderSessionScoreContent(data.session_score_url || '');
-
-      } catch (err) {
-        console.error('아카이브 세션 악보 로드 실패:', err);
-        if (bodyEl) {
-          bodyEl.innerHTML = `
-            <div style="text-align: center; padding: 24px; color: #ef4444;">
-              악보 정보를 불러오지 못했습니다.<br>
-              <small style="color: var(--sub-text);">${err.message}</small>
-            </div>
-          `;
-        }
-      }
     }
 
     function toggleArchiveAccordion(idx) {
@@ -3500,27 +2733,19 @@ async function openMonthLineupModal() {
                 <span class="worship-date-badge" style="background-color: #fee2e2; color: #b91c1c;">${item.date}</span>
                 <strong style="font-size: 1rem; margin-left: 6px; color: #ef4444;">🚫 [예배 없음] ${cancelReason}</strong>
               </div>
-              <p style="font-size: 0.88rem; color: var(--sub-text); margin: 6px 0;">해당 주차는 예배가 없습니다.</p>
             </div>
           `;
         }
 
-        // 건반 1, 2 처리 (괄호 누락 방지 안전 분리)
         const rawKb1 = item.keyboard1 ? String(item.keyboard1).trim() : '';
         const rawKb2 = item.keyboard2 ? String(item.keyboard2).trim() : '';
-        const hasKb1 = rawKb1 && rawKb1 !== 'X' && rawKb1 !== 'x' && rawKb1 !== '-';
-        const hasKb2 = rawKb2 && rawKb2 !== 'X' && rawKb2 !== 'x' && rawKb2 !== '-';
-
         let kbHtml = '-';
-        if (hasKb1 || hasKb2) {
+        if ((rawKb1 && rawKb1 !== 'X') || (rawKb2 && rawKb2 !== 'X')) {
           const lines = [];
-          if (hasKb1) lines.push('<div>' + rawKb1 + ' <span style="font-size:0.75rem; color:var(--sub-text);">(메인)</span></div>');
-          if (hasKb2) lines.push('<div>' + rawKb2 + ' <span style="font-size:0.75rem; color:var(--sub-text);">(세컨)</span></div>');
+          if (rawKb1 && rawKb1 !== 'X') lines.push(`<div>${rawKb1} (메인)</div>`);
+          if (rawKb2 && rawKb2 !== 'X') lines.push(`<div>${rawKb2} (세컨)</div>`);
           kbHtml = lines.join('');
         }
-
-        // Prompter 키 반영
-        const prompterVal = item.Prompter || item.prompter || '-';
 
         return `
           <div class="card" style="margin-bottom: 12px; padding: 16px;">
@@ -3531,7 +2756,7 @@ async function openMonthLineupModal() {
             <div class="members-history-grid">
               <div class="members-history-item" style="grid-column: 1 / -1; background: var(--card-sub-bg);">
                 <span>인도자 / 보컬</span>
-                <strong>🎤 ${leaderVal} / 👥 ${vocalVal}</strong>
+                <strong>🎤 ${item.leader || '-'} / 👥 ${item.vocal || '-'}</strong>
               </div>
               <div class="members-history-item"><span>건반</span>${kbHtml}</div>
               <div class="members-history-item"><span>드럼</span>${item.drum || '-'}</div>
@@ -3539,14 +2764,14 @@ async function openMonthLineupModal() {
               <div class="members-history-item"><span>베이스</span>${item.bass || '-'}</div>
               <div class="members-history-item"><span>음향</span>${item.sound || '-'}</div>
               <div class="members-history-item"><span>방송</span>${item.broadcast || '-'}</div>
-              <div class="members-history-item"><span>프롬프터</span>${prompterVal}</div>
-              <div class="members-history-item"><span>영상</span>${item.video || '-'}</div>
+              <div class="members-history-item"><span>자막</span>${item.prompter || item.Prompter || '-'}</div>
+              <div class="members-history-item"><span>영상</span>${item.video || item.Video || '-'}</div>
             </div>
           </div>
         `;
       }).join('');
     }
-    
+
     function populateLeaderFilterOptions() {
       const leaderSelect = document.getElementById('archiveLeaderFilter');
       if (!leaderSelect) return;
@@ -3585,7 +2810,6 @@ async function openMonthLineupModal() {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-
         allNotices = data || [];
         if (loadingEl) loadingEl.style.display = 'none';
 
@@ -3605,9 +2829,6 @@ async function openMonthLineupModal() {
           const verText = match[0];
           const bubble = document.getElementById('headerVersionBadge');
           if (bubble) bubble.innerText = verText;
-
-          const footerVer = document.querySelector('.footer-version');
-          if (footerVer) footerVer.innerText = `${verText} (Supabase Engine)`;
           break;
         }
       }
@@ -3747,9 +2968,7 @@ async function openMonthLineupModal() {
                   <strong style="font-size: 1.05rem;">${cleanTitle}</strong>
                 </div>
               </div>
-              <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 12px;">
-                배포일: ${dateStr}
-              </div>
+              <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 12px;">배포일: ${dateStr}</div>
               <div style="font-size: 0.92rem; line-height: 1.7; white-space: pre-wrap; background: var(--card-sub-bg); padding: 14px; border-radius: 8px;">${(item.content || '').trim()}</div>
             </div>
           `;
@@ -3784,79 +3003,12 @@ async function openMonthLineupModal() {
     function goToUpdateNotes() {
       const noticeTabBtn = document.querySelectorAll('.tab-btn')[2];
       switchTab('notice', noticeTabBtn);
-      if (typeof switchNoticeSubTab === 'function') switchNoticeSubTab('update');
+      switchNoticeSubTab('update');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* 업데이트 목록에서 최신 버전을 감지해 헤더 배지에 반영 */
-    function syncHeaderVersionFromNotes() {
-      const badgeBtn = document.getElementById('headerVersionBadge');
-      if (!badgeBtn) return;
-
-      let latestVersion = '';
-
-      // 1. 공지/업데이트 데이터 배열 탐색 (UPDATE_NOTES, updateNotes, noticeList 등)
-      const listData = (typeof UPDATE_NOTES !== 'undefined') ? UPDATE_NOTES :
-                       (typeof updateList !== 'undefined') ? updateList :
-                       (typeof noticeList !== 'undefined') ? noticeList : null;
-
-      if (Array.isArray(listData) && listData.length > 0) {
-        for (const item of listData) {
-          const text = (item.version || '') + ' ' + (item.title || '') + ' ' + (item.content || '');
-          const match = text.match(/v\d+\.\d+(\.\d+)?/i);
-          if (match) {
-            latestVersion = match[0];
-            break;
-          }
-        }
-      }
-
-      // 2. 만약 DOM에 이미 렌더링된 텍스트에서 찾는 경우 (폴백)
-      if (!latestVersion) {
-        const updateArea = document.getElementById('updateList') || 
-                           document.getElementById('updateNotesList') || 
-                           document.querySelector('.update-note-card');
-        if (updateArea) {
-          const match = updateArea.innerText.match(/v\d+\.\d+(\.\d+)?/i);
-          if (match) latestVersion = match[0];
-        }
-      }
-
-      // 3. 최신 버전이 확인되면 텍스트를 주입하고 노출 (깜빡임 모션 없음)
-      if (latestVersion) {
-        badgeBtn.innerText = latestVersion.startsWith('v') ? latestVersion : `v${latestVersion}`;
-        badgeBtn.style.display = 'inline-flex';
-      } else {
-        // 아직 로드되지 않았으면 기본적으로 v2.3.0 등으로 안전하게 fallback
-        badgeBtn.innerText = 'v2.3.0';
-        badgeBtn.style.display = 'inline-flex';
-      }
-    }
-
-    /* 9. 멤버 모듈 */
-    let allMembersList = [];
+    /* 9. 멤버 탭 렌더링 */
     let selectedMemberCategory = 'ALL';
-
-    async function loadMembersData() {
-  const { data, error } = await supabaseClient
-    .from('members') // 또는 team_members, user_profiles 등
-    .select('*')
-    .order('name');
-  if (data) {
-    allMembersList = data;
-  }
-}
-        if (error) throw error;
-
-        allMembersList = data || [];
-        if (loadingEl) loadingEl.style.display = 'none';
-
-        renderMembers();
-      } catch (err) {
-        console.error('명단 로드 실패:', err);
-        if (loadingEl) loadingEl.innerText = '명단 로드 실패: ' + err.message;
-      }
-    }
 
     function filterMembersCategory(category, btn) {
       selectedMemberCategory = category;
@@ -3888,7 +3040,6 @@ async function openMonthLineupModal() {
 
           if (!searchSource.includes(keyword)) return false;
         }
-
         return true;
       });
     }
@@ -3979,7 +3130,6 @@ async function openMonthLineupModal() {
       document.getElementById('formMemberTag').value = '';
       document.getElementById('formMemberActive').value = '활동 중';
       document.getElementById('formMemberCall').value = '';
-
       document.getElementById('memberFormTitle').innerText = '➕ 새 팀원 등록';
       document.getElementById('btnSaveMember').innerText = '저장하기';
     }
@@ -4022,7 +3172,6 @@ async function openMonthLineupModal() {
 
       document.getElementById('memberFormTitle').innerText = `✏️ 팀원 정보 수정 (${member.name})`;
       document.getElementById('btnSaveMember').innerText = '수정 완료';
-      document.querySelector('#memberAdminModal .modal-card').scrollTop = 0;
     }
 
     async function saveMemberData() {
@@ -4097,6 +3246,7 @@ async function openMonthLineupModal() {
         return [];
       }
     }
+
     function saveMySuggestionId(newId) {
       const ids = getMySuggestionIds();
       if (!ids.includes(newId)) {
@@ -4114,7 +3264,6 @@ async function openMonthLineupModal() {
 
         if (error) throw error;
         allSuggestions = data || [];
-
         renderMySuggestions();
         renderCompletedSuggestions();
       } catch (err) {
@@ -4148,12 +3297,12 @@ async function openMonthLineupModal() {
 
         if (error) throw error;
 
-        if (data && data.length > 0) saveMySuggestionId(data[0].id);
-        
         if (data && data.length > 0) {
-        saveMySuggestionId(data[0].id);
-        pushSyncDataToCloud(); // ★ 작성한 글 ID를 클라우드 연동 정보에 즉시 자동 백업
-      }
+          saveMySuggestionId(data[0].id);
+          if (typeof pushSyncDataToCloud === 'function') {
+            await pushSyncDataToCloud();
+          }
+        }
 
         alert('소중한 의견이 익명으로 안전하게 접수되었습니다! 🙏');
         contentEl.value = '';
@@ -4324,190 +3473,406 @@ async function openMonthLineupModal() {
       }
     }
 
-    /* 11. 통합 환경설정 (Settings Hub) */
-    let wakeLockSentinel = null;
-
+    /* 11. 통합 환경설정 (Settings Hub & 동기화) */
     function openSettingsModal() {
-  const modal = document.getElementById('settingsModal');
-  if (!modal) return;
+      const modal = document.getElementById('settingsModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
 
-  modal.style.display = 'flex';
-
-  // 로컬스토리지에서 코드 조회 (없으면 즉시 생성)
-  let myCode = localStorage.getItem('shift_portal_sync_key');
-  if (!myCode || myCode === '-' || myCode.trim() === '') {
-    const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-    myCode = 'SHIFT-' + randPart;
-    localStorage.setItem('shift_portal_sync_key', myCode);
-  }
-
-  // 화면 코드 표시 요소에 주입
-  const codeDisplay = document.getElementById('mySyncCodeDisplay') || 
-                      document.getElementById('syncCodeDisplay') || 
-                      document.querySelector('.sync-code-text');
-  if (codeDisplay) {
-    codeDisplay.innerText = myCode;
-  }
-
-  // 현재 설정값(테마, 글꼴) 셀렉트 박스에 반영
-  try {
-    const currentTheme = localStorage.getItem('shift_theme') || 'dark';
-    const currentFont = localStorage.getItem('shift_font') || 'pretendard';
-    const themeSelect = document.getElementById('settingThemeSelect');
-    if (themeSelect) themeSelect.value = currentTheme;
-    const fontSelect = document.getElementById('settingFontSelect');
-    if (fontSelect) fontSelect.value = currentFont;
-  } catch (e) {
-    console.warn('UI 반영 예외:', e);
-  }
-}
-
-/* 2. 동기화 코드 복사 함수 (모바일/HTTPS 제약 완벽 대응 폴백 탑재) */
-async function copySyncCode(event) {
-  const codeDisplay = document.getElementById('mySyncCodeDisplay') || 
-                      document.getElementById('syncCodeDisplay') || 
-                      document.querySelector('.sync-code-text');
-  
-  let code = codeDisplay ? codeDisplay.innerText.trim() : '';
-  if (!code || code === '-') {
-    code = localStorage.getItem('shift_portal_sync_key') || '';
-  }
-
-  // 코드가 없으면 새로 발급
-  if (!code || code === '-') {
-    const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-    code = 'SHIFT-' + randPart;
-    localStorage.setItem('shift_portal_sync_key', code);
-    if (codeDisplay) codeDisplay.innerText = code;
-  }
-
-  const copyBtn = (event && event.target) ? event.target : document.querySelector('button[onclick*="copySyncCode"]');
-  const originalBtnText = copyBtn ? copyBtn.innerText : '📋 코드 복사';
-  if (copyBtn) {
-    copyBtn.disabled = true;
-    copyBtn.innerText = '☁️ 저장 중...';
-  }
-
-  try {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-
-    // [핵심] 로컬스토리지에 저장되어 있는 내가 작성한 건의글 ID 목록 수집
-    let mySuggestionIds = [];
-    try {
-      const storedIds = localStorage.getItem('shift_my_suggestions') || 
-                        localStorage.getItem('my_suggestion_ids');
-      if (storedIds) {
-        mySuggestionIds = JSON.parse(storedIds);
-        if (!Array.isArray(mySuggestionIds)) mySuggestionIds = [];
+      let myCode = localStorage.getItem(SYNC_KEY_STORAGE);
+      if (!myCode || myCode === '-' || myCode.trim() === '') {
+        const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+        myCode = 'SHIFT-' + randPart;
+        localStorage.setItem(SYNC_KEY_STORAGE, myCode);
       }
-    } catch (e) {
-      console.warn('건의글 ID 파싱 건너뜀:', e);
-      mySuggestionIds = [];
+
+      const codeDisplay = document.getElementById('mySyncCodeDisplay');
+      if (codeDisplay) codeDisplay.innerText = myCode;
+
+      const currentTheme = localStorage.getItem('shift_theme') || 'light';
+      const themeSelect = document.getElementById('settingThemeSelect');
+      if (themeSelect) themeSelect.value = currentTheme;
     }
 
-    // settings JSON 안에 건의글 ID 목록을 포함시킴 (DB 열 추가 불필요!)
-    const currentSettings = {
-      theme: localStorage.getItem('shift_theme') || 'dark',
-      font: localStorage.getItem('shift_font') || 'pretendard',
-      my_suggestion_ids: mySuggestionIds,
-      updated_at: new Date().toISOString()
-    };
-
-    // Supabase user_sync 테이블에 저장 (upsert)
-    const { error } = await client
-      .from('user_sync')
-      .upsert({
-        sync_code: code,
-        settings: currentSettings,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'sync_code' });
-
-    if (error) {
-      throw new Error(`[${error.code || 'ERR'}] ${error.message}`);
+    function closeSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      if (modal) modal.style.display = 'none';
     }
 
-    console.log('✅ Supabase user_sync 저장 성공:', code, currentSettings);
+    async function copySyncCode(event) {
+      const codeDisplay = document.getElementById('mySyncCodeDisplay');
+      let code = codeDisplay ? codeDisplay.innerText.trim() : '';
+      if (!code || code === '-') {
+        code = localStorage.getItem(SYNC_KEY_STORAGE) || '';
+      }
 
-    // 모바일/브라우저 클립보드 복사 실행
-    let copied = false;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+      if (!code || code === '-') {
+        const randPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+        code = 'SHIFT-' + randPart;
+        localStorage.setItem(SYNC_KEY_STORAGE, code);
+        if (codeDisplay) codeDisplay.innerText = code;
+      }
+
+      const copyBtn = (event && event.target) ? event.target : document.querySelector('button[onclick*="copySyncCode"]');
+      const originalBtnText = copyBtn ? copyBtn.innerText : '📋 코드 복사';
+      if (copyBtn) {
+        copyBtn.disabled = true;
+        copyBtn.innerText = '☁️ 저장 중...';
+      }
+
       try {
-        await navigator.clipboard.writeText(code);
-        copied = true;
-      } catch (clipErr) {
-        console.warn('Clipboard API 폴백:', clipErr);
-      }
-    }
-
-    if (!copied) {
-      const tempTextArea = document.createElement('textarea');
-      tempTextArea.value = code;
-      tempTextArea.style.position = 'fixed';
-      tempTextArea.style.left = '-9999px';
-      tempTextArea.style.top = '0';
-      document.body.appendChild(tempTextArea);
-      tempTextArea.focus();
-      tempTextArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempTextArea);
-    }
-
-    alert(`🎉 [ ${code} ]\n설정과 작성한 건의글 기록이 클라우드에 백업 및 복사되었습니다!\n\n다른 기기에서 붙여넣고 [불러오기]를 눌러주세요.`);
-
-  } catch (err) {
-    console.error('동기화 저장 오류:', err);
-    alert(`⚠️ 서버 저장 실패\n\n${err.message}`);
-  } finally {
-    if (copyBtn) {
-      copyBtn.disabled = false;
-      copyBtn.innerText = originalBtnText;
-    }
-  }
-}
-
-    /* 알림 토글 핸들러 */
-    async function toggleAppNotification(enable) {
-      if (!('Notification' in window)) {
-        alert('이 브라우저는 웹 알림 기능을 지원하지 않습니다.');
-        document.getElementById('settingNotificationToggle').checked = false;
-        return;
-      }
-
-      if (enable) {
+        let mySuggestionIds = [];
         try {
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            new Notification('SHIFT Worship', {
-              body: 'SHIFT 찬양팀 웹앱 알림이 켜졌습니다! 새로운 콘티와 소식을 전해드릴게요. 🕊️',
-              icon: 'favicon.ico'
-            });
-          } else {
-            alert('알림 권한이 허용되지 않았습니다. 브라우저 설정에서 권한을 허용해 주세요.');
-            document.getElementById('settingNotificationToggle').checked = false;
+          const storedIds = localStorage.getItem(MY_SUGGESTIONS_KEY);
+          if (storedIds) {
+            mySuggestionIds = JSON.parse(storedIds);
+            if (!Array.isArray(mySuggestionIds)) mySuggestionIds = [];
           }
-        } catch (err) {
-          console.error('알림 권한 요청 오류:', err);
-          document.getElementById('settingNotificationToggle').checked = false;
+        } catch (e) {
+          mySuggestionIds = [];
+        }
+
+        const currentSettings = {
+          theme: localStorage.getItem('shift_theme') || 'light',
+          my_suggestion_ids: mySuggestionIds,
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = await supabaseClient
+          .from('user_sync')
+          .upsert({
+            sync_code: code,
+            settings: currentSettings,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'sync_code' });
+
+        if (error) throw error;
+
+        let copied = false;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(code);
+            copied = true;
+          } catch (clipErr) {
+            console.warn('클립보드 폴백:', clipErr);
+          }
+        }
+
+        if (!copied) fallbackCopy(code);
+
+        alert(`🎉 [ ${code} ]\n설정과 작성한 건의글 기록이 클라우드에 백업 및 복사되었습니다!\n다른 기기에서 붙여넣고 [불러오기]를 눌러주세요.`);
+      } catch (err) {
+        console.error('동기화 저장 오류:', err);
+        alert(`⚠️ 서버 저장 실패\n\n${err.message}`);
+      } finally {
+        if (copyBtn) {
+          copyBtn.disabled = false;
+          copyBtn.innerText = originalBtnText;
         }
       }
     }
 
-    function forceAppRefresh() {
-      if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => caches.delete(name));
-        });
+    async function handleApplySyncCode(event) {
+      if (event && event.preventDefault) event.preventDefault();
+
+      const inputEl = document.getElementById('syncCodeInput');
+      const code = inputEl ? inputEl.value.trim().toUpperCase() : '';
+
+      if (!code) {
+        alert('동기화 코드를 입력해 주세요.');
+        if (inputEl) inputEl.focus();
+        return;
       }
-      window.location.reload(true);
+
+      const btn = (event && event.target) ? event.target : document.getElementById('btnRestoreSync');
+      const originalBtnText = btn ? btn.innerText : '불러오기';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '조회 중...';
+      }
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_sync')
+          .select('*')
+          .ilike('sync_code', code)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) {
+          throw new Error(`[ ${code} ]에 해당하는 동기화 기록이 없습니다.\n코드를 생성한 기기에서 먼저 [코드 복사]를 눌러 저장해 주세요.`);
+        }
+
+        localStorage.setItem(SYNC_KEY_STORAGE, data.sync_code);
+
+        if (data.settings) {
+          const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
+          if (settings.theme) applyTheme(settings.theme);
+          if (settings.my_suggestion_ids && Array.isArray(settings.my_suggestion_ids)) {
+            localStorage.setItem(MY_SUGGESTIONS_KEY, JSON.stringify(settings.my_suggestion_ids));
+          }
+        }
+
+        alert('🎉 기기 동기화가 완료되었습니다!\n개인 설정 및 건의글 처리 현황 조회를 위해 포털을 새로고침합니다.');
+        location.reload();
+      } catch (err) {
+        console.error('동기화 불러오기 실패:', err);
+        alert('불러오기 실패: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = originalBtnText;
+        }
+      }
     }
 
-    function adminLogoutFromSettings() {
-      adminLogout();
-      openSettingsModal();
+    async function pushSyncDataToCloud() {
+      const syncKey = localStorage.getItem(SYNC_KEY_STORAGE);
+      if (!syncKey || syncKey === '-') return;
+
+      try {
+        if (!supabaseClient) return;
+
+        let mySuggestions = [];
+        try {
+          const stored = localStorage.getItem(MY_SUGGESTIONS_KEY);
+          if (stored) mySuggestions = JSON.parse(stored);
+        } catch (e) {
+          mySuggestions = [];
+        }
+
+        const currentSettings = {
+          theme: localStorage.getItem('shift_theme') || 'light',
+          my_suggestion_ids: mySuggestions,
+          updated_at: new Date().toISOString()
+        };
+
+        await supabaseClient
+          .from('user_sync')
+          .upsert({
+            sync_code: syncKey,
+            settings: currentSettings,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'sync_code' });
+      } catch (err) {
+        console.warn('백그라운드 동기화 실패:', err);
+      }
     }
 
-    /* 12. 서버 최고관리자 전용 기능 (업데이트 노트 등록 & 알림 발송) */
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    function triggerPWAInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+      } else {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          alert('📱 [아이폰 홈 화면 추가 안내]\n\n사파리 하단의 [공유] ➔ [홈 화면에 추가]를 선택해 주세요.');
+        } else {
+          alert('📱 [안드로이드/PC 앱 추가 안내]\n\n브라우저 우측 상단 [더보기(점 3개)] ➔ [홈 화면에 추가]를 선택해 주세요.');
+        }
+      }
+    }
+
+    /* 12. 세션 악보 모달 & 드라이브 연동 */
+    const SESSION_DRIVE_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbwGcd0ZCNVTPjS-9ugT7m7rd2zQOJa3tSu5ffbwWhHgUSIEG6FiIlwl5JgaHMgTmKzc/exec';
+    let currentWeekSchedule = null;
+
+    async function openSessionScoreModal() {
+      const modal = document.getElementById('sessionScoreModal');
+      const titleEl = document.getElementById('sessionModalTitle');
+      const bodyEl = document.getElementById('sessionScoreBody');
+
+      if (!modal) return;
+      modal.style.display = 'flex';
+
+      let targetSchedule = currentScheduleData;
+      if (!targetSchedule) {
+        const thisSundayStr = getThisSundayDateString();
+        targetSchedule = { date: thisSundayStr, worship_title: '주일예배', session_score_url: '' };
+      }
+
+      currentWeekSchedule = targetSchedule;
+      if (titleEl) titleEl.innerText = `${targetSchedule.date} 세션 악보`;
+      renderSessionScoreContent(targetSchedule.session_score_url || '');
+    }
+
+    function closeSessionScoreModal() {
+      const modal = document.getElementById('sessionScoreModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function renderSessionScoreContent(scoreUrl) {
+      const body = document.getElementById('sessionScoreBody');
+      if (!body) return;
+
+      if (scoreUrl && typeof scoreUrl === 'string' && scoreUrl.trim().length > 0 && scoreUrl !== '-') {
+        const url = scoreUrl.trim();
+        let previewUrl = url;
+        let downloadUrl = url;
+
+        const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          const fileId = fileIdMatch[1];
+          previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+          downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
+
+        body.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 0.88rem; color: #10b981; font-weight: 700;">✅ 등록된 세션 악보가 있습니다</span>
+            <div style="display: flex; gap: 8px;">
+              <a href="${url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;">
+                🔍 드라이브 열기
+              </a>
+              <a href="${downloadUrl}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">
+                ⬇️ 다운로드
+              </a>
+            </div>
+          </div>
+          <div style="width: 100%; height: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; margin-bottom: 14px;">
+            <iframe src="${previewUrl}" style="width: 100%; height: 100%; border: none;" allow="autoplay"></iframe>
+          </div>
+          <details style="font-size: 0.82rem; color: var(--sub-text); margin-top: 10px;">
+            <summary style="cursor: pointer; font-weight: 600;">🔄 다른 악보 파일로 변경(재업로드)하기</summary>
+            <div style="margin-top: 12px; padding: 14px; background: rgba(0,0,0,0.1); border-radius: 8px;">
+              <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.82rem; width: 100%; box-sizing: border-box; margin-bottom: 8px;">
+              <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="width: 100%; padding: 10px; font-weight: 700; border-radius: 8px;">
+                📤 새 악보로 교체 업로드
+              </button>
+              <div id="sessionUploadStatus" style="font-size: 0.8rem; text-align: center; margin-top: 8px; display: none;"></div>
+            </div>
+          </details>
+        `;
+      } else {
+        body.innerHTML = `
+          <div style="text-align: center; padding: 32px 18px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 10px;">
+            <div style="font-size: 2.8rem; margin-bottom: 10px; line-height: 1;">📑</div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; margin: 0 0 8px 0;">등록된 세션 악보가 없습니다</h4>
+            <p style="font-size: 0.84rem; color: var(--sub-text); margin: 0 0 20px 0; line-height: 1.6;">
+              악보 파일(PDF 또는 이미지)을 첨부하시면 팀 드라이브에 저장되고 포털에 자동 연동됩니다.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; text-align: left;">
+              <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.82rem; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); width: 100%; box-sizing: border-box;">
+              <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="padding: 12px; font-size: 0.9rem; font-weight: 700; width: 100%; border-radius: 8px;">
+                📤 구글 드라이브에 저장 & 링크 연동
+              </button>
+              <div id="sessionUploadStatus" style="font-size: 0.8rem; text-align: center; margin-top: 6px; display: none;"></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    async function openArchiveSessionScore(dateStr) {
+      const modal = document.getElementById('sessionScoreModal');
+      const titleEl = document.getElementById('sessionModalTitle');
+      const bodyEl = document.getElementById('sessionScoreBody');
+
+      if (!modal) return;
+      modal.style.display = 'flex';
+      if (bodyEl) bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">악보 정보를 불러오는 중입니다... ⏳</div>';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('schedules')
+          .select('*')
+          .eq('date', dateStr)
+          .single();
+
+        if (error) throw error;
+        currentWeekSchedule = data;
+        if (titleEl) titleEl.innerText = `${data.date} 세션 악보`;
+        renderSessionScoreContent(data.session_score_url || '');
+      } catch (err) {
+        console.error('아카이브 악보 로드 실패:', err);
+        if (bodyEl) {
+          bodyEl.innerHTML = `<div style="text-align: center; padding: 24px; color: #ef4444;">데이터 로드 오류: ${err.message}</div>`;
+        }
+      }
+    }
+
+    async function handleSessionScoreUpload() {
+      const fileInput = document.getElementById('sessionScoreFileInput');
+      const statusEl = document.getElementById('sessionUploadStatus');
+      const btn = document.getElementById('btnUploadSessionScore');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('업로드할 악보 파일(PDF 또는 이미지)을 선택해 주세요.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      if (file.size > 25 * 1024 * 1024) {
+        alert('파일 크기가 너무 큽니다. 25MB 이하의 파일을 선택해 주세요.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = '드라이브 전송 중...';
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'var(--sub-text)';
+      statusEl.innerText = `⏳ "${file.name}" 파일을 업로드하는 중입니다...`;
+
+      try {
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const targetDate = currentWeekSchedule.date;
+        const worshipTitle = currentWeekSchedule.worship_title || '예배';
+
+        const payload = {
+          date: targetDate,
+          worshipTitle: worshipTitle,
+          originalName: file.name,
+          mimeType: file.type,
+          base64Data: base64Data
+        };
+
+        const response = await fetch(SESSION_DRIVE_UPLOAD_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+
+        const res = await response.json();
+        if (!res.success || !res.viewUrl) {
+          throw new Error(res.message || '드라이브 업로드에 실패했습니다.');
+        }
+
+        statusEl.innerText = '⚡ Supabase DB 링크 동기화 중...';
+
+        const { error: dbError } = await supabaseClient
+          .from('schedules')
+          .update({ session_score_url: res.viewUrl })
+          .eq('date', targetDate);
+
+        if (dbError) throw dbError;
+
+        currentWeekSchedule.session_score_url = res.viewUrl;
+        alert(`🎉 세션 악보가 성공적으로 등록되었습니다!\n파일명: ${res.fileName}`);
+        renderSessionScoreContent(res.viewUrl);
+      } catch (err) {
+        console.error('세션 악보 업로드 오류:', err);
+        statusEl.style.color = '#ef4444';
+        statusEl.innerText = `❌ 업로드 실패: ${err.message}`;
+        alert(`오류 발생: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '📤 구글 드라이브에 저장 & 링크 연동';
+      }
+    }
+
+    /* 13. 최고관리자 모달 기능 */
     function openUpdateNoteCreatorModal() {
       if (!isSuperAdmin()) {
         alert('서버 최고관리자만 접근할 수 있습니다.');
@@ -4522,7 +3887,6 @@ async function copySyncCode(event) {
 
     async function handleCreateUpdateNote(e) {
       e.preventDefault();
-
       const version = document.getElementById('newVersionTag').value.trim();
       const category = document.getElementById('newVersionCategory').value;
       const summary = document.getElementById('newVersionSummary').value.trim();
@@ -4530,16 +3894,7 @@ async function copySyncCode(event) {
       const btn = document.getElementById('btnPublishNote');
 
       const title = `${category} ${version} - ${summary}`;
-      const formattedContent = 
-`[배포 버전]: ${version}
-[업데이트 개요]: ${summary}
-
-───────────────
-📌 주요 변경 내역
-───────────────
-${details}
-
-항상 팀을 위해 헌신해 주셔서 감사합니다. 포털 이용 중 불편한 점은 [익명의견함]에 남겨주세요! 🙏`;
+      const formattedContent = `[배포 버전]: ${version}\n[업데이트 개요]: ${summary}\n\n───────────────\n📌 주요 변경 내역\n───────────────\n${details}`;
 
       btn.disabled = true;
       btn.innerText = '발행 중...';
@@ -4547,24 +3902,17 @@ ${details}
       try {
         const { error } = await supabaseClient
           .from('notice')
-          .insert([{
-            title: title,
-            content: formattedContent,
-            author: '서버 관리자',
-            is_pinned: false
-          }]);
+          .insert([{ title, content: formattedContent, author: '서버 관리자', is_pinned: false }]);
 
         if (error) throw error;
-
-        alert(`🎉 ${version} 업데이트 노트가 공지사항에 성공적으로 배포되었습니다!`);
+        alert(`🎉 ${version} 업데이트 노트가 성공적으로 배포되었습니다!`);
         closeUpdateNoteModal();
         await loadNoticeData();
       } catch (err) {
-        console.error('업데이트 노트 발행 실패:', err);
         alert('발행 실패: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerText = '공지사항에 등록 & 배포';
+        btn.innerText = '등록 및 배포';
       }
     }
 
@@ -4603,304 +3951,13 @@ ${details}
       }
     }
 
-    function checkWeeklyKeyboardDuplicate(changedTarget) {
-      const kb1 = document.getElementById('adminKeyboard1')?.value;
-      const kb2 = document.getElementById('adminKeyboard2')?.value;
-
-      if (kb1 && kb2 && kb1 !== 'X' && kb2 !== 'X' && kb1 === kb2) {
-        alert(`⚠️ [건반 중복 배정 경고]\n'${kb1}' 님이 메인 건반과 세컨 건반에 동시에 선택되었습니다.\n각각 다른 연주자를 배정해 주세요.`);
-        if (changedTarget === 'kb1') {
-          document.getElementById('adminKeyboard1').value = 'X';
-        } else {
-          document.getElementById('adminKeyboard2').value = 'X';
-        }
-      }
-    }
-
-    /* 월간 라인업 테이블 건반 중복 검사 */
-    function checkMonthlyKeyboardDuplicate(dateStr, changedTarget) {
-      const kb1El = document.getElementById(`m_kb1_${dateStr}`);
-      const kb2El = document.getElementById(`m_kb2_${dateStr}`);
-      if (!kb1El || !kb2El) return;
-
-      const kb1 = kb1El.value;
-      const kb2 = kb2El.value;
-
-      if (kb1 && kb2 && kb1 !== 'X' && kb2 !== 'X' && kb1 === kb2) {
-        alert(`⚠️ [${dateStr} 건반 중복 배정 경고]\n'${kb1}' 님이 메인 건반과 세컨 건반에 동시에 배정되었습니다.\n한쪽을 변경해 주세요.`);
-        if (changedTarget === 'kb1') {
-          kb1El.value = 'X';
-        } else {
-          kb2El.value = 'X';
-        }
-      }
-    }
-
-    /* ===================================================
-       기기 동기화 엔진 (변수 순서 꼬임 완전 방지 버전)
-    =================================================== */
-
-    async function generateAndSaveMySyncCode() {
-      const codeDisplay = document.getElementById('mySyncCodeDisplay');
-      if (codeDisplay) codeDisplay.innerText = '코드 발급 중... ⏳';
-
-      // 8자리 랜덤 영문/숫자 코드 생성 (예: SH-7A9B)
-      const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase() +
-                        Math.random().toString(36).substring(2, 6).toUpperCase();
-      const newSyncCode = 'SH-' + randomStr.substring(0, 6);
-
-      // 현재 기기의 설정 값 수집
-      const currentSettings = {
-        theme: localStorage.getItem('shift_theme') || 'dark',
-        font: localStorage.getItem('shift_font') || 'pretendard',
-        updated_at: new Date().toISOString()
-      };
-
-      try {
-        const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-        if (!client) throw new Error('Supabase 클라이언트를 찾을 수 없습니다.');
-
-        // ★ 핵심: 생성하자마자 user_sync 테이블에 반드시 INSERT/UPSERT 저장!
-        const { error } = await client
-          .from('user_sync')
-          .upsert([{
-            sync_code: newSyncCode,
-            settings: currentSettings,
-            created_at: new Date().toISOString()
-          }], { onConflict: 'sync_code' });
-
-        if (error) throw error;
-
-        // 내 로컬스토리지에도 저장
-        localStorage.setItem(SYNC_KEY_STORAGE, newSyncCode);
-
-        if (codeDisplay) {
-          codeDisplay.innerText = newSyncCode;
-        }
-        alert(`✅ 새 동기화 코드가 클라우드에 등록되었습니다!\n[ ${newSyncCode} ]\n다른 기기에서 이 코드를 입력해 주세요.`);
-
-      } catch (err) {
-        console.error('동기화 코드 발급 및 DB 저장 실패:', err);
-        if (codeDisplay) codeDisplay.innerText = '발급 실패';
-        alert('동기화 코드 등록 실패: ' + err.message + '\nSupabase user_sync 테이블 권한(RLS)을 확인해 주세요.');
-      }
-    }
-
-    /* [기능 B] 다른 기기에서 코드 입력 후 불러오기 */
-    async function handleApplySyncCode(event) {
-  if (event && event.preventDefault) event.preventDefault();
-
-  const inputEl = document.getElementById('syncCodeInput') || 
-                  document.getElementById('inputSyncCode') || 
-                  document.querySelector('input[placeholder*="동기화"]');
-
-  if (!inputEl) {
-    alert('동기화 코드 입력창을 찾을 수 없습니다.');
-    return;
-  }
-
-  const code = inputEl.value ? inputEl.value.trim().toUpperCase() : '';
-
-  if (!code) {
-    alert('동기화 코드를 입력해 주세요.');
-    inputEl.focus();
-    return;
-  }
-
-  const btn = (event && event.target) ? event.target : document.getElementById('btnRestoreSync');
-  const originalBtnText = btn ? btn.innerText : '불러오기';
-  if (btn) {
-    btn.disabled = true;
-    btn.innerText = '조회 중...';
-  }
-
-  try {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-
-    // sync_code 기준 단일 행 조회
-    const { data, error } = await client
-      .from('user_sync')
-      .select('*')
-      .ilike('sync_code', code)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
-      throw new Error(`[ ${code} ]에 해당하는 동기화 기록이 서버에 없습니다.\n코드를 생성한 기기에서 [코드 복사]를 먼저 눌러 저장해 주세요.`);
-    }
-
-    // 내 기기 로컬스토리지에 동기화 키 저장
-    localStorage.setItem('shift_portal_sync_key', data.sync_code);
-
-    // settings 복원
-    if (data.settings) {
-      const settings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
-      
-      // 1) 테마 복원
-      if (settings.theme) {
-        localStorage.setItem('shift_theme', settings.theme);
-        if (typeof applyTheme === 'function') applyTheme(settings.theme);
-      }
-      // 2) 글꼴 복원
-      if (settings.font) {
-        localStorage.setItem('shift_font', settings.font);
-        if (typeof applyFont === 'function') applyFont(settings.font);
-      }
-      // 3) [핵심] 내가 작성했던 건의글 ID 목록 복원!
-      if (settings.my_suggestion_ids && Array.isArray(settings.my_suggestion_ids)) {
-        localStorage.setItem('shift_my_suggestions', JSON.stringify(settings.my_suggestion_ids));
-        localStorage.setItem('my_suggestion_ids', JSON.stringify(settings.my_suggestion_ids));
-        console.log('복원된 건의글 ID들:', settings.my_suggestion_ids);
-      }
-    }
-
-    alert('🎉 기기 동기화가 완료되었습니다!\n개인 설정 및 건의글 처리 현황 조회를 위해 포털을 새로고침합니다.');
-    location.reload();
-
-  } catch (err) {
-    console.error('동기화 불러오기 실패:', err);
-    alert('불러오기 실패: ' + err.message);
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerText = originalBtnText;
-    }
-  }
-}
-
-    async function submitSuggestion(category, content) {
-  // 폼 입력값 검증 (인자가 없으면 DOM에서 직접 탐색)
-  const catInput = category || (document.getElementById('suggestionCategory') ? document.getElementById('suggestionCategory').value : '일반');
-  const contentInput = content || (document.getElementById('suggestionContent') ? document.getElementById('suggestionContent').value.trim() : '');
-
-  if (!contentInput) {
-    alert('건의 내용을 입력해 주세요.');
-    return;
-  }
-
-  const submitBtn = document.getElementById('btnSubmitSuggestion');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerText = '등록 중...';
-  }
-
-  try {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-
-    // suggestion_box 테이블에 새 건의글 INSERT (.select()를 붙여 새로 생긴 id를 반환받음)
-    const { data, error } = await client
-      .from('suggestion_box')
-      .insert([{
-        category: catInput,
-        content: contentInput,
-        status: '대기',
-        admin_comment: '',
-        created_at: new Date().toISOString()
-      }])
-      .select();
-
-    if (error) throw error;
-
-    // 새로 생성된 글의 ID를 로컬스토리지에 추가
-    if (data && data.length > 0) {
-      const newPostId = data[0].id;
-      
-      let mySuggestions = [];
-      try {
-        const stored = localStorage.getItem('shift_my_suggestions') || localStorage.getItem('my_suggestion_ids');
-        if (stored) mySuggestions = JSON.parse(stored);
-        if (!Array.isArray(mySuggestions)) mySuggestions = [];
-      } catch (e) {
-        mySuggestions = [];
-      }
-
-      if (!mySuggestions.includes(newPostId)) {
-        mySuggestions.push(newPostId);
-      }
-
-      // 두 로컬 키 모두에 안전하게 저장
-      localStorage.setItem('shift_my_suggestions', JSON.stringify(mySuggestions));
-      localStorage.setItem('my_suggestion_ids', JSON.stringify(mySuggestions));
-      console.log('내 건의글 목록에 새 ID 추가 완료:', newPostId);
-    }
-
-    alert('익명의견이 정상적으로 등록되었습니다.\n작성하신 의견의 진행 상황은 이 기기(및 동기화된 기기)에서 확인하실 수 있습니다.');
-
-    // 입력폼 초기화
-    const inputArea = document.getElementById('suggestionContent');
-    if (inputArea) inputArea.value = '';
-
-    // 의견함 목록 새로고침 함수가 있다면 실행
-    if (typeof loadSuggestions === 'function') loadSuggestions();
-
-  } catch (err) {
-    console.error('건의글 등록 실패:', err);
-    alert('등록 중 오류가 발생했습니다: ' + err.message);
-  } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerText = '보내기';
-    }
-  }
-}
-    
-    // 내 코드 복사 헬퍼
-    function copyMySyncKey() {
-      const key = getOrCreateSyncKey();
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(key).then(() => {
-          alert(`내 연동 코드 [${key}]가 복사되었습니다!\n다른 기기(PC/태블릿) 설정창에 입력해 보세요.`);
-        });
-      } else {
-        fallbackCopy(key);
-      }
-    }
-
-    /* ===================================================
-       홈 화면 앱 설치 (PWA) 모듈
-    =================================================== */
-    let deferredPrompt = null;
-
-    // 안드로이드/PC 크롬 설치 프롬프트 캡처
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-    });
-
-    function triggerPWAInstall() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('앱이 홈 화면에 설치되었습니다.');
-          }
-          deferredPrompt = null;
-        });
-      } else {
-        // 아이폰/사파리 및 수동 설치 기기 브라우저 안내
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if (isIOS) {
-          alert('📱 [아이폰 홈 화면 추가 안내]\n\n1. 사파리 브라우저 하단의 [공유(네모+화살표)] 아이콘을 누릅니다.\n2. 아래 메뉴에서 [홈 화면에 추가]를 선택해 주세요.');
-        } else {
-          alert('📱 [안드로이드/PC 앱 추가 안내]\n\n브라우저 우측 상단 [더보기(점 3개)] 메뉴를 누른 후\n[홈 화면에 추가] 또는 [앱 설치]를 선택해 주세요.');
-        }
-      }
-    }
-
-    /* ===================================================
-       SHIFT 놀이터 전체 모듈 (룰렛 모드 2종 / SNS / 메트로놈)
-    =================================================== */
-
-    let currentRouletteType = 'penalty'; // 'penalty' (벌칙룰렛) vs 'member' (멤버룰렛)
+    /* 14. 놀이터 게임 / SNS / 메트로놈 모듈 */
+    let currentRouletteType = 'penalty';
     let rouletteItems = [];
     let rouletteAngle = 0;
     let isSpinning = false;
     const rouletteColors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'];
 
-    // 1) 서브탭 전환
     function switchPlaygroundSubTab(subTab) {
       ['game', 'sns', 'music'].forEach(tab => {
         const btn = document.getElementById(`pg-subtab-${tab}`);
@@ -4909,23 +3966,14 @@ ${details}
         if (content) content.style.display = (tab === subTab) ? 'block' : 'none';
       });
 
-      if (subTab === 'game') {
-        initGameModule();
-      }
-      if (subTab === 'sns') {
-        loadSnsFeedData();
-      }
-      if (subTab !== 'music' && isMetroPlaying) {
-        toggleMetronome(); // 탭 이동 시 메트로놈 정지
-      }
+      if (subTab === 'game') initGameModule();
+      if (subTab === 'sns') loadSnsFeedData();
+      if (subTab !== 'music' && isMetroPlaying) toggleMetronome();
     }
 
-    /* -----------------------------------------
-       1. 게임 놀이터 로직
-    ----------------------------------------- */
     async function initGameModule() {
       if (!allMembersList || allMembersList.length === 0) {
-        if (typeof loadMembersData === 'function') await loadMembersData();
+        await loadMembersData();
       }
       populateRouletteTargetSelect();
       populateRouletteMemberCheckboxes();
@@ -4946,7 +3994,6 @@ ${details}
       if (mode === 'draw') initDrawCards();
     }
 
-    // 1-1 & 1-2. 룰렛 모드 설정
     function setRouletteType(type) {
       currentRouletteType = type;
       const btnPen = document.getElementById('btnModePenalty');
@@ -4968,13 +4015,11 @@ ${details}
       updateRouletteWheel();
     }
 
-    // 활동 중인 멤버 필터
     function getActiveMembers() {
       if (!allMembersList) return [];
       return allMembersList.filter(m => (m.active || '').trim() === '활동 중');
     }
 
-    // 1-1. 벌칙 룰렛 대상 멤버 채우기
     function populateRouletteTargetSelect() {
       const select = document.getElementById('rouletteTargetMemberSelect');
       if (!select) return;
@@ -4982,12 +4027,11 @@ ${details}
       select.innerHTML = actives.map(m => `<option value="${m.name}">${m.name} (${m.main_part || '팀원'})</option>`).join('');
     }
 
-    // 1-2. 랜덤 멤버 룰렛 체크박스 목록 채우기
     function populateRouletteMemberCheckboxes() {
       const container = document.getElementById('rouletteMemberCheckboxList');
       if (!container) return;
       const actives = getActiveMembers();
-      container.innerHTML = actives.map((m, idx) => `
+      container.innerHTML = actives.map(m => `
         <label style="display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer; user-select: none;">
           <input type="checkbox" class="roulette-member-cb" value="${m.name}" checked onchange="updateRouletteWheel()">
           ${m.name}
@@ -5000,7 +4044,6 @@ ${details}
       updateRouletteWheel();
     }
 
-    // 룰렛 데이터 계산 및 렌더링
     function updateRouletteWheel() {
       if (currentRouletteType === 'penalty') {
         const input = document.getElementById('roulettePenaltiesInput')?.value || '';
@@ -5094,7 +4137,6 @@ ${details}
       requestAnimationFrame(animate);
     }
 
-    // 1-3. 사다리타기 체크박스 연동
     function populateLadderMemberCheckboxes() {
       const container = document.getElementById('ladderMemberCheckboxList');
       if (!container) return;
@@ -5131,10 +4173,8 @@ ${details}
       }
 
       const shuffledResults = [...finalResults].sort(() => Math.random() - 0.5);
-
       box.style.display = 'block';
 
-      // 템플릿 표현식 내부 에러 방지를 위해 변수로 분리 후 렌더링
       const rowsHtml = selectedMembers.map((m, idx) => {
         const resText = shuffledResults[idx];
         const isPenalty = resText.includes('당첨') || resText.includes('청소') || resText.includes('간식');
@@ -5157,7 +4197,6 @@ ${details}
       `;
     }
 
-    // 제비뽑기 초기화
     let drawCards = [];
     function initDrawCards() {
       const total = parseInt(document.getElementById('drawTotalCount').value, 10) || 6;
@@ -5189,35 +4228,10 @@ ${details}
       el.innerText = text;
     }
 
-    /* -----------------------------------------
-       2. SNS 놀이터 (선택적 렌더링 & 배경 사진 & 유튜브 검색)
-    ----------------------------------------- */
-    let customInstaBgImage = '';
-
-    // 2-1. 갤러리/파일 이미지 리더
-    function handleSnsBgFile(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          customInstaBgImage = e.target.result;
-          document.getElementById('snsBgUrlInput').value = '';
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    // 2-1. 웹 이미지 URL 입력
-    function handleSnsBgUrl(url) {
-      customInstaBgImage = url.trim();
-      document.getElementById('snsBgFileInput').value = '';
-    }
-
-    // 유튜브 검색 링크 생성기 헬퍼
     function getYoutubeSearchUrl(query) {
       return `https://www.youtube.com/results?search_query=${encodeURIComponent(query + ' 찬양')}`;
     }
 
-    // SNS 피드 불러오기 (유튜브 바로듣기 링크 및 단일 항목 선택적 렌더링)
     async function loadSnsFeedData() {
       const listEl = document.getElementById('snsFeedList');
       if (!listEl) return;
@@ -5231,7 +4245,7 @@ ${details}
         if (error) throw error;
 
         if (!data || data.length === 0) {
-          listEl.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--sub-text);">공유된 찬양 취향표가 없습니다. 첫 카드를 남겨보세요!</div>';
+          listEl.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--sub-text);">공유된 찬양 취향표가 없습니다.</div>';
           return;
         }
 
@@ -5240,46 +4254,12 @@ ${details}
           const authorBadge = item.is_anonymous ? '🎭 익명' : '👤 실명';
           const cardBorderColor = item.card_color || 'var(--accent-color)';
 
-          let wordHtml = '';
-          if (item.word_qt) {
-            wordHtml = `
-              <div style="font-size: 0.83rem; margin-bottom: 8px;">
-                <span style="color: var(--sub-text); font-weight: 700; display: block; margin-bottom: 2px;">📖 은혜의 말씀</span>
-                <div style="line-height: 1.45;">${item.word_qt}</div>
-              </div>
-            `;
-          }
-
-          let favHtml = '';
-          if (item.favorite_songs) {
-            const ytFavUrl = getYoutubeSearchUrl(item.favorite_songs);
-            favHtml = `
-              <div style="font-size: 0.83rem; margin-bottom: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                  <span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span>
-                  <a href="${ytFavUrl}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 검색</a>
-                </div>
-                <div style="line-height: 1.45;">${item.favorite_songs}</div>
-              </div>
-            `;
-          }
-
-          let recHtml = '';
-          if (item.recommended_song) {
-            const ytRecUrl = getYoutubeSearchUrl(item.recommended_song);
-            recHtml = `
-              <div style="font-size: 0.83rem; margin-bottom: 4px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                  <span style="color: var(--sub-text); font-weight: 700;">🎧 요즘 추천곡</span>
-                  <a href="${ytRecUrl}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶️ 유튜브 바로듣기</a>
-                </div>
-                <div style="line-height: 1.45;">${item.recommended_song}</div>
-              </div>
-            `;
-          }
+          let wordHtml = item.word_qt ? `<div style="font-size: 0.83rem; margin-bottom: 8px;"><span style="color: var(--sub-text); font-weight: 700; display: block;">📖 말씀</span><div>${item.word_qt}</div></div>` : '';
+          let favHtml = item.favorite_songs ? `<div style="font-size: 0.83rem; margin-bottom: 8px;"><div style="display: flex; justify-content: space-between;"><span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span><a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브 검색</a></div><div>${item.favorite_songs}</div></div>` : '';
+          let recHtml = item.recommended_song ? `<div style="font-size: 0.83rem;"><div style="display: flex; justify-content: space-between;"><span style="color: var(--sub-text); font-weight: 700;">🎧 추천 찬양</span><a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브 바로듣기</a></div><div>${item.recommended_song}</div></div>` : '';
 
           return `
-            <div class="card" style="border-top: 5px solid ${cardBorderColor}; padding: 14px; position: relative; margin-bottom: 0;">
+            <div class="card" style="border-top: 5px solid ${cardBorderColor}; padding: 14px; margin-bottom: 0;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <strong style="font-size: 1rem;">${item.author_name}</strong>
                 <span style="font-size: 0.72rem; color: var(--sub-text); background: var(--card-sub-bg); padding: 2px 6px; border-radius: 4px;">${authorBadge}</span>
@@ -5296,7 +4276,6 @@ ${details}
       }
     }
 
-    // 포스트잇 저장
     async function handlePublishSnsCard(e) {
       e.preventDefault();
       const author_name = document.getElementById('snsAuthorName').value.trim();
@@ -5336,57 +4315,6 @@ ${details}
       }
     }
 
-    // 2-1 & 2. 인스타 스토리 카드 생성 (선택적 항목 노출 및 배경사진 적용)
-    function previewAndDownloadInstaCard() {
-      const author = document.getElementById('snsAuthorName').value.trim() || 'SHIFT 팀원';
-      const word = document.getElementById('snsWordQt').value.trim();
-      const fav = document.getElementById('snsFavSongs').value.trim();
-      const rec = document.getElementById('snsRecSong').value.trim();
-
-      if (!word && !fav && !rec) {
-        alert('인스타 카드에 담을 내용을 1개 이상 작성해 주세요!');
-        return;
-      }
-
-      document.getElementById('cardPreviewAuthor').innerText = `${author}의 찬양 노트`;
-
-      // 1) 입력된 항목만 조건부 표시
-      const setCardItem = (wrapId, textId, value) => {
-        const wrap = document.getElementById(wrapId);
-        const text = document.getElementById(textId);
-        if (value) {
-          text.innerText = value;
-          wrap.style.display = 'block';
-        } else {
-          wrap.style.display = 'none';
-        }
-      };
-
-      setCardItem('cardWrapWord', 'cardPreviewWord', word);
-      setCardItem('cardWrapFav', 'cardPreviewFav', fav);
-      setCardItem('cardWrapRec', 'cardPreviewRec', rec);
-
-      // 2) 배경 사진 적용
-      const cardEl = document.getElementById('instaStoryCard');
-      if (customInstaBgImage) {
-        cardEl.style.backgroundImage = `url("${customInstaBgImage}")`;
-      } else {
-        cardEl.style.backgroundImage = 'none';
-      }
-
-      // 3) 고화질 캡처 후 다운로드
-      html2canvas(cardEl, { scale: 3, useCORS: true }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `${author}_SHIFT_취향표_스토리.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        alert('📸 인스타그램 스토리용 맞춤 취향표 이미지가 저장되었습니다!');
-      });
-    }
-
-    /* -----------------------------------------
-       3. 찬양팀 놀이터 (비주얼 메트로놈)
-    ----------------------------------------- */
     let audioCtx = null;
     let metroBpm = 120;
     let isMetroPlaying = false;
@@ -5449,8 +4377,7 @@ ${details}
         }, 100);
       }
 
-      const isSoundOn = document.getElementById('metroSoundToggle')?.checked;
-      if (isSoundOn && audioCtx) {
+      if (audioCtx) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
@@ -5481,491 +4408,25 @@ ${details}
       }
     }
 
-    function closeSettingsModal() {
-  const modal = document.getElementById('settingsModal');
-  if (modal) modal.style.display = 'none';
-}
-
-    // 모달 바깥 어두운 배경 클릭 시 닫기
+    // 모달 배경 클릭 시 닫기
     window.addEventListener('click', function(event) {
-      const modal = document.getElementById('settingsModal');
-      if (event.target === modal) {
-        closeSettingsModal();
+      if (event.target.classList.contains('modal-overlay')) {
+        event.target.style.display = 'none';
       }
     });
 
-    // ESC 키 누르면 설정창 닫기
     window.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
-        closeSettingsModal();
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
       }
     });
 
-    /* 위키 탭 전용: 다른 탭으로 다이렉트 전환 */
-    function jumpToPortalTab(targetTabId) {
-      // 1. 모든 네비게이션 탭 버튼에서 active 클래스 제거
-      const allNavBtns = document.querySelectorAll('.nav-tab-btn, .tab-btn');
-      let targetBtn = null;
-
-      allNavBtns.forEach(btn => {
-        btn.classList.remove('active');
-        const onclickAttr = btn.getAttribute('onclick') || '';
-        if (onclickAttr.includes(`'${targetTabId}'`)) {
-          targetBtn = btn;
-        }
-      });
-
-      // 2. 대상 탭 버튼에 active 클래스 부여
-      if (targetBtn) {
-        targetBtn.classList.add('active');
-      }
-
-      // 3. 기존 switchTab 함수 실행
-      if (typeof switchTab === 'function') {
-        switchTab(targetTabId, targetBtn);
-      }
-
-      // 4. 화면 최상단으로 스크롤 이동
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 1단계에서 배포한 구글 앱스 스크립트 웹앱 URL 입력
-    const SESSION_DRIVE_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbwGcd0ZCNVTPjS-9ugT7m7rd2zQOJa3tSu5ffbwWhHgUSIEG6FiIlwl5JgaHMgTmKzc/exec';
-
-    // 현재 활성화된 주간 스케줄 정보를 담는 변수 (기존 주간 콘티 데이터 참조)
-    let currentWeekSchedule = null;
-
-    /* 1. 세션 악보 모달 열기 */
-    async function openSessionScoreModal() {
-      console.log('세션 악보 모달 호출 시작');
-      const modal = document.getElementById('sessionScoreModal');
-      const titleEl = document.getElementById('sessionModalTitle');
-      const bodyEl = document.getElementById('sessionScoreBody');
-
-      if (!modal) {
-        alert('sessionScoreModal 요소를 찾을 수 없습니다.');
-        return;
-      }
-
-      // 모달 표시
-      modal.style.display = 'flex';
-
-      let targetSchedule = null;
-
-      // [1단계] 사이트 내에 이미 정의된 전역 콘티 객체가 있는지 즉시 확인
-      if (typeof currentSchedule !== 'undefined' && currentSchedule && currentSchedule.date) {
-        targetSchedule = { ...currentSchedule };
-      } else if (typeof currentWeekSchedule !== 'undefined' && currentWeekSchedule && currentWeekSchedule.date) {
-        targetSchedule = { ...currentWeekSchedule };
-      }
-
-      // [2단계] 화면(HTML DOM)에 이미 렌더링된 배지와 텍스트에서 즉시 추출 (가장 빠르고 확실함)
-      if (!targetSchedule) {
-        const dateBadge = document.querySelector('#tab-thisweek .worship-date-badge, .worship-date-badge');
-        if (dateBadge && dateBadge.innerText.trim()) {
-          const scrapedDate = dateBadge.innerText.trim();
-          targetSchedule = {
-            date: scrapedDate,
-            worship_title: '주일예배',
-            session_score_url: ''
-          };
-          console.log('화면 텍스트에서 날짜 즉시 감지:', scrapedDate);
-        }
-      }
-
-      // [3단계] 그래도 없다면 Supabase 조회를 시도하되 2.5초 타임아웃 설정 (멈춤 방지)
-      if (!targetSchedule) {
-        if (bodyEl) {
-          bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">콘티 정보를 확인하는 중입니다... ⏳</div>';
-        }
-
-        try {
-          const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-          
-          if (client) {
-            // 2.5초 이상 지연되면 강제 탈출하는 프로미스 레이스
-            const fetchPromise = client
-              .from('schedules')
-              .select('*')
-              .order('date', { ascending: false })
-              .limit(1);
-
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('조회 시간 초과')), 2500)
-            );
-
-            const res = await Promise.race([fetchPromise, timeoutPromise]);
-            if (res && res.data && res.data.length > 0) {
-              targetSchedule = res.data[0];
-            }
-          }
-        } catch (dbErr) {
-          console.warn('Supabase 실시간 조회 생략 또는 타임아웃:', dbErr);
-        }
-      }
-
-      // [4단계] 최후의 보루: 오늘 날짜 기본 객체 생성
-      if (!targetSchedule || !targetSchedule.date) {
-        const todayStr = new Date().toISOString().split('T')[0];
-        targetSchedule = {
-          date: todayStr,
-          worship_title: '주일예배',
-          session_score_url: ''
-        };
-      }
-
-      // 전역 변수 저장
-      currentWeekSchedule = targetSchedule;
-
-      // 제목 업데이트
-      if (titleEl) {
-        titleEl.innerText = `${targetSchedule.date} 세션 악보`;
-      }
-
-      // ★ 로딩 문구를 지우고 본문(뷰어 또는 업로드창)을 즉시 렌더링!
-      console.log('최종 렌더링 타깃 스케줄:', targetSchedule);
-      renderSessionScoreContent(targetSchedule.session_score_url || '');
-    }
-
-    function closeSessionScoreModal() {
-      const modal = document.getElementById('sessionScoreModal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    /* 업로드 입력 폼 템플릿 */
-    function renderUploadFormHtml() {
-      return `
-        <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; max-width: 440px; margin: 0 auto;">
-          <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.8rem; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); width: 100%; box-sizing: border-box;">
-          <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="padding: 10px; font-size: 0.85rem; font-weight: 700; width: 100%;">
-            📤 구글 드라이브에 저장 & 링크 연동
-          </button>
-          <div id="sessionUploadStatus" style="font-size: 0.78rem; text-align: center; display: none;"></div>
-        </div>
-      `;
-    }
-
-    /* 3 & 4. 파일 업로드 실행 -> GAS 전송 -> 구글드라이브 저장/공유 -> Supabase DB 자동 갱신 */
-    async function handleSessionScoreUpload() {
-      const fileInput = document.getElementById('sessionScoreFileInput');
-      const statusEl = document.getElementById('sessionUploadStatus');
-      const btn = document.getElementById('btnUploadSessionScore');
-
-      if (!fileInput.files || fileInput.files.length === 0) {
-        alert('업로드할 악보 파일(PDF 또는 이미지)을 선택해 주세요.');
-        return;
-      }
-
-      const file = fileInput.files[0];
-      if (file.size > 25 * 1024 * 1024) {
-        alert('파일 크기가 너무 큽니다. 25MB 이하의 파일을 선택해 주세요.');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = '드라이브 전송 및 변환 중...';
-      statusEl.style.display = 'block';
-      statusEl.style.color = 'var(--sub-text)';
-      statusEl.innerText = `⏳ "${file.name}" 파일을 업로드하는 중입니다...`;
-
-      try {
-        // Base64 인코딩
-        const base64Data = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-
-        const targetDate = currentWeekSchedule.date;
-        const worshipTitle = currentWeekSchedule.worship_title || '예배';
-
-        // 3. GAS 백엔드로 전송 (날짜 및 예배명 포함하여 전송)
-        const payload = {
-          date: targetDate,
-          worshipTitle: worshipTitle,
-          originalName: file.name,
-          mimeType: file.type,
-          base64Data: base64Data
-        };
-
-        const response = await fetch(SESSION_DRIVE_UPLOAD_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-
-        const res = await response.json();
-        if (!res.success || !res.viewUrl) {
-          throw new Error(res.message || '드라이브 업로드에 실패했습니다.');
-        }
-
-        statusEl.innerText = '⚡ Supabase 데이터베이스에 링크 동기화 중...';
-
-        // 4. 구글 드라이브 공유 링크를 Supabase schedules 테이블에 자동 저장
-        const { error: dbError } = await supabaseClient
-          .from('schedules')
-          .update({ session_score_url: res.viewUrl })
-          .eq('date', targetDate);
-
-        if (dbError) throw dbError;
-
-        // 전역 상태 및 화면 즉시 갱신
-        currentWeekSchedule.session_score_url = res.viewUrl;
-        alert(`🎉 세션 악보가 성공적으로 등록되었습니다!\n파일명: ${res.fileName}`);
-        
-        // 5. 뷰어와 다운로드 화면으로 즉시 전환
-        renderSessionScoreContent(res.viewUrl);
-
-      } catch (err) {
-        console.error('세션 악보 업로드 오류:', err);
-        statusEl.style.color = '#ef4444';
-        statusEl.innerText = `❌ 업로드 실패: ${err.message}`;
-        alert(`오류가 발생했습니다: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = '📤 구글 드라이브에 저장 & 링크 연동';
-      }
-    }
-
-    function renderSessionScoreContent(scoreUrl) {
-      const body = document.getElementById('sessionScoreBody');
-      if (!body) {
-        console.error('sessionScoreBody 요소를 찾을 수 없습니다.');
-        return;
-      }
-
-      // 악보 URL이 유효하게 존재하는 경우
-      if (scoreUrl && typeof scoreUrl === 'string' && scoreUrl.trim().length > 0 && scoreUrl !== '-') {
-        const url = scoreUrl.trim();
-        let previewUrl = url;
-        let downloadUrl = url;
-
-        const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (fileIdMatch && fileIdMatch[1]) {
-          const fileId = fileIdMatch[1];
-          previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-          downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-        }
-
-        body.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-            <span style="font-size: 0.88rem; color: #10b981; font-weight: 700;">✅ 등록된 세션 악보가 있습니다</span>
-            <div style="display: flex; gap: 8px;">
-              <a href="${url}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; text-decoration: none; padding: 6px 12px; border-radius: 6px;">
-                🔍 드라이브 열기
-              </a>
-              <a href="${downloadUrl}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; text-decoration: none; padding: 6px 12px; border-radius: 6px;">
-                ⬇️ 다운로드
-              </a>
-            </div>
-          </div>
-
-          <div style="width: 100%; height: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color, #334155); background: #000; margin-bottom: 14px;">
-            <iframe src="${previewUrl}" style="width: 100%; height: 100%; border: none;" allow="autoplay"></iframe>
-          </div>
-
-          <details style="font-size: 0.82rem; color: var(--sub-text, #94a3b8); margin-top: 10px;">
-            <summary style="cursor: pointer; font-weight: 600;">🔄 다른 악보 파일로 변경(재업로드)하기</summary>
-            <div style="margin-top: 12px; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-              <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.82rem; width: 100%; box-sizing: border-box; margin-bottom: 8px; color: var(--text-color);">
-              <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="width: 100%; padding: 10px; font-weight: 700; border-radius: 8px;">
-                📤 새 악보로 교체 업로드
-              </button>
-              <div id="sessionUploadStatus" style="font-size: 0.8rem; text-align: center; margin-top: 8px; display: none;"></div>
-            </div>
-          </details>
-        `;
-      } else {
-        // ★ 이번 주차처럼 악보가 없을 때 나타나는 UI
-        body.innerHTML = `
-          <div style="text-align: center; padding: 32px 18px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px dashed var(--border-color, #334155); margin-bottom: 10px;">
-            <div style="font-size: 2.8rem; margin-bottom: 10px; line-height: 1;">📑</div>
-            <h4 style="font-size: 1.05rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text-color, #f8fafc);">
-              등록된 세션 악보가 없습니다
-            </h4>
-            <p style="font-size: 0.84rem; color: var(--sub-text, #94a3b8); margin: 0 0 20px 0; line-height: 1.6; word-break: keep-all;">
-              이번 주 세션 악보 파일이 아직 첨부되지 않았습니다.<br>
-              아래에서 악보 파일(PDF 또는 이미지)을 첨부하시면 팀 구글 드라이브에 저장되고 포털에 자동 연동됩니다.
-            </p>
-
-            <div style="display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; text-align: left;">
-              <input type="file" id="sessionScoreFileInput" accept="application/pdf,image/*" style="font-size: 0.82rem; padding: 8px; border: 1px solid var(--border-color, #334155); border-radius: 8px; background: var(--bg-color, #0f172a); color: var(--text-color, #fff); width: 100%; box-sizing: border-box;">
-              
-              <button type="button" id="btnUploadSessionScore" onclick="handleSessionScoreUpload()" class="btn-action btn-primary" style="padding: 12px; font-size: 0.9rem; font-weight: 700; width: 100%; border-radius: 8px; cursor: pointer;">
-                📤 구글 드라이브에 저장 & 링크 연동
-              </button>
-              
-              <div id="sessionUploadStatus" style="font-size: 0.8rem; text-align: center; margin-top: 6px; display: none;"></div>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    /* 아카이브 목록 전용: 특정 주차 세션 악보 모달 열기 */
-async function openArchiveSessionScore(dateStr) {
-  const modal = document.getElementById('sessionScoreModal');
-  const titleEl = document.getElementById('sessionModalTitle');
-  const bodyEl = document.getElementById('sessionScoreBody');
-
-  if (!modal) return;
-
-  modal.style.display = 'flex';
-  if (bodyEl) {
-    bodyEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">악보 정보를 불러오는 중입니다... ⏳</div>';
-  }
-
-  try {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-
-    // 1. 해당 날짜의 스케줄 1건 조회
-    const { data, error } = await client
-      .from('schedules')
-      .select('*')
-      .eq('date', dateStr)
-      .single();
-
-    if (error) throw error;
-
-    // 2. 현재 작업 대상을 해당 주차 객체로 지정 (업로드 시 올바른 날짜로 들어가도록 세팅)
-    currentWeekSchedule = data;
-
-    if (titleEl) {
-      titleEl.innerText = `${data.date} 세션 악보`;
-    }
-
-    // 3. 악보가 있으면 뷰어, 없으면 업로드 폼 렌더링
-    renderSessionScoreContent(data.session_score_url || '');
-
-  } catch (err) {
-    console.error('아카이브 악보 로드 실패:', err);
-    if (bodyEl) {
-      bodyEl.innerHTML = `
-        <div style="text-align: center; padding: 24px; color: #ef4444;">
-          데이터를 불러오는 중 오류가 발생했습니다.<br>
-          <small style="color: var(--sub-text);">${err.message}</small>
-        </div>
-      `;
-    }
-  }
-}
-
-    /* 업데이트 노트 최신 버전을 헤더 배지에 자동 연동 */
-function updateHeaderVersionBadge() {
-  const badgeBtn = document.getElementById('headerVersionBadge');
-  if (!badgeBtn) return;
-
-  let latestVersion = '';
-
-  // 1. 업데이트 노트 데이터 배열이 있는 경우 (변수명에 맞게 자동 탐색)
-  const notesData = (typeof UPDATE_NOTES !== 'undefined') ? UPDATE_NOTES :
-                    (typeof updateNotes !== 'undefined') ? updateNotes :
-                    (typeof releaseNotes !== 'undefined') ? releaseNotes : null;
-
-  if (Array.isArray(notesData) && notesData.length > 0) {
-    const firstItem = notesData[0];
-    latestVersion = firstItem.version || 
-                    firstItem.title?.match(/v\d+\.\d+(\.\d+)?/i)?.[0] || '';
-  } 
-  // 2. 만약 공지사항 목록(noticeList 등)에서 가져오는 구조인 경우
-  else if (typeof noticeList !== 'undefined' && Array.isArray(noticeList)) {
-    const updateNotice = noticeList.find(n => /업데이트|배포|v\d+/i.test(n.title));
-    if (updateNotice) {
-      const match = (updateNotice.title + ' ' + updateNotice.content).match(/v\d+\.\d+(\.\d+)?/i);
-      if (match) latestVersion = match[0];
-    }
-  }
-
-  // 3. 최신 버전을 찾으면 버튼에 주입하고 화면에 표시
-  if (latestVersion) {
-    badgeBtn.innerText = latestVersion.startsWith('v') ? latestVersion : `v${latestVersion}`;
-    badgeBtn.style.display = 'inline-flex'; // 또는 'inline-block'
-  } else {
-    badgeBtn.style.display = 'none';
-  }
-}
-
-    async function pushSyncDataToCloud() {
-  const syncKey = localStorage.getItem('shift_portal_sync_key');
-  if (!syncKey || syncKey === '-') return; // 연동 코드가 아직 없으면 패스
-
-  try {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
-    if (!client) return;
-
-    // 내가 쓴 건의글 ID 목록 수집
-    let mySuggestions = [];
-    try {
-      const stored = localStorage.getItem('shift_my_suggestions') || localStorage.getItem('my_suggestion_ids');
-      if (stored) mySuggestions = JSON.parse(stored);
-    } catch (e) {
-      mySuggestions = [];
-    }
-
-    const currentSettings = {
-      theme: localStorage.getItem('shift_theme') || 'dark',
-      font: localStorage.getItem('shift_font') || 'pretendard',
-      my_suggestion_ids: mySuggestions,
-      updated_at: new Date().toISOString()
-    };
-
-    // user_sync 테이블에 자동 업데이트
-    await client
-      .from('user_sync')
-      .upsert({
-        sync_code: syncKey,
-        settings: currentSettings,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'sync_code' });
-
-    console.log('☁️ 의견 등록 후 클라우드 자동 동기화 완료');
-  } catch (err) {
-    console.warn('백그라운드 동기화 실패 (의견 등록 자체에는 영향 없음):', err);
-  }
-}
-
-    function setHeaderVersionFromLatestNote(latestVersionText) {
-  const badge = document.getElementById('headerVersionBadge');
-  if (!badge) return;
-
-  // 정규식으로 v2.x.x 추출
-  const match = latestVersionText.match(/v\d+\.\d+(\.\d+)?/i);
-  if (match) {
-    badge.innerText = match[0];
-  } else {
-    badge.innerText = latestVersionText;
-  }
-
-  // 이제 글자가 완전히 준비되었으므로 단 한 번에 매끄럽게 노출 (바뀌는 모션 없음)
-  badge.style.visibility = 'visible';
-}
-
-    /* 13. 진입점 */
+    /* 15. 페이지 시작 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
-      loadCurrentConti();
-      loadNoticeData(); // ★ 페이지 접속 시 즉시 최신 버전명을 가져와 자동 동기화!
+      loadMembersData();    // 팀원 명단 우선 로드 (라인업 셀렉트 박스 즉시 준비)
+      loadCurrentConti();   // 이번 주 콘티 로드
+      loadNoticeData();     // 공지사항 및 버전 정보 로드
     });
   </script>
-
-  <div id="sessionScoreModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 99999; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
-  <div class="modal-card" style="background: var(--card-bg, #1e293b); color: var(--text-color, #f8fafc); max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 22px; box-sizing: border-box; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 1px solid var(--border-color, #334155);">
-    
-    <!-- 모달 헤더 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color, #334155); padding-bottom: 12px; margin-bottom: 16px;">
-      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <span>🎼</span> <span id="sessionModalTitle">2026-10-11 세션 악보</span>
-      </h3>
-      <button type="button" onclick="closeSessionScoreModal()" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--sub-text, #94a3b8); line-height: 1; padding: 0 4px;">&times;</button>
-    </div>
-
-    <!-- 모달 본문 영역 (반드시 id가 sessionScoreBody 여야 합니다) -->
-    <div id="sessionScoreBody" style="min-height: 180px; width: 100%;">
-      <!-- JS를 통해 안내창 및 업로더가 주입됩니다 -->
-    </div>
-
-  </div>
-</div>
 </body>
 </html>
