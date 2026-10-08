@@ -696,6 +696,65 @@
     font-size: 0.78rem !important; /* 좁은 폰에서도 한 줄 유지 */
   }
 }
+
+    #sessionScoreModal,
+#sessionScoresModal,
+#sessionModal,
+.session-score-modal,
+#contiManageModal,
+#adminContiModal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  z-index: 99999 !important;
+  justify-content: center !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  padding: 16px !important;
+}
+
+/* 모달 내부 컨텐츠 카드 규격 */
+#sessionScoreModal > div,
+#sessionScoresModal > div,
+#sessionModal > div,
+#contiManageModal > div,
+#adminContiModal > div {
+  margin: auto !important;
+  max-width: 550px !important;
+  width: 92% !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+}
+
+    #contiAdminModal,
+#sessionScoreModal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  z-index: 99999 !important;
+  display: none;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* 팝업 내부 카드 규격 */
+#contiAdminModal > div,
+#sessionScoreModal > div {
+  margin: auto !important;
+  max-width: 550px !important;
+  width: 94% !important;
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
   </style>
 </head>
 <body>
@@ -739,16 +798,17 @@
     
     <!-- 1. 헤더: 예배 정보 (좌측) + 콘티 관리 버튼 (우측 상단 유지) -->
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-      <div>
-        <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
-        <h2 class="worship-title" id="viewWorshipTitle" style="margin: 4px 0 0 0;">예배명을 불러옵니다</h2>
-      </div>
-      <div class="conti-admin-actions" style="flex-shrink: 0;">
-        <button type="button" class="btn-action btn-secondary" onclick="openContiManageModal()" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-          ⚙️ 콘티 관리
-        </button>
-      </div>
-    </div>
+  <div>
+    <span class="worship-date-badge" id="viewWorshipDate">2026-00-00</span>
+    <h2 class="worship-title" id="viewWorshipTitle" style="margin: 4px 0 0 0;">예배명을 불러옵니다</h2>
+  </div>
+  <div class="conti-admin-actions" style="flex-shrink: 0;">
+    <!-- ★ 원래 함수명 openContiAdminModal() 로 연결 -->
+    <button type="button" class="btn-action btn-secondary" onclick="openContiAdminModal()" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+      ⚙️ 콘티 관리
+    </button>
+  </div>
+</div>
 
     <!-- 곡 목록 -->
     <div class="song-box">
