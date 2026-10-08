@@ -552,15 +552,21 @@
 
     /* 팝업 모달 */
     .modal-overlay {
-      position: fixed !important;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 9999 !important;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-    }
+  display: none;
+  flex-direction: column; /* 자식 요소들을 무조건 상하 정렬 */
+  justify-content: center;
+  align-items: center;
+}
+
+/* 모바일 전용 모달 카드 최적화 */
+@media (max-width: 600px) {
+  #settingsModal .modal-card {
+    width: 94% !important;
+    max-width: 94% !important;
+    margin: auto;
+    padding: 18px 14px !important;
+  }
+}
     .modal-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -1777,28 +1783,33 @@
   </div>
 
   <!-- 5. 환경설정 모달 -->
-  <div id="settingsModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card" style="max-width: 490px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-        <h3 style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-          <span>⚙️ 포털 환경설정</span>
-        </h3>
-        <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">&times;</button>
+  <!-- ============================================== -->
+<!-- 2. 설정 모달 (푸터와 완전히 분리된 독립 컨테이너) -->
+<!-- ============================================== -->
+<div id="settingsModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.75); z-index: 99999; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
+  
+  <!-- 모달 내부 카드: 반드시 flex-direction 컬럼 설정 & 모바일 너비 100% 보장 -->
+  <div class="modal-card" style="background: var(--card-bg, #1e293b); color: var(--text-color, #f8fafc); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 22px; box-sizing: border-box; box-shadow: 0 20px 40px rgba(0,0,0,0.6); border: 1px solid var(--border-color, #334155); display: flex; flex-direction: column;">
+    
+    <!-- 모달 헤더 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color, #334155); padding-bottom: 12px; margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <span>⚙️</span> 환경설정 및 기기 동기화
+      </h3>
+      <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--sub-text, #94a3b8); line-height: 1; padding: 0 4px;">&times;</button>
+    </div>
+
+    <!-- 모달 본문: 설정 항목들 -->
+    <div class="settings-content" style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+      
+      <!-- 테마 설정 -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+        <label for="settingThemeSelect" style="font-size: 0.9rem; font-weight: 600;">테마 모드</label>
+        <select id="settingThemeSelect" onchange="changeTheme(this.value)" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color, #334155); background: var(--bg-color, #0f172a); color: var(--text-color, #fff); font-size: 0.85rem;">
+          <option value="dark">다크 모드</option>
+          <option value="light">라이트 모드</option>
+        </select>
       </div>
-
-      <div style="display: flex; flex-direction: column; gap: 14px;">
-
-        <!-- 1. 화면 스타일 & 글꼴 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 10px;">🎨 화면 스타일 & 글꼴</h4>
-          
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <label style="font-size: 0.82rem; font-weight: 600;">테마 모드</label>
-            <select id="settingThemeSelect" onchange="changeThemeFromSetting(this.value)" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.82rem;">
-              <option value="light">☀️ 라이트 모드</option>
-              <option value="dark">🌙 다크 모드</option>
-            </select>
-          </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <label style="font-size: 0.82rem; font-weight: 600;">기본 글꼴</label>
@@ -1997,11 +2008,15 @@
   </div>
 </div>
 
-  <!-- 푸터 -->
-  <footer class="site-footer">
-    <p class="footer-title">SHIFT 찬양팀 웹 포털</p>
-    <p class="footer-version">v2.0.0 (Supabase Engine)</p>
-  </footer>
+  <!-- ============================================== -->
+<!-- 1. 메인 푸터 (모달 바깥, 페이지 본문 최하단에 위치) -->
+<!-- ============================================== -->
+<footer id="mainFooter" class="portal-footer" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color, #334155); color: var(--sub-text, #94a3b8); font-size: 0.8rem; box-sizing: border-box;">
+  <div>© 2026 SHIFT WORSHIP TEAM. All rights reserved.</div>
+  <div style="margin-top: 6px; font-size: 0.75rem; opacity: 0.8;">
+    v2.2.0 | 문의 및 피드백: 익명의견함
+  </div>
+</footer>
 
   <!-- ===================================================
        자바스크립트 완전본
