@@ -671,6 +671,11 @@
   min-width: 0 !important;
   flex: 1 1 auto !important;
 }
+
+    #headerVersionBadge {
+  transition: none !important; /* 글자가 바뀌며 늘어나거나 튀는 트랜지션 강제 끄기 */
+  animation: none !important;
+}
   </style>
 </head>
 <body>
@@ -5724,6 +5729,22 @@ function updateHeaderVersionBadge() {
   } catch (err) {
     console.warn('백그라운드 동기화 실패 (의견 등록 자체에는 영향 없음):', err);
   }
+}
+
+    function setHeaderVersionFromLatestNote(latestVersionText) {
+  const badge = document.getElementById('headerVersionBadge');
+  if (!badge) return;
+
+  // 정규식으로 v2.x.x 추출
+  const match = latestVersionText.match(/v\d+\.\d+(\.\d+)?/i);
+  if (match) {
+    badge.innerText = match[0];
+  } else {
+    badge.innerText = latestVersionText;
+  }
+
+  // 이제 글자가 완전히 준비되었으므로 단 한 번에 매끄럽게 노출 (바뀌는 모션 없음)
+  badge.style.visibility = 'visible';
 }
 
     /* 13. 진입점 */
