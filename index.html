@@ -8,7 +8,8 @@
   <!-- 웹폰트: Pretendard, S-Core Dream, Noto Serif -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
-  <link rel="stylesheet" href="https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.0/KyoboHandwriting2019.css">
 
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1762,9 +1763,10 @@
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <label for="settingFontSelect" style="font-size: 0.85rem; font-weight: 600;">기본 글꼴</label>
             <select id="settingFontSelect" onchange="applyFont(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-              <option value="pretendard">프리텐다드 (Pretendard)</option>
-              <option value="score">에스코어 드림 (S-Core Dream)</option>
-              <option value="serif">나눔명조 (Noto Serif KR)</option>
+              <option value="pretendard">프리텐다드 (깔끔한 고딕)</option>
+              <option value="score">에스코어 드림 (반듯한 사각 고딕)</option>
+              <option value="serif">나눔명조 (단정한 명조)</option>
+              <option value="hand">교보 손글씨 (따뜻한 손글씨)</option>
             </select>
           </div>
         </div>
@@ -4178,13 +4180,22 @@
 
     function applyFont(fontKey) {
   let fontValue = '-apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif';
+
   if (fontKey === 'score') {
-    fontValue = '"S-CoreDream-3Light", "Pretendard", sans-serif';
+    fontValue = '"S-CoreDream", "Pretendard", sans-serif';
   } else if (fontKey === 'serif') {
     fontValue = '"Noto Serif KR", Georgia, serif';
+  } else if (fontKey === 'hand') {
+    // 손글씨 폰트 패밀리 지정 (한글/영문 모두 대응)
+    fontValue = '"KyoboHandwriting2019", -apple-system, sans-serif';
   }
 
+  // 1. CSS 루트 변수 덮어쓰기
   document.documentElement.style.setProperty('--app-font', fontValue);
+
+  // 2. body 전체 스타일 즉시 반영
+  document.body.style.fontFamily = fontValue;
+
   localStorage.setItem('shift_font', fontKey);
 }
 
