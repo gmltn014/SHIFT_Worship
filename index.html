@@ -5687,6 +5687,45 @@ function updateHeaderVersionBadge() {
   }
 }
 
+    async function pushSyncDataToCloud() {
+  const syncKey = localStorage.getItem('shift_portal_sync_key');
+  if (!syncKey || syncKey === '-') return; // 연동 코드가 아직 없으면 패스
+
+  try {
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+    if (!client) return;
+
+    // 내가 쓴 건의글 ID 목록 수집
+    let mySuggestions = [];
+    try {
+      const stored = localStorage.getItem('shift_my_suggestions') || localStorage.getItem('my_suggestion_ids');
+      if (stored) mySuggestions = JSON.parse(stored);
+    } catch (e) {
+      mySuggestions = [];
+    }
+
+    const currentSettings = {
+      theme: localStorage.getItem('shift_theme') || 'dark',
+      font: localStorage.getItem('shift_font') || 'pretendard',
+      my_suggestion_ids: mySuggestions,
+      updated_at: new Date().toISOString()
+    };
+
+    // user_sync 테이블에 자동 업데이트
+    await client
+      .from('user_sync')
+      .upsert({
+        sync_code: syncKey,
+        settings: currentSettings,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'sync_code' });
+
+    console.log('☁️ 의견 등록 후 클라우드 자동 동기화 완료');
+  } catch (err) {
+    console.warn('백그라운드 동기화 실패 (의견 등록 자체에는 영향 없음):', err);
+  }
+}
+
     /* 13. 진입점 */
     document.addEventListener('DOMContentLoaded', () => {
       loadCurrentConti();
