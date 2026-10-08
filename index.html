@@ -2035,7 +2035,7 @@
   <footer id="mainFooter" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--sub-text); font-size: 0.8rem;">
     <div>© 2026 SHIFT WORSHIP TEAM. All rights reserved.</div>
     <div style="margin-top: 6px; font-size: 0.75rem; opacity: 0.8;">
-      v2.2.0 | 문의 및 피드백: 익명의견함
+      <span id="footerVersionText">v2.2.0</span> | 문의 및 피드백: 익명의견함
     </div>
   </footer>
 
@@ -3308,17 +3308,26 @@
     }
 
     function syncAppVersionFromNotices() {
-      for (const item of allNotices) {
-        const title = item.title || '';
-        const match = title.match(/v\d+\.\d+(\.\d+)?/i);
-        if (match) {
-          const verText = match[0];
-          const bubble = document.getElementById('headerVersionBadge');
-          if (bubble) bubble.innerText = verText;
-          break;
-        }
+  for (const item of allNotices) {
+    const title = item.title || '';
+    const match = title.match(/v\d+\.\d+(\.\d+)?/i);
+    if (match) {
+      const verText = match[0];
+
+      // 1. 헤더 배지 연동
+      const bubble = document.getElementById('headerVersionBadge');
+      if (bubble) bubble.innerText = verText;
+
+      // 2. ★ 메인 푸터 버전 자동 연동
+      const footerVer = document.getElementById('footerVersionText');
+      if (footerVer) {
+        footerVer.innerText = verText;
       }
+
+      break;
     }
+  }
+}
 
     function parseNoticeMetadata(title) {
       const raw = (title || '').trim();
