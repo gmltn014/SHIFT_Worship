@@ -4044,43 +4044,70 @@
     let wakeLockSentinel = null;
 
     function openSettingsModal() {
-      // 1. 테마 & 폰트 세팅 반영
-      const currentTheme = localStorage.getItem('shift_theme') || 'light';
-      const themeSelect = document.getElementById('settingThemeSelect');
-      if (themeSelect) themeSelect.value = currentTheme;
+  console.log('설정 버튼 클릭됨');
+  const modal = document.getElementById('settingsModal');
+  if (!modal) {
+    alert('settingsModal 요소를 찾을 수 없습니다.');
+    console.error('settingsModal element not found');
+    return;
+  }
 
-      const currentFont = localStorage.getItem('shift_font') || 'system';
-      const fontSelect = document.getElementById('settingFontSelect');
-      if (fontSelect) fontSelect.value = currentFont;
+  // 1. 화면에 설정 모달을 무조건 먼저 띄움
+  modal.style.display = 'flex';
 
-      // 2. ★ 브라우저 알림 토글 상태 반영
-      const notiToggle = document.getElementById('settingNotificationToggle');
-      if (notiToggle) {
-        notiToggle.checked = ('Notification' in window && Notification.permission === 'granted');
+  // 2. 현재 저장된 설정값(테마, 글꼴 등) UI 반영
+  try {
+    const currentTheme = localStorage.getItem('shift_theme') || 'dark';
+    const currentFont = localStorage.getItem('shift_font') || 'pretendard';
+    
+    const themeSelect = document.getElementById('settingThemeSelect');
+    if (themeSelect) themeSelect.value = currentTheme;
+
+    const fontSelect = document.getElementById('settingFontSelect');
+    if (fontSelect) fontSelect.value = currentFont;
+  } catch (e) {
+    console.warn('설정값 UI 바인딩 중 경미한 오류:', e);
+  }
+
+  // 3. 내 동기화 코드 표시 및 서버 자동 백업 (백그라운드 비동기 처리)
+  setTimeout(async () => {
+    try {
+      const codeDisplay = document.getElementById('mySyncCodeDisplay');
+      let myCode = localStorage.getItem('shift_portal_sync_key') || 'SHIFT-2981VYY';
+      
+      if (codeDisplay) {
+        codeDisplay.innerText = myCode;
       }
 
-      // 3. 내 기기 연동 키 표시
-      const keyDisplay = document.getElementById('mySyncKeyDisplay');
-      if (keyDisplay) keyDisplay.innerText = getOrCreateSyncKey();
-
-      // 4. 관리자 상태 반영
-      const isAuth = isAdminAuthenticated();
-      const statusText = document.getElementById('settingAdminStatusText');
-      const logoutBtn = document.getElementById('settingAdminLogoutBtn');
-      if (statusText && logoutBtn) {
-        if (isAuth) {
-          statusText.innerHTML = isSuperAdmin() 
-            ? '<span style="color: #3b82f6; font-weight: 700;">⚡ 최고관리자(Super) 인증됨</span>' 
-            : '<span style="color: #10b981; font-weight: 700;">✅ 일반 관리자 인증됨</span>';
-          logoutBtn.style.display = 'inline-flex';
-        } else {
-          statusText.innerHTML = '<span style="color: var(--sub-text);">관리자 모드: 미인증</span>';
-          logoutBtn.style.display = 'none';
-        }
+      // Supabase 클라이언트가 준비되어 있다면 서버에 백업 등록 시도
+      const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : (typeof supabase !== 'undefined' ? supabase : null);
+      if (client) {
+        await client
+          .from('user_sync')
+          .upsert([{
+            sync_code: myCode,
+            settings: {
+              theme: localStorage.getItem('shift_theme') || 'dark',
+              font: localStorage.getItem('shift_font') || 'pretendard',
+              updated_at: new Date().toISOString()
+            },
+            created_at: new Date().toISOString()
+          }], { onConflict: 'sync_code' });
+        console.log('기기 동기화 코드 서버 자동 등록 완료:', myCode);
       }
-
-      document.getElementById('settingsModal').style.display = 'flex';
+    } catch (syncErr) {
+      console.warn('동기화 코드 자동 등록 건너뜀 (모달 동작에는 영향 없음):', syncErr);
     }
+  }, 50);
+}
+
+/* 설정 모달 닫기 */
+function closeSettingsModal() {
+  const modal = document.getElementById('settingsModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
 
     /* 알림 토글 핸들러 */
     async function toggleAppNotification(enable) {
