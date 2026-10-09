@@ -5910,39 +5910,73 @@ async function hashPin(pinString) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// 1. 프로필 모달 열기 & 조회
+// 1. 프로필 모달 열기 & 조회 (안정화 수정본)
 async function openMemberProfileModal(memberId) {
-  const member = allMembersList.find(m => m.member_id === memberId);
-  if (!member) return;
+  // member_id 타입(문자열/숫자) 차이 방지를 위해 느슨한 비교(==) 또는 Number 변환
+  const targetId = Number(memberId);
+  const member = (typeof allMembersList !== 'undefined')
+    ? allMembersList.find(m => Number(m.member_id) === targetId)
+    : null;
+
+  if (!member) {
+    console.warn('해당 ID의 팀원을 찾을 수 없습니다:', memberId);
+    return;
+  }
 
   currentViewingMember = member;
   currentViewingProfile = null;
 
-  // 헤더 기본 정보 셋팅
-  document.getElementById('profHeaderName').innerText = `${member.name} 프로필`;
-  document.getElementById('profHeaderBadge').innerText = member.main_category || 'TEAM';
-  document.getElementById('profViewName').innerText = member.name;
-  document.getElementById('profViewParts').innerText = `${member.main_part || '-'}${member.part_b ? ` / ${member.part_b}` : ''}`;
+  // 헤더 및 기본 인적사항 셋팅
+  const headerNameEl = document.getElementById('profHeaderName');
+  const headerBadgeEl = document.getElementById('profHeaderBadge');
+  const viewNameEl = document.getElementById('profViewName');
+  const viewPartsEl = document.getElementById('profViewParts');
 
-  cancelProfileEdit(); // 뷰 모드로 초기화
-  document.getElementById('memberProfileModal').style.display = 'flex';
+  if (headerNameEl) headerNameEl.innerText = `${member.name} 프로필`;
+  if (headerBadgeEl) headerBadgeEl.innerText = member.main_category || 'TEAM';
+  if (viewNameEl) viewNameEl.innerText = member.name;
+  if (viewPartsEl) {
+    viewPartsEl.innerText = `${member.main_part || '-'}${member.part_b ? ` / ${member.part_b}` : ''}`;
+  }
 
+  // 뷰 모드로 초기화 및 모달 노출
+  if (typeof cancelProfileEdit === 'function') cancelProfileEdit();
+  const modalEl = document.getElementById('memberProfileModal');
+  if (modalEl) modalEl.style.display = 'flex';
+
+  // 프로필 데이터 로드 전 기본 뷰 1차 렌더링 (이전 사용자 데이터 잔여 방지)
+  if (typeof renderProfileView === 'function') renderProfileView();
+
+  // Supabase 프로필 조회
   try {
-    const { data, error } = await supabaseClient
-      .from('member_profiles')
-      .select('*')
-      .eq('member_id', memberId)
-      .maybeSingle();
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('member_profiles')
+        .select('*')
+        .eq('member_id', targetId)
+        .maybeSingle();
 
-    if (error) throw error;
-    currentViewingProfile = data;
-    renderProfileView();
+      if (error) throw error;
+      currentViewingProfile = data;
+    }
   } catch (err) {
     console.warn('프로필 로드 예외:', err);
+  } finally {
+    // 조회 완료 후 프로필 내용 반영
+    if (typeof renderProfileView === 'function') {
+      renderProfileView();
+    }
   }
-  await loadRollingPaperAndHearts(memberId);
-}
 
+  // 롤링페이퍼 및 하트 수 로드
+  if (typeof loadRollingPaperAndHearts === 'function') {
+    try {
+      await loadRollingPaperAndHearts(targetId);
+    } catch (paperErr) {
+      console.warn('롤링페이퍼 로드 예외:', paperErr);
+    }
+  }
+}
 function closeMemberProfileModal() {
   document.getElementById('memberProfileModal').style.display = 'none';
 }
@@ -6139,7 +6173,7 @@ async function handleSaveMemberProfile(e) {
 
 let cachedMemberProfiles = [];
 
-// 1. 생일 D-Day 계산 함수
+// 1. 생일 D-Day 계산 함수 (한국 시간 기준 자정 정규화)
 function getBirthdayDDay(birthdayStr) {
   if (!birthdayStr) return null;
   const match = birthdayStr.match(/(\d{1,2})[^\d]+(\d{1,2})/);
@@ -6151,21 +6185,26 @@ function getBirthdayDDay(birthdayStr) {
   const now = new Date();
   const currentYear = now.getFullYear();
 
-  let targetDate = new Date(currentYear, month - 1, day);
-  const todayZero = new Date(currentYear, now.getMonth(), now.getDate());
+  // 오늘 날짜의 자정 기준 (시간/분/초 제거)
+  const todayZero = new Date(currentYear, now.getMonth(), now.getDate()).getTime();
 
+  // 올해 생일의 자정 기준
+  let targetDate = new Date(currentYear, month - 1, day).getTime();
+
+  // 올해 생일이 이미 지난 경우 내년 생일로 계산
   if (targetDate < todayZero) {
-    targetDate = new Date(currentYear + 1, month - 1, day);
+    targetDate = new Date(currentYear + 1, month - 1, day).getTime();
   }
 
-  const diffTime = targetDate.getTime() - todayZero.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffTime = targetDate - todayZero;
+  return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
-// 2. 생일 뱃지 HTML 생성기
+// 2. 생일 뱃지 HTML 생성기 (타입 안정화 & 중복 선언 제거)
 function getBirthdayBadgeHtml(memberId) {
   if (!cachedMemberProfiles || cachedMemberProfiles.length === 0) return '';
-  const prof = cachedMemberProfiles.find(p => p.member_id === memberId);
+  const targetId = Number(memberId);
+  const prof = cachedMemberProfiles.find(p => Number(p.member_id) === targetId);
   if (!prof || !prof.birthday || !prof.show_birthday) return '';
 
   const dday = getBirthdayDDay(prof.birthday);
@@ -6179,9 +6218,9 @@ function getBirthdayBadgeHtml(memberId) {
   return '';
 }
 
-// 3. 프로필 전체 로드 및 생일 검사 함수 (누락되었던 핵심 함수)
+// 3. 프로필 전체 로드 및 생일 검사 함수
 async function loadAllProfilesAndCheckBirthdays() {
-  if (!supabaseClient) return;
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
 
   try {
     const { data, error } = await supabaseClient
@@ -6196,8 +6235,9 @@ async function loadAllProfilesAndCheckBirthdays() {
     cachedMemberProfiles = data || [];
 
     // 생일 당일인 경우 인앱 알림 자동 등록 (하루 1회 제한)
-    const today = new Date().toISOString().split('T')[0];
-    const notifiedTodayKey = `shift_bday_notified_${today}`;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const notifiedTodayKey = `shift_bday_notified_${todayStr}`;
 
     if (!localStorage.getItem(notifiedTodayKey)) {
       for (const prof of cachedMemberProfiles) {
@@ -6206,7 +6246,7 @@ async function loadAllProfilesAndCheckBirthdays() {
         const dday = getBirthdayDDay(prof.birthday);
         if (dday === 0) {
           const m = (typeof allMembersList !== 'undefined') 
-            ? allMembersList.find(item => item.member_id === prof.member_id) 
+            ? allMembersList.find(item => Number(item.member_id) === Number(prof.member_id)) 
             : null;
 
           if (m && typeof sendNotificationAndTrim === 'function') {
@@ -6233,40 +6273,27 @@ async function loadAllProfilesAndCheckBirthdays() {
   }
 }
 
-// 3. 명단 렌더링에 D-Day 뱃지 주입 (renderMembers 보완)
-// renderMembers() 내부의 이름 출력 부분에 아래 생일 뱃지 로직이 결합됩니다:
-function getBirthdayBadgeHtml(memberId) {
-  const prof = cachedMemberProfiles.find(p => p.member_id === memberId);
-  if (!prof || !prof.birthday || !prof.show_birthday) return '';
 
-  const dday = getBirthdayDDay(prof.birthday);
-  if (dday === null) return '';
-
-  if (dday === 0) {
-    return `<span class="birthday-badge d-day-today">🎂 오늘 생일! 🎉</span>`;
-  } else if (dday <= 30) { // 30일 이내로 다가온 경우 D-N 표시
-    return `<span class="birthday-badge">🎂 D-${dday}</span>`;
-  }
-  return '';
-}
-
-  /* ===================================================
+/* ===================================================
    💌 2단계: 롤링페이퍼 & 하트(응원) 엔진
 =================================================== */
 
 // 1. 하트 수 및 롤링페이퍼 로드
 async function loadRollingPaperAndHearts(memberId) {
+  const targetId = Number(memberId);
   const listEl = document.getElementById('profRollingPaperList');
   const countEl = document.getElementById('profPaperCount');
   const heartEl = document.getElementById('profHeartCountDisplay');
   if (!listEl) return;
 
   try {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+
     // A. 하트 개수 조회
     const { data: heartData } = await supabaseClient
       .from('member_cheer_hearts')
       .select('heart_count')
-      .eq('member_id', memberId)
+      .eq('member_id', targetId)
       .maybeSingle();
 
     if (heartEl) heartEl.innerText = heartData ? heartData.heart_count : '0';
@@ -6275,7 +6302,7 @@ async function loadRollingPaperAndHearts(memberId) {
     const { data: papers, error } = await supabaseClient
       .from('member_rolling_papers')
       .select('*')
-      .eq('member_id', memberId)
+      .eq('member_id', targetId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -6288,8 +6315,8 @@ async function loadRollingPaperAndHearts(memberId) {
     }
 
     // 본인(기기 PIN 인증자)인지 확인하여 비밀쪽지 열람 허용
-    const verifiedMap = JSON.parse(localStorage.getItem(MY_VERIFIED_PINS_KEY) || '{}');
-    const isOwnerVerified = currentViewingProfile && (verifiedMap[memberId] === currentViewingProfile.pin_hash);
+    const verifiedMap = JSON.parse(localStorage.getItem(MY_VERIFIED_PINS_KEY || 'shift_verified_member_pins') || '{}');
+    const isOwnerVerified = currentViewingProfile && (verifiedMap[targetId] === currentViewingProfile.pin_hash);
 
     const pastelColors = ['#fef3c7', '#fee2e2', '#e0e7ff', '#dcfce7', '#f3e8ff'];
 
@@ -6323,26 +6350,26 @@ async function loadRollingPaperAndHearts(memberId) {
 
 // 2. 하트(응원) 보내기 (+1)
 async function handleSendCheerHeart() {
-  if (!currentViewingMember || !supabaseClient) return;
-  const memberId = currentViewingMember.member_id;
+  if (!currentViewingMember || typeof supabaseClient === 'undefined' || !supabaseClient) return;
+  const targetId = Number(currentViewingMember.member_id);
 
   try {
     const { data: exist } = await supabaseClient
       .from('member_cheer_hearts')
       .select('heart_count')
-      .eq('member_id', memberId)
+      .eq('member_id', targetId)
       .maybeSingle();
 
     const newCount = (exist ? exist.heart_count : 0) + 1;
 
     await supabaseClient
       .from('member_cheer_hearts')
-      .upsert({ member_id: memberId, heart_count: newCount, updated_at: new Date().toISOString() });
+      .upsert({ member_id: targetId, heart_count: newCount, updated_at: new Date().toISOString() });
 
     const heartEl = document.getElementById('profHeartCountDisplay');
     if (heartEl) heartEl.innerText = newCount;
 
-    // 가벼운 애니메이션 효과
+    // 가벼운 클릭 애니메이션
     const btn = document.getElementById('btnSendHeart');
     if (btn) {
       btn.style.transform = 'scale(1.15)';
@@ -6356,22 +6383,28 @@ async function handleSendCheerHeart() {
 // 3. 롤링페이퍼 등록
 async function handleSaveRollingPaper(e) {
   e.preventDefault();
-  if (!currentViewingMember || !supabaseClient) return;
+  if (!currentViewingMember || typeof supabaseClient === 'undefined' || !supabaseClient) return;
 
-  const memberId = currentViewingMember.member_id;
-  const senderName = document.getElementById('paperSenderName').value.trim();
-  const message = document.getElementById('paperMessage').value.trim();
-  const isSecret = document.getElementById('paperIsSecret').checked;
+  const targetId = Number(currentViewingMember.member_id);
+  const senderInput = document.getElementById('paperSenderName');
+  const messageInput = document.getElementById('paperMessage');
+  const secretInput = document.getElementById('paperIsSecret');
   const btn = document.getElementById('btnSubmitPaper');
+
+  const senderName = senderInput ? senderInput.value.trim() : '';
+  const message = messageInput ? messageInput.value.trim() : '';
+  const isSecret = secretInput ? secretInput.checked : false;
 
   if (!message) return;
 
-  btn.disabled = true;
-  btn.innerText = '저장 중...';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '저장 중...';
+  }
 
   try {
     const { error } = await supabaseClient.from('member_rolling_papers').insert([{
-      member_id: memberId,
+      member_id: targetId,
       sender_name: senderName || '익명의 동역자',
       message: message,
       is_secret: isSecret
@@ -6379,16 +6412,17 @@ async function handleSaveRollingPaper(e) {
 
     if (error) throw error;
 
-    document.getElementById('paperMessage').value = '';
-    await loadRollingPaperAndHearts(memberId);
+    if (messageInput) messageInput.value = '';
+    await loadRollingPaperAndHearts(targetId);
   } catch (err) {
     alert('메시지 등록 실패: ' + err.message);
   } finally {
-    btn.disabled = false;
-    btn.innerText = '남기기';
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = '남기기';
+    }
   }
 }
-
 }
 
     /* 15. 페이지 시작 진입점 */
