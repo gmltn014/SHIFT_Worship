@@ -682,6 +682,56 @@
   position: relative;
   word-break: break-word;
 }
+
+  /* SNS 놀이터 작성바 모바일 세로 배치 */
+.sns-publish-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .sns-publish-controls {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .sns-publish-controls .author-select-group {
+    width: 100% !important;
+    display: flex;
+    gap: 6px;
+  }
+  .sns-publish-controls .author-select-group select,
+  .sns-publish-controls .author-select-group input {
+    flex: 1;
+    min-width: 0;
+  }
+  .sns-publish-controls .action-btn-group {
+    width: 100% !important;
+    display: flex;
+    gap: 6px;
+  }
+  .sns-publish-controls .action-btn-group button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+    .sns-author-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 640px) {
+  .sns-author-row {
+    grid-template-columns: 1fr !important; /* 모바일에서는 세로로 1열 배치 */
+    gap: 12px !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -1127,55 +1177,61 @@
       </div>
 
       <!-- SNS 놀이터 -->
-      <div id="pg-content-sns" style="display: none;">
-        <div class="card" style="margin-bottom: 16px;">
-          <div style="margin-bottom: 12px;">
-            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📸 나의 SHIFT 찬양 취향표 작성</h3>
-            <p style="font-size: 0.82rem; color: var(--sub-text);">원하는 항목만 자유롭게 작성해 보세요.</p>
-          </div>
-          <form onsubmit="handlePublishSnsCard(event)">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-  <div>
-    <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">작성자 이름 / 닉네임</label>
-    <div style="display: flex; gap: 6px;">
-      <input type="text" id="snsAuthorName" required placeholder="예: 최찬양, 조방송" style="flex: 1; min-width: 0; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-      <!-- 익명 선택 시 노출되는 랜덤 돌리기 버튼 -->
-      <button type="button" id="btnRandomNickname" onclick="generateRandomNickname()" class="btn-action btn-secondary" style="display: none; padding: 6px 10px; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0;" title="다른 닉네임 뽑기">
-        🎲 뽑기
-      </button>
+<div id="pg-content-sns" style="display: none;">
+  <div class="card" style="margin-bottom: 16px;">
+    <div style="margin-bottom: 12px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📸 나의 SHIFT 찬양 취향표 작성</h3>
+      <p style="font-size: 0.82rem; color: var(--sub-text);">원하는 항목만 자유롭게 작성해 보세요.</p>
     </div>
-  </div>
-  <div>
-    <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">공유 방식</label>
-    <select id="snsIsAnonymous" onchange="handleSnsAnonymousChange(this.value)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-      <option value="false">👤 실명으로 당당하게 공유</option>
-      <option value="true">🎭 비밀 닉네임(익명)으로 공유</option>
-    </select>
+    <form onsubmit="handlePublishSnsCard(event)">
+      <!-- ★ 모바일에서는 1열(세로), PC에서는 2열(가로) 자동 전환 -->
+      <div class="sns-author-row">
+        <div>
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">작성자 이름 / 닉네임</label>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <input type="text" id="snsAuthorName" required placeholder="예: 최찬양, 조방송" style="flex: 1; min-width: 0; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+            <!-- 익명 선택 시 노출되는 랜덤 돌리기 버튼 -->
+            <button type="button" id="btnRandomNickname" onclick="generateRandomNickname()" class="btn-action btn-secondary" style="display: none; padding: 6px 10px; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; height: 36px;" title="다른 닉네임 뽑기">
+              🎲 뽑기
+            </button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">공유 방식</label>
+          <select id="snsIsAnonymous" onchange="handleSnsAnonymousChange(this.value)" style="width: 100%; height: 36px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+            <option value="false">👤 실명으로 당당하게 공유</option>
+            <option value="true">🎭 비밀 닉네임(익명)으로 공유</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📖 오늘 묵상한 은혜의 말씀 (선택)</label>
+        <input type="text" id="snsWordQt" placeholder="예: 시편 23:1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 내 인생 가장 좋아하는 찬양 (선택)</label>
+        <input type="text" id="snsFavSongs" placeholder="예: 은혜, 꽃들도" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎧 최근 푹 빠진 추천 찬양 (선택)</label>
+        <input type="text" id="snsRecSong" placeholder="예: 나의 하나님 - 위러브" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포인트 색:</span>
+          <input type="color" id="snsCardColor" value="#3b82f6" style="border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent;">
+        </div>
+        <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px; flex-shrink: 0;">
+          📌 놀이터 보드에 게시
+        </button>
+      </div>
+    </form>
   </div>
 </div>
-            <div style="margin-bottom: 10px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">📖 오늘 묵상한 은혜의 말씀 (선택)</label>
-              <input type="text" id="snsWordQt" placeholder="예: 시편 23:1" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div style="margin-bottom: 10px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 내 인생 가장 좋아하는 찬양 (선택)</label>
-              <input type="text" id="snsFavSongs" placeholder="예: 은혜, 꽃들도" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎧 최근 푹 빠진 추천 찬양 (선택)</label>
-              <input type="text" id="snsRecSong" placeholder="예: 나의 하나님 - 위러브" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포인트 색:</span>
-                <input type="color" id="snsCardColor" value="#3b82f6" style="border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent;">
-              </div>
-              <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px;">
-                📌 놀이터 보드에 게시
-              </button>
-            </div>
-          </form>
-        </div>
 
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -2164,20 +2220,20 @@
         </div>
 
         <!-- 롤링페이퍼 작성 토글 폼 -->
-        <form onsubmit="handleSaveRollingPaper(event)" style="background: var(--card-sub-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
-            <input type="text" id="paperSenderName" required placeholder="작성자(또는 익명)" style="width: 110px; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-            <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--sub-text); cursor: pointer; user-select: none;">
-              <input type="checkbox" id="paperIsSecret" style="accent-color: var(--accent-color);">
-              🔒 본인만 보기 (비밀쪽지)
-            </label>
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <input type="text" id="paperMessage" required placeholder="따뜻한 응원의 한 줄을 남겨주세요! ✨" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-            <button type="submit" id="btnSubmitPaper" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 700; white-space: nowrap;">
-              남기기
-            </button>
-          </div>
+        <form onsubmit="handleSaveRollingPaper(event)" style="background: var(--card-sub-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); box-sizing: border-box;">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+    <input type="text" id="paperSenderName" required placeholder="작성자(또는 익명)" style="flex: 1; min-width: 100px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; box-sizing: border-box;">
+    <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--sub-text); cursor: pointer; user-select: none; white-space: nowrap;">
+      <input type="checkbox" id="paperIsSecret" style="accent-color: var(--accent-color); width: 14px; height: 14px;">
+      🔒 본인만 보기 (비밀쪽지)
+    </label>
+  </div>
+  <div style="display: flex; gap: 6px; align-items: center;">
+    <input type="text" id="paperMessage" required placeholder="따뜻한 응원을 남겨주세요! ✨" style="flex: 1; min-width: 0; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+    <button type="submit" id="btnSubmitPaper" class="btn-action btn-primary" style="padding: 7px 14px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; box-sizing: border-box;">
+      남기기
+    </button>
+  </div>
         </form>
       </div>
 
