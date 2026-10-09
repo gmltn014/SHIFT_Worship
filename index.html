@@ -5153,151 +5153,151 @@ function generateRandomNickname() {
 }
 
     async function handlePublishSnsCard(e) {
-      e.preventDefault();
-      const author_name = document.getElementById('snsAuthorName').value.trim();
-      const is_anonymous = document.getElementById('snsIsAnonymous').value === 'true';
-      const word_qt = document.getElementById('snsWordQt').value.trim();
-      const favorite_songs = document.getElementById('snsFavSongs').value.trim();
-      const recommended_song = document.getElementById('snsRecSong').value.trim();
-      const card_color = document.getElementById('snsCardColor').value;
-      const btn = document.getElementById('btnPublishSns');
+  e.preventDefault();
+  const author_name = document.getElementById('snsAuthorName').value.trim();
+  const is_anonymous = document.getElementById('snsIsAnonymous').value === 'true';
+  const word_qt = document.getElementById('snsWordQt').value.trim();
+  const favorite_songs = document.getElementById('snsFavSongs').value.trim();
+  const recommended_song = document.getElementById('snsRecSong').value.trim();
+  const card_color = document.getElementById('snsCardColor').value;
+  const btn = document.getElementById('btnPublishSns');
 
-      if (!word_qt && !favorite_songs && !recommended_song) {
-        alert('말씀, 인생 찬양, 추천곡 중 최소 1개 항목은 작성해 주세요!');
-        return;
-      }
+  if (!word_qt && !favorite_songs && !recommended_song) {
+    alert('말씀, 인생 찬양, 추천곡 중 최소 1개 항목은 작성해 주세요!');
+    return;
+  }
 
-      btn.disabled = true;
-      btn.innerText = '게시 중...';
+  btn.disabled = true;
+  btn.innerText = '게시 중...';
 
-      try {
-        const { error } = await supabaseClient.from('playground_sns').insert([{
-          author_name,
-          is_anonymous,
-          word_qt: word_qt || null,
-          favorite_songs: favorite_songs || null,
-          recommended_song: recommended_song || null,
-          card_color
-        }]);
+  try {
+    const { error } = await supabaseClient.from('playground_sns').insert([{
+      author_name,
+      is_anonymous,
+      word_qt: word_qt || null,
+      favorite_songs: favorite_songs || null,
+      recommended_song: recommended_song || null,
+      card_color
+    }]);
 
-        if (error) throw error;
-        alert('🎉 나의 찬양 취향표가 보드에 성공적으로 게시되었습니다!');
-        await loadSnsFeedData();
-      } catch (err) {
-        alert('게시 실패: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = '📌 놀이터 보드에 게시';
-      }
+    if (error) throw error;
+    alert('🎉 나의 찬양 취향표가 보드에 성공적으로 게시되었습니다!');
+    await loadSnsFeedData();
+  } catch (err) {
+    alert('게시 실패: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '📌 놀이터 보드에 게시';
+  }
+}
+
+let audioCtx = null;
+let metroBpm = 120;
+let isMetroPlaying = false;
+let metroTimerId = null;
+let tapTimes = [];
+
+function setMetroBpm(val) {
+  metroBpm = parseInt(val, 10);
+  document.getElementById('metroBpmVal').innerText = metroBpm;
+  document.getElementById('metroSlider').value = metroBpm;
+  if (isMetroPlaying) restartMetronome();
+}
+
+function adjustMetroBpm(delta) {
+  setMetroBpm(Math.min(Math.max(metroBpm + delta, 40), 220));
+}
+
+function toggleMetronome() {
+  isMetroPlaying = !isMetroPlaying;
+  const btn = document.getElementById('btnToggleMetro');
+
+  if (isMetroPlaying) {
+    btn.innerText = '⏹️ 정지';
+    btn.classList.replace('btn-primary', 'btn-secondary');
+    startMetronomeTimer();
+  } else {
+    btn.innerText = '▶️ 시작하기';
+    btn.classList.replace('btn-secondary', 'btn-primary');
+    stopMetronomeTimer();
+  }
+}
+
+function startMetronomeTimer() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const intervalMs = (60 / metroBpm) * 1000;
+  metroTimerId = setInterval(triggerMetronomeTick, intervalMs);
+  triggerMetronomeTick();
+}
+
+function stopMetronomeTimer() {
+  if (metroTimerId) {
+    clearInterval(metroTimerId);
+    metroTimerId = null;
+  }
+}
+
+function restartMetronome() {
+  stopMetronomeTimer();
+  startMetronomeTimer();
+}
+
+function triggerMetronomeTick() {
+  const ring = document.getElementById('metronomePulseRing');
+  if (ring) {
+    ring.style.transform = 'scale(1.25)';
+    ring.style.opacity = '0.9';
+    setTimeout(() => {
+      ring.style.transform = 'scale(0.95)';
+      ring.style.opacity = '0.2';
+    }, 100);
+  }
+
+  if (audioCtx) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.05);
+  }
+}
+
+function handleTapTempo() {
+  const now = Date.now();
+  tapTimes.push(now);
+  if (tapTimes.length > 4) tapTimes.shift();
+
+  if (tapTimes.length >= 2) {
+    const diffs = [];
+    for (let i = 1; i < tapTimes.length; i++) {
+      diffs.push(tapTimes[i] - tapTimes[i - 1]);
     }
-
-    let audioCtx = null;
-    let metroBpm = 120;
-    let isMetroPlaying = false;
-    let metroTimerId = null;
-    let tapTimes = [];
-
-    function setMetroBpm(val) {
-      metroBpm = parseInt(val, 10);
-      document.getElementById('metroBpmVal').innerText = metroBpm;
-      document.getElementById('metroSlider').value = metroBpm;
-      if (isMetroPlaying) restartMetronome();
+    const avgDiff = diffs.reduce((a, b) => a + b) / diffs.length;
+    if (avgDiff > 0) {
+      const calcBpm = Math.round(60000 / avgDiff);
+      if (calcBpm >= 40 && calcBpm <= 220) setMetroBpm(calcBpm);
     }
+  }
+}
 
-    function adjustMetroBpm(delta) {
-      setMetroBpm(Math.min(Math.max(metroBpm + delta, 40), 220));
-    }
+// 모달 배경 클릭 시 닫기
+window.addEventListener('click', function(event) {
+  if (event.target.classList.contains('modal-overlay')) {
+    event.target.style.display = 'none';
+  }
+});
 
-    function toggleMetronome() {
-      isMetroPlaying = !isMetroPlaying;
-      const btn = document.getElementById('btnToggleMetro');
+window.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+  }
+});
 
-      if (isMetroPlaying) {
-        btn.innerText = '⏹️ 정지';
-        btn.classList.replace('btn-primary', 'btn-secondary');
-        startMetronomeTimer();
-      } else {
-        btn.innerText = '▶️ 시작하기';
-        btn.classList.replace('btn-secondary', 'btn-primary');
-        stopMetronomeTimer();
-      }
-    }
-
-    function startMetronomeTimer() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const intervalMs = (60 / metroBpm) * 1000;
-      metroTimerId = setInterval(triggerMetronomeTick, intervalMs);
-      triggerMetronomeTick();
-    }
-
-    function stopMetronomeTimer() {
-      if (metroTimerId) {
-        clearInterval(metroTimerId);
-        metroTimerId = null;
-      }
-    }
-
-    function restartMetronome() {
-      stopMetronomeTimer();
-      startMetronomeTimer();
-    }
-
-    function triggerMetronomeTick() {
-      const ring = document.getElementById('metronomePulseRing');
-      if (ring) {
-        ring.style.transform = 'scale(1.25)';
-        ring.style.opacity = '0.9';
-        setTimeout(() => {
-          ring.style.transform = 'scale(0.95)';
-          ring.style.opacity = '0.2';
-        }, 100);
-      }
-
-      if (audioCtx) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.05);
-      }
-    }
-
-    function handleTapTempo() {
-      const now = Date.now();
-      tapTimes.push(now);
-      if (tapTimes.length > 4) tapTimes.shift();
-
-      if (tapTimes.length >= 2) {
-        const diffs = [];
-        for (let i = 1; i < tapTimes.length; i++) {
-          diffs.push(tapTimes[i] - tapTimes[i - 1]);
-        }
-        const avgDiff = diffs.reduce((a, b) => a + b) / diffs.length;
-        if (avgDiff > 0) {
-          const calcBpm = Math.round(60000 / avgDiff);
-          if (calcBpm >= 40 && calcBpm <= 220) setMetroBpm(calcBpm);
-        }
-      }
-    }
-
-    // 모달 배경 클릭 시 닫기
-    window.addEventListener('click', function(event) {
-      if (event.target.classList.contains('modal-overlay')) {
-        event.target.style.display = 'none';
-      }
-    });
-
-    window.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-      }
-    });
-
-    function jumpToPortalTab(targetTabId) {
+function jumpToPortalTab(targetTabId) {
   const tabMapping = {
     'thisweek': 'conti',
     'conti': 'conti',
@@ -5319,7 +5319,7 @@ function generateRandomNickname() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-    /* ===================================================
+/* ===================================================
    인앱 알림 피드 & 라인업 변경 요청 시스템
 =================================================== */
 
@@ -5593,7 +5593,7 @@ async function handleLineupChangeRequest(e) {
   }
 }
 
-    /* ===================================================
+/* ===================================================
    🌳 SHIFT 기도제목 숲 모듈
 =================================================== */
 
@@ -5627,7 +5627,7 @@ function switchPlaygroundSubTab(subTab) {
 
   if (subTab === 'game') initGameModule();
   if (subTab === 'sns') loadSnsFeedData();
-  if (subTab === 'prayer') loadPrayerForestData(); // ★ 기도제목 숲 로드
+  if (subTab === 'prayer') loadPrayerForestData();
   if (subTab !== 'music' && isMetroPlaying) toggleMetronome();
 }
 
@@ -5638,7 +5638,7 @@ function handleIntercessoryToggle(isIntercessory) {
 
   if (isIntercessory) {
     anonSelect.value = 'false';
-    anonSelect.disabled = true; // 익명 비활성화
+    anonSelect.disabled = true;
     authorInput.placeholder = '본인 실명 입력';
     authorInput.value = '';
     authorInput.focus();
@@ -5672,7 +5672,7 @@ async function loadPrayerForestData() {
     const { data: prayers, error: pError } = await supabaseClient
       .from('prayer_forest')
       .select('*')
-      .order('is_intercessory', { ascending: false }) // ★ 중보기도 최상단 정렬
+      .order('is_intercessory', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (pError) throw pError;
@@ -5697,7 +5697,6 @@ async function loadPrayerForestData() {
       const postComments = (comments || []).filter(c => String(c.prayer_id) === String(p.id));
       const commentCount = postComments.length;
 
-      // 댓글이 달리면 기도/하트 이모지 배지 표시
       let prayBadgeHtml = '';
       if (commentCount > 0) {
         prayBadgeHtml = `
@@ -5711,7 +5710,6 @@ async function loadPrayerForestData() {
 
       return `
         <div class="prayer-card ${p.is_intercessory ? 'intercessory' : ''}">
-          <!-- 카드 헤더 -->
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
               ${p.is_intercessory ? '<span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;">🚨 긴급 중보기도</span>' : '<span style="background: #10b981; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">🌱 기도제목</span>'}
@@ -5720,7 +5718,6 @@ async function loadPrayerForestData() {
               ${prayBadgeHtml}
             </div>
 
-            <!-- 본인 작성 글일 경우 삭제 버튼 노출 -->
             ${isMyPost ? `
               <button type="button" onclick="deleteMyPrayer(${p.id}, '${p.delete_key}')" style="background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; text-decoration: underline;">
                 삭제
@@ -5728,17 +5725,14 @@ async function loadPrayerForestData() {
             ` : ''}
           </div>
 
-          <!-- 기도 본문 내용 -->
           <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); white-space: pre-wrap; margin-bottom: 10px;">${p.content}</div>
 
-          <!-- 기도/응원 댓글 토글 버튼 -->
           <div style="display: flex; justify-content: flex-end;">
             <button type="button" class="btn-action btn-secondary" onclick="toggleCommentBox(${p.id})" style="padding: 4px 10px; font-size: 0.78rem;">
               💬 함께 기도하기 (댓글 ${commentCount})
             </button>
           </div>
 
-          <!-- 댓글 목록 & 입력창 (기본 토글 또는 노출) -->
           <div id="commentSection-${p.id}" class="prayer-comments-wrap" style="${commentCount > 0 ? 'display: flex;' : 'display: none;'}">
             <div id="commentList-${p.id}">
               ${postComments.map(c => `
@@ -5752,7 +5746,6 @@ async function loadPrayerForestData() {
               `).join('')}
             </div>
 
-            <!-- 작은 댓글 입력창 -->
             <div style="display: flex; gap: 6px; margin-top: 6px;">
               <input type="text" id="commentAuthor-${p.id}" placeholder="이름" style="width: 75px; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.78rem;">
               <input type="text" id="commentText-${p.id}" placeholder="기도로 동역할게요! 🙏" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.8rem;">
@@ -5769,7 +5762,7 @@ async function loadPrayerForestData() {
   }
 }
 
-// 5. 새 기도제목 제출 (중보기도 시 인앱 알림 발송 연동)
+// 5. 새 기도제목 제출
 async function handlePrayerSubmit(e) {
   e.preventDefault();
 
@@ -5784,7 +5777,6 @@ async function handlePrayerSubmit(e) {
     return;
   }
 
-  // 중보기도 시 실명 재검증
   if (isIntercessory && (isAnon || !author || author === '익명의 예배자')) {
     alert('중보기도 요청은 본인 실명으로만 등록 가능합니다.');
     return;
@@ -5793,7 +5785,6 @@ async function handlePrayerSubmit(e) {
   btn.disabled = true;
   btn.innerText = '등록 중...';
 
-  // 나만의 고유 삭제키 생성
   const deleteKey = 'pk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
 
   try {
@@ -5807,10 +5798,8 @@ async function handlePrayerSubmit(e) {
 
     if (error) throw error;
 
-    // 본인 삭제키 저장
     saveMyPrayerKey(deleteKey);
 
-    // ★ 긴급 중보기도인 경우, 포털 인앱 알림 시스템에 즉시 등록!
     if (isIntercessory && typeof sendNotificationAndTrim === 'function') {
       await sendNotificationAndTrim({
         type: 'request',
@@ -5894,15 +5883,14 @@ async function deleteMyPrayer(prayerId, deleteKey) {
   }
 }
 
-    /* ===================================================
+/* ===================================================
    팀원 프로필 미니홈피 & PIN 보안 제어 엔진
 =================================================== */
 
 let currentViewingMember = null;
 let currentViewingProfile = null;
-const MY_VERIFIED_PINS_KEY = 'shift_verified_member_pins'; // 로컬 인증 기억소
+const MY_VERIFIED_PINS_KEY = 'shift_verified_member_pins';
 
-// SHA-256 단방향 암호화 헬퍼
 async function hashPin(pinString) {
   const msgUint8 = new TextEncoder().encode(pinString.trim());
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
@@ -5910,9 +5898,7 @@ async function hashPin(pinString) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// 1. 프로필 모달 열기 & 조회 (안정화 수정본)
 async function openMemberProfileModal(memberId) {
-  // member_id 타입(문자열/숫자) 차이 방지를 위해 느슨한 비교(==) 또는 Number 변환
   const targetId = Number(memberId);
   const member = (typeof allMembersList !== 'undefined')
     ? allMembersList.find(m => Number(m.member_id) === targetId)
@@ -5926,7 +5912,6 @@ async function openMemberProfileModal(memberId) {
   currentViewingMember = member;
   currentViewingProfile = null;
 
-  // 헤더 및 기본 인적사항 셋팅
   const headerNameEl = document.getElementById('profHeaderName');
   const headerBadgeEl = document.getElementById('profHeaderBadge');
   const viewNameEl = document.getElementById('profViewName');
@@ -5939,15 +5924,12 @@ async function openMemberProfileModal(memberId) {
     viewPartsEl.innerText = `${member.main_part || '-'}${member.part_b ? ` / ${member.part_b}` : ''}`;
   }
 
-  // 뷰 모드로 초기화 및 모달 노출
   if (typeof cancelProfileEdit === 'function') cancelProfileEdit();
   const modalEl = document.getElementById('memberProfileModal');
   if (modalEl) modalEl.style.display = 'flex';
 
-  // 프로필 데이터 로드 전 기본 뷰 1차 렌더링 (이전 사용자 데이터 잔여 방지)
   if (typeof renderProfileView === 'function') renderProfileView();
 
-  // Supabase 프로필 조회
   try {
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
       const { data, error } = await supabaseClient
@@ -5962,13 +5944,11 @@ async function openMemberProfileModal(memberId) {
   } catch (err) {
     console.warn('프로필 로드 예외:', err);
   } finally {
-    // 조회 완료 후 프로필 내용 반영
     if (typeof renderProfileView === 'function') {
       renderProfileView();
     }
   }
 
-  // 롤링페이퍼 및 하트 수 로드
   if (typeof loadRollingPaperAndHearts === 'function') {
     try {
       await loadRollingPaperAndHearts(targetId);
@@ -5977,15 +5957,15 @@ async function openMemberProfileModal(memberId) {
     }
   }
 }
+
 function closeMemberProfileModal() {
-  document.getElementById('memberProfileModal').style.display = 'none';
+  const modal = document.getElementById('memberProfileModal');
+  if (modal) modal.style.display = 'none';
 }
 
-// 2. 프로필 뷰어 렌더링 (공개/비공개 처리)
 function renderProfileView() {
   const prof = currentViewingProfile;
 
-  // 사진
   const imgEl = document.getElementById('profViewImg');
   const fallbackEl = document.getElementById('profViewImgFallback');
   if (prof && prof.show_img && prof.profile_img_url) {
@@ -5997,7 +5977,6 @@ function renderProfileView() {
     fallbackEl.style.display = 'block';
   }
 
-  // 한 줄 상태
   const statusEl = document.getElementById('profViewStatus');
   if (prof && prof.show_status && prof.status_message) {
     statusEl.innerText = `"${prof.status_message}"`;
@@ -6005,7 +5984,6 @@ function renderProfileView() {
     statusEl.innerText = '등록된 한 줄 소개가 없습니다.';
   }
 
-  // 좋아하는 찬양
   const favEl = document.getElementById('profViewFavSong');
   const ytBtn = document.getElementById('profViewFavYtBtn');
   if (prof && prof.show_favorite && prof.favorite_song) {
@@ -6017,7 +5995,6 @@ function renderProfileView() {
     ytBtn.style.display = 'none';
   }
 
-  // 생일
   const birthEl = document.getElementById('profViewBirthday');
   if (prof && prof.show_birthday && prof.birthday) {
     birthEl.innerText = prof.birthday;
@@ -6025,7 +6002,6 @@ function renderProfileView() {
     birthEl.innerText = (prof && !prof.show_birthday) ? '비공개 🔒' : '미등록';
   }
 
-  // TMI
   const tmiEl = document.getElementById('profViewTmi');
   if (prof && prof.show_tmi && prof.custom_tmi) {
     tmiEl.innerText = prof.custom_tmi;
@@ -6039,19 +6015,15 @@ function renderProfileView() {
   }
 }
 
-// 3. 편집 모드 진입 (보안 검증)
 async function triggerProfileEditMode() {
   if (!currentViewingMember) return;
   const memberId = currentViewingMember.member_id;
 
-  // Case A: 아직 프로필이 없는 경우 -> 즉시 신규 등록 모드 (PIN 최초 설정)
   if (!currentViewingProfile) {
     setupProfileEditForm(null);
     return;
   }
 
-  // Case B: 이미 프로필이 있는 경우 -> PIN 번호 검증
-  // 1) 포털 관리자이거나, 이 기기에서 이미 인증한 적이 있는 경우 통과
   const verifiedMap = JSON.parse(localStorage.getItem(MY_VERIFIED_PINS_KEY) || '{}');
   const savedToken = verifiedMap[memberId];
 
@@ -6060,23 +6032,19 @@ async function triggerProfileEditMode() {
     return;
   }
 
-  // 2) PIN 번호 입력 확인
   const inputPin = prompt(`🔒 '${currentViewingMember.name}' 님의 프로필 수정을 위해\n설정하셨던 4자리 비밀번호(PIN)를 입력해 주세요:`);
   if (!inputPin) return;
 
   const hashedInput = await hashPin(inputPin);
   if (hashedInput === currentViewingProfile.pin_hash) {
-    // 인증 성공 시 로컬스토리지에 저장하여 다음부터 편하게 통과
     verifiedMap[memberId] = hashedInput;
     localStorage.setItem(MY_VERIFIED_PINS_KEY, JSON.stringify(verifiedMap));
-
     setupProfileEditForm(currentViewingProfile);
   } else {
     alert('비밀번호(PIN)가 일치하지 않습니다. 본인만 수정할 수 있습니다.');
   }
 }
 
-// 4. 편집 폼 초기화 및 채우기
 function setupProfileEditForm(prof) {
   document.getElementById('profViewSection').style.display = 'none';
   document.getElementById('profEditSection').style.display = 'block';
@@ -6088,7 +6056,6 @@ function setupProfileEditForm(prof) {
   document.getElementById('profFormBirth').value = prof?.birthday || '';
   document.getElementById('profFormTmi').value = prof?.custom_tmi || '';
 
-  // 공개 토글
   document.getElementById('profShowImg').checked = prof ? prof.show_img : true;
   document.getElementById('profShowStatus').checked = prof ? prof.show_status : true;
   document.getElementById('profShowFav').checked = prof ? prof.show_favorite : true;
@@ -6108,7 +6075,6 @@ function cancelProfileEdit() {
   document.getElementById('profEditSection').style.display = 'none';
 }
 
-// 5. 프로필 저장 실행
 async function handleSaveMemberProfile(e) {
   e.preventDefault();
   if (!currentViewingMember) return;
@@ -6149,7 +6115,6 @@ async function handleSaveMemberProfile(e) {
 
     if (error) throw error;
 
-    // 인증 토큰 로컬 갱신
     const verifiedMap = JSON.parse(localStorage.getItem(MY_VERIFIED_PINS_KEY) || '{}');
     verifiedMap[memberId] = pin_hash;
     localStorage.setItem(MY_VERIFIED_PINS_KEY, JSON.stringify(verifiedMap));
@@ -6165,9 +6130,9 @@ async function handleSaveMemberProfile(e) {
     btn.disabled = false;
     btn.innerText = '저장 완료';
   }
+} // ★ 누락되었던 handleSaveMemberProfile 닫는 중괄호 복구
 
-
-  /* ===================================================
+/* ===================================================
    🎂 생일 D-Day 계산 & 알림 자동 검사 모듈
 =================================================== */
 
@@ -6185,34 +6150,9 @@ function getBirthdayDDay(birthdayStr) {
   const now = new Date();
   const currentYear = now.getFullYear();
 
-  // 오늘 날짜의 자정 기준 (시간/분/초 제거)
   const todayZero = new Date(currentYear, now.getMonth(), now.getDate()).getTime();
-
-  /* ===================================================
-   🎂 생일 D-Day 계산 & 알림 자동 검사 모듈
-=================================================== */
-  
-let cachedMemberProfiles = [];
-
-// 1. 생일 D-Day 계산 함수 (누락되었던 함수 시작부 복원)
-function getBirthdayDDay(birthdayStr) {
-  if (!birthdayStr) return null;
-  const match = birthdayStr.match(/(\d{1,2})[^\d]+(\d{1,2})/);
-  if (!match) return null;
-
-  const month = parseInt(match[1], 10);
-  const day = parseInt(match[2], 10);
-
-  const now = new Date();
-  const currentYear = now.getFullYear();
-
-  // 오늘 날짜 자정 기준 (시간/분/초 제거)
-  const todayZero = new Date(currentYear, now.getMonth(), now.getDate()).getTime();
-
-  // 올해 생일 자정 기준
   let targetDate = new Date(currentYear, month - 1, day).getTime();
 
-  // 올해 생일이 이미 지난 경우 내년 생일로 계산
   if (targetDate < todayZero) {
     targetDate = new Date(currentYear + 1, month - 1, day).getTime();
   }
@@ -6221,7 +6161,7 @@ function getBirthdayDDay(birthdayStr) {
   return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
-// 2. 생일 뱃지 HTML 생성기 (타입 안정화 & 중복 선언 제거)
+// 2. 생일 뱃지 HTML 생성기
 function getBirthdayBadgeHtml(memberId) {
   if (!cachedMemberProfiles || cachedMemberProfiles.length === 0) return '';
   const targetId = Number(memberId);
@@ -6255,7 +6195,6 @@ async function loadAllProfilesAndCheckBirthdays() {
 
     cachedMemberProfiles = data || [];
 
-    // 생일 당일인 경우 인앱 알림 자동 등록 (하루 1회 제한)
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const notifiedTodayKey = `shift_bday_notified_${todayStr}`;
@@ -6285,7 +6224,6 @@ async function loadAllProfilesAndCheckBirthdays() {
       localStorage.setItem(notifiedTodayKey, 'true');
     }
 
-    // 명단에 D-Day 뱃지가 나타나도록 재렌더링
     if (typeof renderMembers === 'function') {
       renderMembers();
     }
@@ -6309,7 +6247,7 @@ async function loadRollingPaperAndHearts(memberId) {
   try {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
 
-    // A. 하트 개수 조회
+    // 하트 개수 조회
     const { data: heartData } = await supabaseClient
       .from('member_cheer_hearts')
       .select('heart_count')
@@ -6318,7 +6256,7 @@ async function loadRollingPaperAndHearts(memberId) {
 
     if (heartEl) heartEl.innerText = heartData ? heartData.heart_count : '0';
 
-    // B. 롤링페이퍼 조회
+    // 롤링페이퍼 조회
     const { data: papers, error } = await supabaseClient
       .from('member_rolling_papers')
       .select('*')
@@ -6334,7 +6272,6 @@ async function loadRollingPaperAndHearts(memberId) {
       return;
     }
 
-    // 본인(기기 PIN 인증자)인지 확인하여 비밀쪽지 열람 허용
     const verifiedMap = JSON.parse(localStorage.getItem(MY_VERIFIED_PINS_KEY || 'shift_verified_member_pins') || '{}');
     const isOwnerVerified = currentViewingProfile && (verifiedMap[targetId] === currentViewingProfile.pin_hash);
 
@@ -6343,7 +6280,6 @@ async function loadRollingPaperAndHearts(memberId) {
     listEl.innerHTML = papers.map((p, idx) => {
       const bgColor = p.paper_color || pastelColors[idx % pastelColors.length];
       
-      // 비밀쪽지인데 본인이 아니면 가림 처리
       if (p.is_secret && !isOwnerVerified) {
         return `
           <div class="rolling-paper-item" style="background: #f3f4f6; color: #9ca3af; border: 1px dashed #d1d5db;">
@@ -6389,7 +6325,6 @@ async function handleSendCheerHeart() {
     const heartEl = document.getElementById('profHeartCountDisplay');
     if (heartEl) heartEl.innerText = newCount;
 
-    // 가벼운 클릭 애니메이션
     const btn = document.getElementById('btnSendHeart');
     if (btn) {
       btn.style.transform = 'scale(1.15)';
@@ -6444,15 +6379,15 @@ async function handleSaveRollingPaper(e) {
   }
 }
 
-    /* 15. 페이지 시작 진입점 */
-    document.addEventListener('DOMContentLoaded', () => {
-      loadMembersData();    // 팀원 명단 우선 로드 (라인업 셀렉트 박스 즉시 준비)
-      loadCurrentConti();   // 이번 주 콘티 로드
-      loadNoticeData();     // 공지사항 및 버전 정보 로드
-      checkUnreadNotifications(); // ★ 새 알림 및 빨간 점 자동 검사
-      loadAllProfilesAndCheckBirthdays(); // ★ 생일 D-Day 계산 및 당일 알림 자동 등록
-      applyFont(localStorage.getItem('shift_font') || 'pretendard');
-    });
-  </script>
+/* 15. 페이지 시작 진입점 */
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof loadMembersData === 'function') loadMembersData();
+  if (typeof loadCurrentConti === 'function') loadCurrentConti();
+  if (typeof loadNoticeData === 'function') loadNoticeData();
+  if (typeof checkUnreadNotifications === 'function') checkUnreadNotifications();
+  if (typeof loadAllProfilesAndCheckBirthdays === 'function') loadAllProfilesAndCheckBirthdays();
+  if (typeof applyFont === 'function') applyFont(localStorage.getItem('shift_font') || 'pretendard');
+});
+</script>
 </body>
 </html>
