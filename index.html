@@ -5806,10 +5806,10 @@ async function loadPrayerForestData() {
               `).join('')}
             </div>
 
-            <div style="display: flex; gap: 6px; margin-top: 6px;">
-              <input type="text" id="commentAuthor-${p.id}" placeholder="이름" style="width: 75px; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.78rem;">
-              <input type="text" id="commentText-${p.id}" placeholder="기도로 동역할게요! 🙏" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.8rem;">
-              <button type="button" onclick="submitPrayerComment(${p.id})" class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 700; white-space: nowrap;">
+            <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; box-sizing: border-box;">
+              <input type="text" id="commentAuthor-${p.id}" placeholder="이름" style="width: 70px; min-width: 65px; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.78rem; box-sizing: border-box;">
+              <input type="text" id="commentText-${p.id}" placeholder="기도로 동역할게요! 🙏" style="flex: 1; min-width: 130px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.8rem; box-sizing: border-box;">
+              <button type="button" onclick="submitPrayerComment(${p.id})" class="btn-action btn-primary" style="padding: 7px 12px; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; white-space: nowrap; box-sizing: border-box;">
                 기도하기
               </button>
             </div>
