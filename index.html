@@ -4971,17 +4971,20 @@ let cachedFortuneMessages = null;
 let currentTodayFortune = null;
 
 async function loadFortuneMessages() {
-  if (cachedFortuneMessages) return cachedFortuneMessages;
+  if (cachedFortuneMessages && cachedFortuneMessages.length > 0) return cachedFortuneMessages;
   try {
     const res = await fetch('fortune-messages.json');
     if (!res.ok) throw new Error('JSON 로드 실패');
-    cachedFortuneMessages = await res.json();
+    const data = await res.json();
+    
+    // JSON 구조가 { messages: [...] } 형태인지, 바로 배열 [...] 형태인지 둘 다 대응
+    cachedFortuneMessages = Array.isArray(data) ? data : (data.messages || []);
   } catch (e) {
-    // 로드 실패 시 사용할 기본 예비 문구
+    console.warn('포춘쿠키 로드 예외, 기본 문구 사용:', e);
     cachedFortuneMessages = [
-      { text: "주의 말씀은 내 발에 등이요 내 길에 빛이니이다. (시 119:105)", category: "말씀/위로" },
-      { text: "오늘 연습 때 인도자와 눈빛만 봐도 사인이 통할 운세입니다! ⚡", category: "찬양팀위트" },
-      { text: "아무것도 염려하지 말고 오직 모든 일에 기도와 간구로 감사함으로 아뢰라.", category: "말씀/위로" }
+      { message: "주의 말씀은 내 발에 등이요 내 길에 빛이니이다. (시 119:105)", category: "말씀/위로" },
+      { message: "오늘 연습 때 인도자와 눈빛만 봐도 사인이 통할 운세입니다! ⚡", category: "찬양팀위트" },
+      { message: "아무것도 염려하지 말고 오직 모든 일에 기도와 간구로 감사함으로 아뢰라.", category: "말씀/위로" }
     ];
   }
   return cachedFortuneMessages;
@@ -4993,20 +4996,58 @@ function getTodayDateString() {
 }
 
 // 화면 진입 시 오늘 이미 뽑았는지 확인
-async function initFortuneCookieState() {
-  const saved = localStorage.getItem(FORTUNE_STORAGE_KEY);
-  const today = getTodayDateString();
+// 관리자 여부 확인 헬퍼
+function isFortuneAdminUnlimited() {
+  const isSuper = (typeof isSuperAdmin === 'function') && isSuperAdmin();
+  const isAdmin = (typeof isAdminAuthenticated === 'function') && isAdminAuthenticated();
+  return isSuper || isAdmin;
+}
 
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed.date === today && parsed.message) {
-        showCrackedCookie(parsed.message, false);
-        return;
-      }
-    } catch (e) {}
+// 화면 진입 시 오늘 뽑은 기록 확인
+async function initFortuneCookieState() {
+  const isUnlimited = isFortuneAdminUnlimited();
+  updateFortuneAdminBadge(isUnlimited);
+
+  // 일반 사용자는 오늘 기록이 있으면 복원
+  if (!isUnlimited) {
+    const saved = localStorage.getItem(FORTUNE_STORAGE_KEY);
+    const today = getTodayDateString();
+
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.date === today && parsed.message) {
+          showCrackedCookie(parsed.message, false);
+          return;
+        }
+      } catch (e) {}
+    }
   }
+
+  // 관리자이거나 아직 오늘 안 뽑은 일반 사용자는 초기 쿠키 상태로
   resetCookieVisuals();
+}
+
+    // 관리자 무제한 안내 배지 갱신
+function updateFortuneAdminBadge(isUnlimited) {
+  let badgeEl = document.getElementById('fortuneAdminModeBadge');
+  const panel = document.getElementById('game-panel-fortune');
+  if (!panel) return;
+
+  if (isUnlimited) {
+    if (!badgeEl) {
+      badgeEl = document.createElement('div');
+      badgeEl.id = 'fortuneAdminModeBadge';
+      badgeEl.style.cssText = 'display: inline-block; background: rgba(59, 130, 246, 0.12); color: #2563eb; font-size: 0.74rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; margin-bottom: 12px;';
+      badgeEl.innerHTML = '👑 관리자 로그인 중: 무제한 뽑기 활성화';
+      const heading = panel.querySelector('p');
+      if (heading) heading.after(badgeEl);
+    } else {
+      badgeEl.style.display = 'inline-block';
+    }
+  } else if (badgeEl) {
+    badgeEl.style.display = 'none';
+  }
 }
 
 function resetCookieVisuals() {
@@ -5030,9 +5071,18 @@ function resetCookieVisuals() {
 async function crackFortuneCookie() {
   const left = document.getElementById('cookiePartLeft');
   const right = document.getElementById('cookiePartRight');
-  if (left.classList.contains('cookie-cracked-left')) return; // 이미 깨짐
+  const isUnlimited = isFortuneAdminUnlimited();
 
-  // 흔들림 애니메이션
+  // 이미 깨진 상태일 때:
+  // 1) 일반 유저는 추가 클릭 방지
+  // 2) 관리자는 즉시 초기화 후 연속으로 다시 뽑기 진행
+  if (left.classList.contains('cookie-cracked-left')) {
+    if (!isUnlimited) return;
+    resetCookieVisuals();
+    await new Promise(r => setTimeout(r, 80)); // 애니메이션 리셋 딜레이
+  }
+
+  // 쿠키 흔들림 애니메이션 시작
   left.classList.add('cookie-wiggling');
 
   setTimeout(async () => {
@@ -5044,11 +5094,13 @@ async function crackFortuneCookie() {
     const randomPick = list[Math.floor(Math.random() * list.length)];
     currentTodayFortune = randomPick;
 
-    // 로컬스토리지에 오늘 날짜와 함께 저장
-    localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify({
-      date: getTodayDateString(),
-      message: randomPick
-    }));
+    // 일반 사용자일 때만 로컬스토리지에 날짜 고정 저장
+    if (!isUnlimited) {
+      localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify({
+        date: getTodayDateString(),
+        message: randomPick
+      }));
+    }
 
     setTimeout(() => {
       showCrackedCookie(randomPick, true);
@@ -5069,8 +5121,13 @@ function showCrackedCookie(item, animate) {
   }
 
   currentTodayFortune = item;
-  if (catEl) catEl.innerText = item.category === '찬양팀위트' ? '⚡ 찬양팀 공감 & 위트' : '✨ 오늘의 은혜와 묵상';
-  if (textEl) textEl.innerText = item.text;
+  
+  // ★ item.message 또는 item.text 둘 다 읽을 수 있도록 수정
+  const fortuneContent = item ? (item.message || item.text || '은혜로운 하루 되세요! ✨') : '은혜로운 하루 되세요! ✨';
+  const categoryName = item?.category === '찬양팀위트' || item?.category === '위트' ? '⚡ 찬양팀 공감 & 위트' : '✨ 오늘의 은혜와 묵상';
+
+  if (catEl) catEl.innerText = categoryName;
+  if (textEl) textEl.innerText = fortuneContent;
   if (box) box.style.display = 'block';
 }
 
@@ -5086,7 +5143,6 @@ function resetFortuneDaily(force) {
 async function applyFortuneToMyProfile() {
   if (!currentTodayFortune) return;
 
-  // 1) 기기 인증된 본인 member_id 확인
   const verifiedMap = JSON.parse(localStorage.getItem(typeof MY_VERIFIED_PINS_KEY !== 'undefined' ? MY_VERIFIED_PINS_KEY : 'shift_verified_member_pins') || '{}');
   const verifiedIds = Object.keys(verifiedMap);
 
@@ -5115,7 +5171,10 @@ async function applyFortuneToMyProfile() {
   try {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) throw new Error('Supabase 미연결');
 
-    const cleanText = currentTodayFortune.text.replace(/^[✨🕊️⚡💡📖\s]+/, '').substring(0, 80);
+    // ★ message 또는 text에서 텍스트 추출
+    const rawMsg = currentTodayFortune.message || currentTodayFortune.text || '';
+    const cleanText = rawMsg.replace(/^[✨🕊️⚡💡📖\s]+/, '').substring(0, 80);
+
     const { error } = await supabaseClient
       .from('member_profiles')
       .upsert({ member_id: targetMemberId, status_message: cleanText, updated_at: new Date().toISOString() }, { onConflict: 'member_id' });
