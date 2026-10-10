@@ -732,6 +732,32 @@
     gap: 12px !important;
   }
 }
+
+    /* 포춘쿠키 & 타이머 애니메이션 */
+@keyframes paperSlideUp {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cookieWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+.cookie-wiggling {
+  animation: cookieWiggle 0.4s ease-in-out;
+}
+
+.cookie-cracked-left {
+  transform: translate(-30px, -10px) rotate(-35deg) scale(0.9) !important;
+  opacity: 0.5 !important;
+}
+
+.cookie-cracked-right {
+  opacity: 0.5 !important;
+  transform: translate(30px, 10px) rotate(35deg) scale(0.9) !important;
+}
   </style>
 </head>
 <body>
@@ -1069,112 +1095,193 @@
       </div>
 
       <!-- 게임 놀이터 -->
-      <div id="pg-content-game" style="display: block;">
-        <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; white-space: nowrap;">
-          <button class="member-cat-btn active" onclick="switchGameMode('roulette', this)">🎡 룰렛 게임</button>
-          <button class="member-cat-btn" onclick="switchGameMode('draw', this)">📦 제비뽑기</button>
-          <button class="member-cat-btn" onclick="switchGameMode('ladder', this)">🪜 사다리타기</button>
+<div id="pg-content-game" style="display: block;">
+  <!-- 상단 게임 모드 탭 (포춘쿠키, N초 맞추기 추가) -->
+  <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px;">
+    <button class="member-cat-btn active" onclick="switchGameMode('roulette', this)">🎡 룰렛 게임</button>
+    <button class="member-cat-btn" onclick="switchGameMode('draw', this)">📦 제비뽑기</button>
+    <button class="member-cat-btn" onclick="switchGameMode('ladder', this)">🪜 사다리타기</button>
+    <button class="member-cat-btn" onclick="switchGameMode('fortune', this)">🥠 포춘쿠키</button>
+    <button class="member-cat-btn" onclick="switchGameMode('timer', this)">⏱️ N초 맞추기</button>
+  </div>
+
+  <!-- 1. 룰렛 게임 카드 -->
+  <div id="game-panel-roulette" class="card" style="text-align: center;">
+    <div style="display: inline-flex; background: var(--card-sub-bg); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+      <button id="btnModePenalty" type="button" class="btn-action btn-primary" onclick="setRouletteType('penalty')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
+        🎯 1. 벌칙 룰렛 (1인 벌칙 뽑기)
+      </button>
+      <button id="btnModeMember" type="button" class="btn-action btn-secondary" onclick="setRouletteType('member')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
+        👥 2. 랜덤 룰렛 (벌칙 수행자 뽑기)
+      </button>
+    </div>
+
+    <div style="position: relative; display: inline-block; margin-bottom: 16px;">
+      <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 22px solid #ef4444; z-index: 5;"></div>
+      <canvas id="rouletteCanvas" width="320" height="320" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 4px solid var(--border-color);"></canvas>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <button type="button" class="btn-action btn-primary" id="btnSpinRoulette" onclick="spinRoulette()" style="font-size: 1.05rem; padding: 10px 32px; border-radius: 30px;">
+        🚀 룰렛 돌리기!
+      </button>
+    </div>
+
+    <div id="rouletteSetupPenalty" style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 벌칙을 받을 대상 멤버</label>
+        <select id="rouletteTargetMemberSelect" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;"></select>
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">📝 벌칙 후보 목록 (쉼표 구분)</label>
+        <textarea id="roulettePenaltiesInput" rows="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;" oninput="updateRouletteWheel()">커피 쏘기, 마이크 정리, 간식 사오기, 자유, 다음 주 기도, 본당 정리</textarea>
+      </div>
+    </div>
+
+    <div id="rouletteSetupMember" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">⚡ 적용할 벌칙/역할</label>
+        <input type="text" id="rouletteFixedPenaltyInput" value="오늘의 간식 쏘기 ☕" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 룰렛 참가 멤버 선택</label>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn-action btn-secondary" onclick="toggleAllRouletteMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
+            <button type="button" class="btn-action btn-secondary" onclick="toggleAllRouletteMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
+          </div>
         </div>
+        <div id="rouletteMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 150px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
+      </div>
+    </div>
+  </div>
 
-        <!-- 룰렛 게임 카드 -->
-        <div id="game-panel-roulette" class="card" style="text-align: center;">
-          <div style="display: inline-flex; background: var(--card-sub-bg); padding: 4px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-color);">
-            <button id="btnModePenalty" type="button" class="btn-action btn-primary" onclick="setRouletteType('penalty')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
-              🎯 1. 벌칙 룰렛 (1인 벌칙 뽑기)
-            </button>
-            <button id="btnModeMember" type="button" class="btn-action btn-secondary" onclick="setRouletteType('member')" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px;">
-              👥 2. 랜덤 룰렛 (벌칙 수행자 뽑기)
-            </button>
-          </div>
+  <!-- 2. 제비뽑기 카드 -->
+  <div id="game-panel-draw" class="card" style="display: none; text-align: center;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📦 박진감 제비뽑기</h3>
+    <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 16px;">카드를 한 장씩 뒤집어 당첨과 꽝을 확인하세요!</p>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">총 인원수</label>
+        <input type="number" id="drawTotalCount" value="6" min="2" max="30" style="width: 70px; padding: 6px; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">당첨(벌칙) 수</label>
+        <input type="number" id="drawHitCount" value="1" min="1" max="29" style="width: 70px; padding: 6px; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+      </div>
+      <div style="display: flex; align-items: flex-end;">
+        <button type="button" class="btn-action btn-primary" onclick="initDrawCards()" style="padding: 7px 16px; font-size: 0.85rem;">제비 섞기</button>
+      </div>
+    </div>
+    <div id="drawCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-width: 500px; margin: 0 auto;"></div>
+  </div>
 
-          <div style="position: relative; display: inline-block; margin-bottom: 16px;">
-            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 22px solid #ef4444; z-index: 5;"></div>
-            <canvas id="rouletteCanvas" width="320" height="320" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 4px solid var(--border-color);"></canvas>
-          </div>
-
-          <div style="margin-bottom: 16px;">
-            <button type="button" class="btn-action btn-primary" id="btnSpinRoulette" onclick="spinRoulette()" style="font-size: 1.05rem; padding: 10px 32px; border-radius: 30px;">
-              🚀 룰렛 돌리기!
-            </button>
-          </div>
-
-          <div id="rouletteSetupPenalty" style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
-            <div style="margin-bottom: 10px;">
-              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 벌칙을 받을 대상 멤버</label>
-              <select id="rouletteTargetMemberSelect" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;"></select>
-            </div>
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">📝 벌칙 후보 목록 (쉼표 구분)</label>
-              <textarea id="roulettePenaltiesInput" rows="2" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;" oninput="updateRouletteWheel()">커피 쏘기, 마이크 정리, 간식 사오기, 자유, 다음 주 기도, 본당 정리</textarea>
-            </div>
-          </div>
-
-          <div id="rouletteSetupMember" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; max-width: 500px; margin: 0 auto;">
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">⚡ 적용할 벌칙/역할</label>
-              <input type="text" id="rouletteFixedPenaltyInput" value="오늘의 간식 쏘기 ☕" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 룰렛 참가 멤버 선택</label>
-                <div style="display: flex; gap: 6px;">
-                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllRouletteMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
-                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllRouletteMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
-                </div>
-              </div>
-              <div id="rouletteMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 150px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
-            </div>
+  <!-- 3. 사다리타기 카드 -->
+  <div id="game-panel-ladder" class="card" style="display: none;">
+    <div style="text-align: center; margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🪜 미니 사다리타기</h3>
+      <p style="font-size: 0.82rem; color: var(--sub-text);">참가 팀원을 체크하고 결과 항목을 지정해 사다리를 타보세요.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
+      <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 사다리 참가자 선택</label>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
+            <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
           </div>
         </div>
+        <div id="ladderMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 130px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 결과/벌칙 목록 (쉼표 구분)</label>
+        <input type="text" id="ladderResultsInput" value="당첨, 통과, 간식, 통과, 청소, 통과" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+      </div>
+      <button type="button" class="btn-action btn-primary" onclick="buildAndStartLadder()" style="justify-content: center; padding: 10px; font-size: 0.95rem;">
+        🪜 사다리 생성 및 매칭 시작
+      </button>
+      <div id="ladderResultBox" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+    </div>
+  </div>
 
-        <!-- 제비뽑기 카드 -->
-        <div id="game-panel-draw" class="card" style="display: none; text-align: center;">
-          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">📦 박진감 제비뽑기</h3>
-          <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 16px;">카드를 한 장씩 뒤집어 당첨과 꽝을 확인하세요!</p>
-          <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">총 인원수</label>
-              <input type="number" id="drawTotalCount" value="6" min="2" max="30" style="width: 70px; padding: 6px; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-            </div>
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text);">당첨(벌칙) 수</label>
-              <input type="number" id="drawHitCount" value="1" min="1" max="29" style="width: 70px; padding: 6px; text-align: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-            </div>
-            <div style="display: flex; align-items: flex-end;">
-              <button type="button" class="btn-action btn-primary" onclick="initDrawCards()" style="padding: 7px 16px; font-size: 0.85rem;">제비 섞기</button>
-            </div>
-          </div>
-          <div id="drawCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; max-width: 500px; margin: 0 auto;"></div>
-        </div>
+  <!-- 4. 🥠 오늘의 포춘쿠키 카드 (신규 추가) -->
+  <div id="game-panel-fortune" class="card" style="display: none; text-align: center; max-width: 520px; margin: 0 auto;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🥠 오늘의 찬양팀 포춘쿠키</h3>
+    <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 20px;">쿠키를 터치해 오늘의 은혜 문장과 위트를 열어보세요! (하루 1개)</p>
 
-        <!-- 사다리타기 카드 -->
-        <div id="game-panel-ladder" class="card" style="display: none;">
-          <div style="text-align: center; margin-bottom: 16px;">
-            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">🪜 미니 사다리타기</h3>
-            <p style="font-size: 0.82rem; color: var(--sub-text);">참가 팀원을 체크하고 결과 항목을 지정해 사다리를 타보세요.</p>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto;">
-            <div style="background: var(--card-sub-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text);">👥 사다리 참가자 선택</label>
-                <div style="display: gap: 6px;">
-                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(true)" style="padding: 2px 6px; font-size: 0.72rem;">전체선택</button>
-                  <button type="button" class="btn-action btn-secondary" onclick="toggleAllLadderMembers(false)" style="padding: 2px 6px; font-size: 0.72rem;">전체해제</button>
-                </div>
-              </div>
-              <div id="ladderMemberCheckboxList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 6px; max-height: 130px; overflow-y: auto; background: var(--card-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);"></div>
-            </div>
-            <div>
-              <label style="font-size: 0.78rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 결과/벌칙 목록 (쉼표 구분)</label>
-              <input type="text" id="ladderResultsInput" value="당첨, 통과, 간식, 통과, 청소, 통과" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            </div>
-            <button type="button" class="btn-action btn-primary" onclick="buildAndStartLadder()" style="justify-content: center; padding: 10px; font-size: 0.95rem;">
-              🪜 사다리 생성 및 매칭 시작
-            </button>
-            <div id="ladderResultBox" style="display: none; background: var(--card-sub-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
-          </div>
+    <div id="fortuneCookieStage" onclick="crackFortuneCookie()" style="position: relative; width: 170px; height: 130px; margin: 0 auto 20px; cursor: pointer; user-select: none;">
+      <!-- 좌측 쿠키 조각 -->
+      <div id="cookiePartLeft" class="cookie-piece" style="position: absolute; left: 10px; top: 15px; font-size: 5rem; transform-origin: left bottom; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);">🥠</div>
+      <!-- 우측 쿠키 조각 (깨질 때 분리 효과용) -->
+      <div id="cookiePartRight" class="cookie-piece" style="position: absolute; left: 10px; top: 15px; font-size: 5rem; opacity: 0; transform-origin: right bottom; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);">🥠</div>
+    </div>
+
+    <!-- 쪽지 결과창 -->
+    <div id="fortunePaperBox" style="display: none; background: #fffdf5; color: #1f2937; border: 2px dashed #f59e0b; border-radius: 12px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); animation: paperSlideUp 0.5s ease-out;">
+      <div id="fortuneCategoryBadge" style="display: inline-block; font-size: 0.72rem; font-weight: 700; background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 10px; margin-bottom: 8px;">✨ 오늘의 말씀과 묵상</div>
+      <div id="fortuneTextDisplay" style="font-size: 0.98rem; font-weight: 600; line-height: 1.6; margin-bottom: 14px; word-break: keep-all;">포춘쿠키를 깨주세요!</div>
+      <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+        <button type="button" id="btnApplyFortuneToStatus" onclick="applyFortuneToMyProfile()" class="btn-action btn-primary" style="padding: 7px 14px; font-size: 0.8rem; font-weight: 700;">
+          📌 내 프로필 한마디로 등록
+        </button>
+        <button type="button" onclick="resetFortuneDaily(true)" class="btn-action btn-secondary" style="padding: 7px 12px; font-size: 0.8rem;">
+          🎲 다시 뽑기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ⏱️ N초 맞추기 챌린지 카드 (신규 추가) -->
+  <div id="game-panel-timer" class="card" style="display: none; text-align: center; max-width: 520px; margin: 0 auto;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 4px;">⏱️ 정확히 N초 맞추기</h3>
+    <p style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 16px;">찬양팀의 내장 메트로놈 박자감을 시험해보세요!</p>
+
+    <!-- 옵션 설정 (목표 초 & 난이도) -->
+    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+      <div style="text-align: left;">
+        <label style="font-size: 0.76rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">🎯 목표 시간</label>
+        <div style="display: flex; gap: 6px;">
+          <select id="timerTargetSelect" style="padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+            <option value="5">5초</option>
+            <option value="7">7초</option>
+            <option value="10" selected>10초</option>
+            <option value="12">12초</option>
+            <option value="15">15초</option>
+          </select>
+          <button type="button" class="btn-action btn-secondary" onclick="setRandomTimerTarget()" style="padding: 6px 10px; font-size: 0.78rem;" title="5~15초 랜덤 설정">🎲 챌린지</button>
         </div>
       </div>
+
+      <div style="text-align: left;">
+        <label style="font-size: 0.76rem; font-weight: 700; color: var(--sub-text); display: block; margin-bottom: 4px;">⚡ 난이도</label>
+        <select id="timerDifficultySelect" style="padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+          <option value="easy">쉬움 (초시계 항상 표시)</option>
+          <option value="normal" selected>보통 (3초 후 암전)</option>
+          <option value="hard">어려움 (1초 후 페이드아웃)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 타이머 디스플레이 -->
+    <div id="timerDisplayBox" style="background: var(--card-sub-bg); border: 2px solid var(--border-color); border-radius: 14px; padding: 24px 10px; margin-bottom: 18px; transition: opacity 0.5s ease;">
+      <div style="font-size: 0.85rem; color: var(--sub-text); margin-bottom: 4px;">목표: <strong id="timerTargetDisplayLabel" style="color: var(--accent-color); font-size: 1.1rem;">10.00</strong>초</div>
+      <div id="timerRunningDigits" style="font-size: 3.2rem; font-weight: 900; font-family: monospace; letter-spacing: 2px;">00.00</div>
+    </div>
+
+    <!-- 조작 버튼 -->
+    <div style="margin-bottom: 16px;">
+      <button type="button" id="btnTimerControl" onclick="toggleTimerGame()" class="btn-action btn-primary" style="font-size: 1.1rem; padding: 12px 36px; border-radius: 30px; font-weight: 800;">
+        ▶️ 시작하기
+      </button>
+    </div>
+
+    <!-- 결과 판정 박스 -->
+    <div id="timerResultCard" style="display: none; background: var(--card-sub-bg); border-radius: 10px; padding: 14px; border: 1px solid var(--border-color); animation: fadeIn 0.3s ease;">
+      <div id="timerScoreRank" style="font-size: 1.15rem; font-weight: 800; margin-bottom: 4px;">-</div>
+      <div id="timerScoreDiff" style="font-size: 0.88rem; color: var(--sub-text);">-</div>
+    </div>
+  </div>
+</div>
 
       <!-- SNS 놀이터 -->
 <div id="pg-content-sns" style="display: none;">
@@ -4840,18 +4947,350 @@ function openSettingsModal() {
       updateRouletteWheel();
     }
 
-    function switchGameMode(mode, btn) {
-      document.querySelectorAll('#pg-content-game .member-cat-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
+    function switchGameMode(mode, btnEl) {
+  const modes = ['roulette', 'draw', 'ladder', 'fortune', 'timer'];
+  modes.forEach(m => {
+    const panel = document.getElementById(`game-panel-${m}`);
+    if (panel) panel.style.display = (m === mode) ? 'block' : 'none';
+  });
 
-      ['roulette', 'draw', 'ladder'].forEach(m => {
-        const panel = document.getElementById(`game-panel-${m}`);
-        if (panel) panel.style.display = (m === mode) ? 'block' : 'none';
-      });
+  if (btnEl) {
+    document.querySelectorAll('#pg-content-game .member-cat-btn').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
 
-      if (mode === 'roulette') updateRouletteWheel();
-      if (mode === 'draw') initDrawCards();
+  if (mode === 'fortune') initFortuneCookieState();
+  if (mode === 'timer') resetTimerGameUI();
+}
+
+/* ---------------------------------------------------
+   🥠 포춘쿠키 엔진 (로컬스토리지 하루 1회 + JSON 연동)
+--------------------------------------------------- */
+const FORTUNE_STORAGE_KEY = 'shift_daily_fortune_data';
+let cachedFortuneMessages = null;
+let currentTodayFortune = null;
+
+async function loadFortuneMessages() {
+  if (cachedFortuneMessages) return cachedFortuneMessages;
+  try {
+    const res = await fetch('fortune-messages.json');
+    if (!res.ok) throw new Error('JSON 로드 실패');
+    cachedFortuneMessages = await res.json();
+  } catch (e) {
+    // 로드 실패 시 사용할 기본 예비 문구
+    cachedFortuneMessages = [
+      { text: "주의 말씀은 내 발에 등이요 내 길에 빛이니이다. (시 119:105)", category: "말씀/위로" },
+      { text: "오늘 연습 때 인도자와 눈빛만 봐도 사인이 통할 운세입니다! ⚡", category: "찬양팀위트" },
+      { text: "아무것도 염려하지 말고 오직 모든 일에 기도와 간구로 감사함으로 아뢰라.", category: "말씀/위로" }
+    ];
+  }
+  return cachedFortuneMessages;
+}
+
+function getTodayDateString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// 화면 진입 시 오늘 이미 뽑았는지 확인
+async function initFortuneCookieState() {
+  const saved = localStorage.getItem(FORTUNE_STORAGE_KEY);
+  const today = getTodayDateString();
+
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.date === today && parsed.message) {
+        showCrackedCookie(parsed.message, false);
+        return;
+      }
+    } catch (e) {}
+  }
+  resetCookieVisuals();
+}
+
+function resetCookieVisuals() {
+  const left = document.getElementById('cookiePartLeft');
+  const right = document.getElementById('cookiePartRight');
+  const box = document.getElementById('fortunePaperBox');
+
+  if (left) {
+    left.className = 'cookie-piece';
+    left.style.transform = 'none';
+    left.style.opacity = '1';
+  }
+  if (right) {
+    right.className = 'cookie-piece';
+    right.style.transform = 'none';
+    right.style.opacity = '0';
+  }
+  if (box) box.style.display = 'none';
+}
+
+async function crackFortuneCookie() {
+  const left = document.getElementById('cookiePartLeft');
+  const right = document.getElementById('cookiePartRight');
+  if (left.classList.contains('cookie-cracked-left')) return; // 이미 깨짐
+
+  // 흔들림 애니메이션
+  left.classList.add('cookie-wiggling');
+
+  setTimeout(async () => {
+    left.classList.remove('cookie-wiggling');
+    left.classList.add('cookie-cracked-left');
+    right.classList.add('cookie-cracked-right');
+
+    const list = await loadFortuneMessages();
+    const randomPick = list[Math.floor(Math.random() * list.length)];
+    currentTodayFortune = randomPick;
+
+    // 로컬스토리지에 오늘 날짜와 함께 저장
+    localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify({
+      date: getTodayDateString(),
+      message: randomPick
+    }));
+
+    setTimeout(() => {
+      showCrackedCookie(randomPick, true);
+    }, 250);
+  }, 400);
+}
+
+function showCrackedCookie(item, animate) {
+  const left = document.getElementById('cookiePartLeft');
+  const right = document.getElementById('cookiePartRight');
+  const box = document.getElementById('fortunePaperBox');
+  const textEl = document.getElementById('fortuneTextDisplay');
+  const catEl = document.getElementById('fortuneCategoryBadge');
+
+  if (left && right) {
+    left.classList.add('cookie-cracked-left');
+    right.classList.add('cookie-cracked-right');
+  }
+
+  currentTodayFortune = item;
+  if (catEl) catEl.innerText = item.category === '찬양팀위트' ? '⚡ 찬양팀 공감 & 위트' : '✨ 오늘의 은혜와 묵상';
+  if (textEl) textEl.innerText = item.text;
+  if (box) box.style.display = 'block';
+}
+
+function resetFortuneDaily(force) {
+  if (force) {
+    localStorage.removeItem(FORTUNE_STORAGE_KEY);
+    resetCookieVisuals();
+    setTimeout(() => crackFortuneCookie(), 100);
+  }
+}
+
+// 프로필 '한 줄 소개'에 포춘쿠키 문구 즉시 반영
+async function applyFortuneToMyProfile() {
+  if (!currentTodayFortune) return;
+
+  // 1) 기기 인증된 본인 member_id 확인
+  const verifiedMap = JSON.parse(localStorage.getItem(typeof MY_VERIFIED_PINS_KEY !== 'undefined' ? MY_VERIFIED_PINS_KEY : 'shift_verified_member_pins') || '{}');
+  const verifiedIds = Object.keys(verifiedMap);
+
+  let targetMemberId = null;
+  if (verifiedIds.length === 1) {
+    targetMemberId = Number(verifiedIds[0]);
+  } else if (typeof currentViewingMember !== 'undefined' && currentViewingMember) {
+    targetMemberId = Number(currentViewingMember.member_id);
+  }
+
+  if (!targetMemberId) {
+    const inputName = prompt('프로필에 등록할 본인의 이름을 입력해 주세요:');
+    if (!inputName) return;
+    const m = (typeof allMembersList !== 'undefined') ? allMembersList.find(x => x.name === inputName.trim()) : null;
+    if (!m) {
+      alert('일치하는 팀원을 찾을 수 없습니다.');
+      return;
     }
+    targetMemberId = Number(m.member_id);
+  }
+
+  const btn = document.getElementById('btnApplyFortuneToStatus');
+  btn.disabled = true;
+  btn.innerText = '반영 중...';
+
+  try {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) throw new Error('Supabase 미연결');
+
+    const cleanText = currentTodayFortune.text.replace(/^[✨🕊️⚡💡📖\s]+/, '').substring(0, 80);
+    const { error } = await supabaseClient
+      .from('member_profiles')
+      .upsert({ member_id: targetMemberId, status_message: cleanText, updated_at: new Date().toISOString() }, { onConflict: 'member_id' });
+
+    if (error) throw error;
+    alert(`🎉 내 프로필 한 줄 소개에 반영되었습니다!\n"${cleanText}"`);
+  } catch (err) {
+    alert('프로필 반영 실패: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '📌 내 프로필 한마디로 등록';
+  }
+}
+
+/* ---------------------------------------------------
+   ⏱️ N초 맞추기 챌린지 엔진
+--------------------------------------------------- */
+let timerState = {
+  isRunning: false,
+  startTime: 0,
+  timerId: null,
+  targetSec: 10,
+  difficulty: 'normal'
+};
+
+function setRandomTimerTarget() {
+  const rand = Math.floor(Math.random() * 11) + 5; // 5 ~ 15
+  const sel = document.getElementById('timerTargetSelect');
+  if (sel) {
+    let exists = false;
+    for (let opt of sel.options) {
+      if (Number(opt.value) === rand) { exists = true; break; }
+    }
+    if (!exists) {
+      const newOpt = new Option(`${rand}초`, String(rand));
+      sel.add(newOpt);
+    }
+    sel.value = String(rand);
+  }
+  updateTimerTargetDisplay();
+}
+
+function updateTimerTargetDisplay() {
+  const sel = document.getElementById('timerTargetSelect');
+  const target = Number(sel?.value || 10);
+  timerState.targetSec = target;
+  const label = document.getElementById('timerTargetDisplayLabel');
+  if (label) label.innerText = target.toFixed(2);
+}
+
+document.getElementById('timerTargetSelect')?.addEventListener('change', updateTimerTargetDisplay);
+
+function resetTimerGameUI() {
+  updateTimerTargetDisplay();
+  const digits = document.getElementById('timerRunningDigits');
+  const box = document.getElementById('timerDisplayBox');
+  const btn = document.getElementById('btnTimerControl');
+  const card = document.getElementById('timerResultCard');
+
+  if (digits) digits.innerText = '00.00';
+  if (box) {
+    box.style.opacity = '1';
+    box.style.filter = 'none';
+  }
+  if (btn) {
+    btn.innerText = '▶️ 시작하기';
+    btn.classList.replace('btn-secondary', 'btn-primary');
+  }
+  if (card) card.style.display = 'none';
+
+  if (timerState.timerId) clearInterval(timerState.timerId);
+  timerState.isRunning = false;
+}
+
+function toggleTimerGame() {
+  if (!timerState.isRunning) {
+    startTimerGame();
+  } else {
+    stopTimerGame();
+  }
+}
+
+function startTimerGame() {
+  timerState.isRunning = true;
+  timerState.targetSec = Number(document.getElementById('timerTargetSelect').value || 10);
+  timerState.difficulty = document.getElementById('timerDifficultySelect').value || 'normal';
+  timerState.startTime = performance.now();
+
+  const btn = document.getElementById('btnTimerControl');
+  const box = document.getElementById('timerDisplayBox');
+  const digits = document.getElementById('timerRunningDigits');
+  const card = document.getElementById('timerResultCard');
+
+  if (card) card.style.display = 'none';
+  if (box) {
+    box.style.opacity = '1';
+    box.style.filter = 'none';
+  }
+  btn.innerText = '⏹️ 스톱!';
+  btn.classList.replace('btn-primary', 'btn-secondary');
+
+  timerState.timerId = setInterval(() => {
+    const elapsedMs = performance.now() - timerState.startTime;
+    const elapsedSec = elapsedMs / 1000;
+
+    // 난이도별 블라인드 처리
+    if (timerState.difficulty === 'normal') {
+      if (elapsedSec >= 3.0) {
+        digits.innerText = '??.??';
+      } else {
+        digits.innerText = elapsedSec.toFixed(2);
+      }
+    } else if (timerState.difficulty === 'hard') {
+      if (elapsedSec >= 1.0) {
+        digits.innerText = '??.??';
+        const fade = Math.max(0, 1 - (elapsedSec - 1.0) / 1.5);
+        box.style.opacity = String(fade);
+      } else {
+        digits.innerText = elapsedSec.toFixed(2);
+      }
+    } else {
+      // 쉬움: 항상 노출
+      digits.innerText = elapsedSec.toFixed(2);
+    }
+  }, 30);
+}
+
+function stopTimerGame() {
+  timerState.isRunning = false;
+  clearInterval(timerState.timerId);
+
+  const finalElapsedSec = (performance.now() - timerState.startTime) / 1000;
+  const diffSec = finalElapsedSec - timerState.targetSec;
+  const absDiff = Math.abs(diffSec);
+
+  const btn = document.getElementById('btnTimerControl');
+  const box = document.getElementById('timerDisplayBox');
+  const digits = document.getElementById('timerRunningDigits');
+  const card = document.getElementById('timerResultCard');
+  const rankEl = document.getElementById('timerScoreRank');
+  const diffEl = document.getElementById('timerScoreDiff');
+
+  // 디스플레이 복원 및 최종 시간 표시
+  box.style.opacity = '1';
+  digits.innerText = finalElapsedSec.toFixed(2);
+  btn.innerText = '🔄 다시 도전';
+  btn.classList.replace('btn-secondary', 'btn-primary');
+
+  // 찬양팀 맞춤형 등급 판정
+  let rank = '';
+  let color = '#10b981';
+
+  if (absDiff <= 0.08) {
+    rank = '👑 신의 메트로놈! (인간 박자기 수준)';
+    color = '#f59e0b';
+  } else if (absDiff <= 0.3) {
+    rank = '⚡ 완벽한 칼박! (드러머 급 박자감)';
+    color = '#10b981';
+  } else if (absDiff <= 0.7) {
+    rank = '🎵 안정적인 그루브! (양호한 박자감)';
+    color = '#3b82f6';
+  } else if (absDiff <= 1.5) {
+    rank = '🏃 살짝 급하거나 느림! (더 집중 필요)';
+    color = '#8b5cf6';
+  } else {
+    rank = '🚨 박자 대탈선! (메트로놈과 친해지세요)';
+    color = '#ef4444';
+  }
+
+  const sign = diffSec > 0 ? `+${diffSec.toFixed(2)}` : diffSec.toFixed(2);
+  rankEl.style.color = color;
+  rankEl.innerText = rank;
+  diffEl.innerText = `기록: ${finalElapsedSec.toFixed(2)}초 (목표 대비 ${sign}초 차이)`;
+  card.style.display = 'block';
+}
 
     function setRouletteType(type) {
       currentRouletteType = type;
