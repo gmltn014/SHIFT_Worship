@@ -1221,28 +1221,29 @@
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포인트 색:</span>
-          <input type="color" id="snsCardColor" value="#3b82f6" style="border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--sub-text);">포인트 색:</span>
+            <input type="color" id="snsCardColor" value="#3b82f6" style="border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent;">
+          </div>
+          <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px; flex-shrink: 0;">
+            📌 놀이터 보드에 게시
+          </button>
         </div>
-        <button type="submit" id="btnPublishSns" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 16px; flex-shrink: 0;">
-          📌 놀이터 보드에 게시
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+      </form>
+    </div> <!-- .card 닫기 -->
 
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="font-size: 1.05rem; font-weight: 700;">📌 팀원들이 공유한 찬양 취향표 피드</h4>
-            <button type="button" class="btn-action btn-secondary" onclick="loadSnsFeedData()" style="padding: 4px 10px; font-size: 0.75rem;">🔄 새로고침</button>
-          </div>
-          <div id="snsFeedList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
-            <div class="loading-spinner">취향표 피드를 불러오는 중입니다...</div>
-          </div>
-        </div>
+    <!-- 취향표 피드 목록 (pg-content-sns 안쪽으로 정상 수납) -->
+    <div style="margin-top: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h4 style="font-size: 1.05rem; font-weight: 700;">📌 팀원들이 공유한 찬양 취향표 피드</h4>
+        <button type="button" class="btn-action btn-secondary" onclick="loadSnsFeedData()" style="padding: 4px 10px; font-size: 0.75rem;">🔄 새로고침</button>
       </div>
+      <div id="snsFeedList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+        <div class="loading-spinner">취향표 피드를 불러오는 중입니다...</div>
+      </div>
+    </div>
+
+  </div>
 
       <!-- ================= 4. 기도제목 숲 ================= -->
 <div id="pg-content-prayer" style="display: none;">
