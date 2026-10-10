@@ -5168,21 +5168,19 @@ function showCrackedCookie(item, animate) {
 
   // string 또는 객체(text, message 등) 어떤 형태든 추출
   let displayMsg = '';
-
   if (typeof item === 'string') {
     displayMsg = item;
   } else if (item && typeof item === 'object') {
     displayMsg = item.text || item.message || item.content || '';
-    if (item.category === '찬양팀위트' || item.category === '위트') {
-      displayCategory = '⚡ 찬양팀 공감 & 위트';
-    }
   }
 
   if (!displayMsg) {
     displayMsg = '주 안에서 기뻐하며 감사함으로 승리하는 하루 되세요! 🕊️';
   }
 
-  if (catEl) catEl.innerText = displayCategory;
+  // ★ 상단 뱃지 숨김 처리
+  if (catEl) catEl.style.display = 'none';
+
   if (textEl) textEl.innerText = displayMsg;
   if (box) box.style.display = 'block';
 }
