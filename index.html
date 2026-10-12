@@ -6407,7 +6407,7 @@ async function handlePrayerSubmit(e) {
 
 // 6. 댓글창 열기/닫기 토글
 function toggleCommentBox(prayerId) {
-  const box = document.getElementById(`commentSection-${prayerId}`);
+  const box = document.getElementById('commentSection-' + prayerId);
   if (!box) return;
   box.style.display = (box.style.display === 'none') ? 'flex' : 'none';
 }
