@@ -6280,30 +6280,22 @@ async function loadPrayerForestData() {
 
       const dateStr = p.created_at ? p.created_at.split('T')[0] : '';
 
-      return `
-        <div class="prayer-card ${p.is_intercessory ? 'intercessory' : ''}">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              ${p.is_intercessory ? '<span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;">🚨 긴급 중보기도</span>' : '<span style="background: #10b981; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">🌱 기도제목</span>'}
-              <strong style="font-size: 0.95rem;">${p.author}</strong>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">${dateStr}</span>
-              ${prayBadgeHtml}
-            </div>
-
-            ${isMyPost ? `
-              <button type="button" onclick="deleteMyPrayer(${p.id}, '${p.delete_key}')" style="background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; text-decoration: underline;">
-                삭제
-              </button>
-            ` : ''}
-          </div>
-
-          <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); white-space: pre-wrap; margin-bottom: 10px;">${p.content}</div>
-
-          <div style="display: flex; justify-content: flex-end;">
-            <button type="button" class="btn-action btn-secondary" onclick="toggleCommentBox(${p.id})" style="padding: 4px 10px; font-size: 0.78rem;">
-              💬 함께 기도하기 (댓글 ${commentCount})
-            </button>
-          </div>
+      return '<div class="prayer-card ' + (p.is_intercessory ? 'intercessory' : '') + '">' +
+    '  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">' +
+    '    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">' +
+    '      ' + badgeHtml +
+    '      <strong style="font-size: 0.95rem;">' + p.author + '</strong>' +
+    '      <span style="font-size: 0.72rem; color: var(--sub-text);">' + dateStr + '</span>' +
+    '      ' + prayBadgeHtml +
+    '    </div>' +
+    '    ' + deleteBtnHtml +
+    '  </div>' +
+    '  <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); white-space: pre-wrap; margin-bottom: 10px;">' + p.content + '</div>' +
+    '  <div style="display: flex; justify-content: flex-end;">' +
+    '    <button type="button" class="btn-action btn-secondary" onclick="toggleCommentBox(' + p.id + ')" style="padding: 4px 10px; font-size: 0.78rem;">' +
+    '      💬 함께 기도하기 (댓글 ' + commentCount + ')' +
+    '    </button>' +
+    '  </div>';
 
           <div id="commentSection-${p.id}" class="prayer-comments-wrap" style="${commentCount > 0 ? 'display: flex;' : 'display: none;'}">
             <div id="commentList-${p.id}">
