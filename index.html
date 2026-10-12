@@ -6383,7 +6383,7 @@ async function handlePrayerSubmit(e) {
         type: 'request',
         category: '중보기도',
         action_type: '긴급요청',
-        title: `🚨 [중보기도 요청] ${author} 팀원의 기도제목`,
+        title: '🚨 [중보기도 요청] ' + author + ' 팀원의 기도제목',
         message: `SHIFT 찬양팀의 멤버가 중보기도를 요청하였습니다. 확인해주세요.\n\n▶ 내용: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
         sender_name: author
       });
