@@ -6262,110 +6262,96 @@ async function loadPrayerForestData() {
       return;
     }
 
-    const myKeys = getMyPrayerKeys();
+    const myKeys = (typeof getMyPrayerKeys === 'function') ? getMyPrayerKeys() : [];
 
-    feedEl.innerHTML = prayers.map(p => {
+    feedEl.innerHTML = prayers.map(function(p) {
       const isMyPost = myKeys.includes(p.delete_key);
-      const postComments = (comments || []).filter(c => String(c.prayer_id) === String(p.id));
+      const postComments = (comments || []).filter(function(c) {
+        return String(c.prayer_id) === String(p.id);
+      });
       const commentCount = postComments.length;
 
       let prayBadgeHtml = '';
       if (commentCount > 0) {
-        prayBadgeHtml = `
-          <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.76rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;">
-            🙏 함께 기도 중 (${commentCount}) ❤️
-          </span>
-        `;
+        prayBadgeHtml = '<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.76rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;">' +
+          '🙏 함께 기도 중 (' + commentCount + ') ❤️' +
+          '</span>';
       }
 
       const dateStr = p.created_at ? p.created_at.split('T')[0] : '';
 
       const deleteBtnHtml = isMyPost 
-    ? '<button type="button" onclick="deleteMyPrayer(' + p.id + ', \'' + (p.delete_key || '') + '\')" style="background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; text-decoration: underline;">삭제</button>' 
-    : '';
+        ? '<button type="button" onclick="deleteMyPrayer(' + p.id + ', \'' + (p.delete_key || '') + '\')" style="background: none; border: none; font-size: 0.75rem; color: #ef4444; cursor: pointer; text-decoration: underline;">삭제</button>' 
+        : '';
 
-  const badgeHtml = p.is_intercessory 
-    ? '<span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;">🚨 긴급 중보기도</span>' 
-    : '<span style="background: #10b981; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">🌱 기도제목</span>';
+      const badgeHtml = p.is_intercessory 
+        ? '<span style="background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;">🚨 긴급 중보기도</span>' 
+        : '<span style="background: #10b981; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">🌱 기도제목</span>';
 
-  // 댓글 목록 HTML 생성 (백틱 제거 및 안전한 연결)
-  let commentsHtml = '';
-  if (Array.isArray(postComments) && postComments.length > 0) {
-    commentsHtml = postComments.map(function(c) {
-      const datePart = (c.created_at && c.created_at.indexOf('T') !== -1) ? c.created_at.split('T')[0] : (c.created_at || '');
-      return '<div class="prayer-comment-item">' +
-             '  <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">' +
-             '    <strong style="color: var(--accent-color); font-size: 0.78rem;">' + (c.author || '익명') + '</strong>' +
-             '    <span style="font-size: 0.68rem; color: var(--sub-text);">' + datePart + '</span>' +
-             '  </div>' +
-             '  <div>' + (c.comment || '') + '</div>' +
-             '</div>';
+      // 댓글 목록 렌더링
+      let commentsHtml = '';
+      if (Array.isArray(postComments) && postComments.length > 0) {
+        commentsHtml = postComments.map(function(c) {
+          const datePart = (c.created_at && c.created_at.indexOf('T') !== -1) ? c.created_at.split('T')[0] : (c.created_at || '');
+          return '<div class="prayer-comment-item">' +
+            '  <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">' +
+            '    <strong style="color: var(--accent-color); font-size: 0.78rem;">' + (c.author || '익명') + '</strong>' +
+            '    <span style="font-size: 0.68rem; color: var(--sub-text);">' + datePart + '</span>' +
+            '  </div>' +
+            '  <div>' + (c.comment || '') + '</div>' +
+            '</div>';
+        }).join('');
+      }
+
+      const commentBoxDisplay = (commentCount > 0) ? 'display: flex;' : 'display: none;';
+
+      return '<div class="prayer-card ' + (p.is_intercessory ? 'intercessory' : '') + '">' +
+        '  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">' +
+        '    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">' +
+        '      ' + badgeHtml +
+        '      <strong style="font-size: 0.95rem;">' + p.author + '</strong>' +
+        '      <span style="font-size: 0.72rem; color: var(--sub-text);">' + dateStr + '</span>' +
+        '      ' + prayBadgeHtml +
+        '    </div>' +
+        '    ' + deleteBtnHtml +
+        '  </div>' +
+        '  <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); white-space: pre-wrap; margin-bottom: 10px;">' + p.content + '</div>' +
+        '  <div style="display: flex; justify-content: flex-end;">' +
+        '    <button type="button" class="btn-action btn-secondary" onclick="toggleCommentBox(' + p.id + ')" style="padding: 4px 10px; font-size: 0.78rem;">' +
+        '      💬 함께 기도하기 (댓글 ' + commentCount + ')' +
+        '    </button>' +
+        '  </div>' +
+        '  <div id="commentSection-' + p.id + '" class="prayer-comments-wrap" style="' + commentBoxDisplay + '">' +
+        '    <div id="commentList-' + p.id + '">' +
+        '      ' + commentsHtml +
+        '    </div>' +
+        '    <!-- 댓글 작성 폼 (가변 폭 & 🎲 랜덤 닉네임 버튼) -->' +
+        '    <div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center; box-sizing: border-box;">' +
+        '      <div style="display: flex; gap: 4px; flex: 1 1 145px; min-width: 140px; max-width: 220px;">' +
+        '        <input type="text" id="commentAuthor-' + p.id + '" placeholder="작성자(랜덤 익명)" style="flex: 1; min-width: 0; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; box-sizing: border-box;">' +
+        '        <button type="button" onclick="fillRandomNickname(\'commentAuthor-' + p.id + '\')" title="랜덤 익명" class="btn-action btn-secondary" style="padding: 0 8px; font-size: 0.82rem; flex-shrink: 0; height: 34px; display: inline-flex; align-items: center; justify-content: center;">🎲</button>' +
+        '      </div>' +
+        '      <input type="text" id="commentText-' + p.id + '" placeholder="기도로 함께할게요! 🙏" style="flex: 2 1 180px; min-width: 160px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">' +
+        '      <button type="button" onclick="submitPrayerComment(' + p.id + ')" class="btn-action btn-primary" style="padding: 7px 12px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; height: 34px; white-space: nowrap;">기도하기</button>' +
+        '    </div>' +
+        '  </div>' +
+        '</div>';
     }).join('');
+
+  } catch (err) {
+    console.error('기도제목 로드 실패:', err);
+    feedEl.innerHTML = '<div style="text-align: center; padding: 30px; color: #ef4444; font-size: 0.85rem;">기도제목을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
   }
-
-  const commentBoxDisplay = (commentCount > 0) ? 'display: flex;' : 'display: none;';
-
-  return '<div class="prayer-card ' + (p.is_intercessory ? 'intercessory' : '') + '">' +
-    '  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">' +
-    '    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">' +
-    '      ' + badgeHtml +
-    '      <strong style="font-size: 0.95rem;">' + p.author + '</strong>' +
-    '      <span style="font-size: 0.72rem; color: var(--sub-text);">' + dateStr + '</span>' +
-    '      ' + prayBadgeHtml +
-    '    </div>' +
-    '    ' + deleteBtnHtml +
-    '  </div>' +
-    '  <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-color); white-space: pre-wrap; margin-bottom: 10px;">' + p.content + '</div>' +
-    '  <div style="display: flex; justify-content: flex-end;">' +
-    '    <button type="button" class="btn-action btn-secondary" onclick="toggleCommentBox(' + p.id + ')" style="padding: 4px 10px; font-size: 0.78rem;">' +
-    '      💬 함께 기도하기 (댓글 ' + commentCount + ')' +
-    '    </button>' +
-    '  </div>' +
-    '  <div id="commentSection-' + p.id + '" class="prayer-comments-wrap" style="' + commentBoxDisplay + '">' +
-    '    <div id="commentList-' + p.id + '">' +
-    '      ' + commentsHtml +
-    '    </div>' +
-    '    <!-- 댓글 작성 폼 (랜덤 닉네임 버튼 포함) -->' +
-    '    <div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center; box-sizing: border-box;">' +
-    '      <div style="display: flex; gap: 4px; flex: 1 1 145px; min-width: 140px; max-width: 220px;">' +
-    '        <input type="text" id="commentAuthor-' + p.id + '" placeholder="작성자(랜덤 익명)" style="flex: 1; min-width: 0; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; box-sizing: border-box;">' +
-    '        <button type="button" onclick="fillRandomNickname(\'commentAuthor-' + p.id + '\')" title="랜덤 익명" class="btn-action btn-secondary" style="padding: 0 8px; font-size: 0.82rem; flex-shrink: 0; height: 34px; display: inline-flex; align-items: center; justify-content: center;">🎲</button>' +
-    '      </div>' +
-    '      <input type="text" id="commentText-' + p.id + '" placeholder="기도로 함께할게요! 🙏" style="flex: 2 1 180px; min-width: 160px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">' +
-    '      <button type="button" onclick="submitPrayerComment(' + p.id + ')" class="btn-action btn-primary" style="padding: 7px 12px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; height: 34px; white-space: nowrap;">기도하기</button>' +
-    '    </div>' +
-    '  </div>' +
-    '</div>';
-
-            <div style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center; box-sizing: border-box;">
-  <!-- 이름 입력창 + 🎲 버튼 (최소 145px 이상 확보, 모바일 폭에 맞춰 신축) -->
-  <div style="display: flex; gap: 4px; flex: 1 1 145px; min-width: 140px; max-width: 220px;">
-    <input type="text" id="commentAuthor-${p.id}" placeholder="작성자(랜덤 익명)" 
-           style="flex: 1; min-width: 0; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem; box-sizing: border-box;">
-    <button type="button" onclick="fillRandomNickname(\'commentAuthor-${p.id}\')" title="랜덤 익명" class="btn-action btn-secondary" style="padding: 0 8px; font-size: 0.82rem; flex-shrink: 0; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
-  🎲
-</button>
-  </div>
-  
-  <!-- 댓글 본문 입력창 -->
-  <input type="text" id="commentText-${p.id}" placeholder="기도로 함께할게요! 🙏" 
-         style="flex: 2 1 180px; min-width: 160px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
-  
-  <!-- 등록 버튼 -->
-  <button type="button" onclick="submitPrayerComment(${p.id})" 
-          class="btn-action btn-primary" style="padding: 7px 12px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; height: 34px; white-space: nowrap;">
-    기도하기
-  </button>
-</div>
+}
 
 // 5. 새 기도제목 제출
 async function handlePrayerSubmit(e) {
   e.preventDefault();
 
-  const author = document.getElementById('prayerAuthorName').value.trim();
-  const isAnon = document.getElementById('prayerIsAnonymous').value === 'true';
-  const isIntercessory = document.getElementById('prayerIsIntercessory').checked;
-  const content = document.getElementById('prayerContent').value.trim();
+  let author = document.getElementById('prayerAuthorName') ? document.getElementById('prayerAuthorName').value.trim() : '';
+  const isAnon = document.getElementById('prayerIsAnonymous') ? (document.getElementById('prayerIsAnonymous').value === 'true') : false;
+  const isIntercessory = document.getElementById('prayerIsIntercessory') ? document.getElementById('prayerIsIntercessory').checked : false;
+  const content = document.getElementById('prayerContent') ? document.getElementById('prayerContent').value.trim() : '';
   const btn = document.getElementById('btnSubmitPrayer');
 
   if (!content) {
@@ -6378,23 +6364,34 @@ async function handlePrayerSubmit(e) {
     return;
   }
 
-  btn.disabled = true;
-  btn.innerText = '등록 중...';
+  // 익명 선택 시 작성자명이 비어있으면 랜덤 닉네임 자동 생성
+  if (isAnon && !author) {
+    author = (typeof getRandomAnonymousName === 'function') 
+      ? await getRandomAnonymousName() 
+      : '은혜충만 예배자';
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '등록 중...';
+  }
 
   const deleteKey = 'pk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
 
   try {
     const { error } = await supabaseClient.from('prayer_forest').insert([{
-      author: isAnon ? '익명의 예배자' : author,
+      author: author,
       is_anonymous: isAnon,
       is_intercessory: isIntercessory,
-      content,
+      content: content,
       delete_key: deleteKey
     }]);
 
     if (error) throw error;
 
-    saveMyPrayerKey(deleteKey);
+    if (typeof saveMyPrayerKey === 'function') {
+      saveMyPrayerKey(deleteKey);
+    }
 
     if (isIntercessory && typeof sendNotificationAndTrim === 'function') {
       await sendNotificationAndTrim({
@@ -6408,18 +6405,24 @@ async function handlePrayerSubmit(e) {
     }
 
     alert('소중한 기도제목이 숲에 등록되었습니다. 함께 기도합니다! 🙏');
-    document.getElementById('prayerContent').value = '';
-    if (!isAnon) document.getElementById('prayerAuthorName').value = '';
-    document.getElementById('prayerIsIntercessory').checked = false;
-    handleIntercessoryToggle(false);
+    
+    if (document.getElementById('prayerContent')) document.getElementById('prayerContent').value = '';
+    if (!isAnon && document.getElementById('prayerAuthorName')) document.getElementById('prayerAuthorName').value = '';
+    if (document.getElementById('prayerIsIntercessory')) document.getElementById('prayerIsIntercessory').checked = false;
+    
+    if (typeof handleIntercessoryToggle === 'function') {
+      handleIntercessoryToggle(false);
+    }
 
     await loadPrayerForestData();
   } catch (err) {
     console.error('기도제목 등록 실패:', err);
     alert('등록 오류: ' + err.message);
   } finally {
-    btn.disabled = false;
-    btn.innerText = '🌱 기도제목 올리기';
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = '🌱 기도제목 올리기';
+    }
   }
 }
 
