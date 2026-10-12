@@ -6414,8 +6414,8 @@ function toggleCommentBox(prayerId) {
 
 // 7. 기도 응원 댓글 등록
 async function submitPrayerComment(prayerId) {
-  const authorInput = document.getElementById(`commentAuthor-${prayerId}`);
-  const textInput = document.getElementById(`commentText-${prayerId}`);
+  const authorInput = document.getElementById('commentAuthor-' + prayerId);
+const textInput = document.getElementById('commentText-' + prayerId);
 
   const author = authorInput?.value.trim() || '동역자';
   const comment = textInput?.value.trim();
