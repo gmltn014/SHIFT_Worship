@@ -6495,7 +6495,7 @@ async function openMemberProfileModal(memberId) {
   const viewNameEl = document.getElementById('profViewName');
   const viewPartsEl = document.getElementById('profViewParts');
 
-  if (headerNameEl) headerNameEl.innerText = `${member.name} 프로필`;
+ if (headerNameEl) headerNameEl.innerText = member.name + ' 프로필';
   if (headerBadgeEl) headerBadgeEl.innerText = member.main_category || 'TEAM';
   if (viewNameEl) viewNameEl.innerText = member.name;
   if (viewPartsEl) {
