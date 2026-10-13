@@ -2741,32 +2741,43 @@ applyTheme(localStorage.getItem('shift_theme') || 'light');
 
   // 1. 본 찬양 목록 출력
   const songEl = document.getElementById('viewSongList');
-  if (songEl) songEl.innerText = item.song_list || '등록된 곡 목록이 없습니다.';
+if (songEl) {
+  if (!item.song_list) {
+    songEl.innerText = '등록된 곡 목록이 없습니다.';
+  } else {
+    const songLines = item.song_list.split('\n').map(s => s.trim()).filter(Boolean);
+    const rawTokens = (item.youtube_url || '').split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+    const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
 
-  // 2. 결단 찬양 출력 + 하트(❤️/🤍) 보관함 버튼 추가
-  const closingEl = document.getElementById('viewClosingSong');
-  if (closingEl) {
-    const closingTitle = item.closing_song || '해당 없음';
-    let closingHeartBtn = '';
-
-    // 결단 찬양에 유튜브 영상 링크가 있다면 하트 버튼 생성
-    if (item.closing_youtube_url && typeof extractYoutubeId === 'function') {
-      const closingVid = extractYoutubeId(item.closing_youtube_url);
-      if (closingVid) {
-        const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
-        const isFav = favorites.some(function(f) { return f.id === closingVid; });
-        const cleanTitle = ('[결단] ' + closingTitle).replace(/'/g, "\\'");
-
-        closingHeartBtn = ' <button type="button" onclick="handleHeartClick(event, this, \'' + closingVid + '\', \'' + cleanTitle + '\')" ' +
-          'style="background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 0 4px; vertical-align: middle;" ' +
-          'title="' + (isFav ? '내 보관함에서 제거' : '내 보관함에 담기') + '">' +
-          (isFav ? '❤️' : '🤍') +
-          '</button>';
+    songEl.innerHTML = songLines.map((line, idx) => {
+      const vid = rawTokens[idx] ? extractYoutubeId(rawTokens[idx]) : null;
+      let heartBtn = '';
+      if (vid) {
+        const isFav = favorites.some(f => f.id === vid);
+        const cleanTitle = line.replace(/^\d+[\.\)]\s*/, '').replace(/'/g, "\\'");
+        heartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.9rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
       }
-    }
-    // 글자 + 하트 버튼 함께 렌더링
-    closingEl.innerHTML = closingTitle + closingHeartBtn;
+      return `<div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;"><span>${line}</span>${heartBtn}</div>`;
+    }).join('');
   }
+}
+
+// 결단 찬양
+const closingEl = document.getElementById('viewClosingSong');
+if (closingEl) {
+  const closingTitle = item.closing_song || '해당 없음';
+  let closingHeartBtn = '';
+  if (item.closing_youtube_url) {
+    const closingVid = extractYoutubeId(item.closing_youtube_url);
+    if (closingVid) {
+      const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+      const isFav = favorites.some(f => f.id === closingVid);
+      const cleanTitle = ('[결단] ' + closingTitle).replace(/'/g, "\\'");
+      closingHeartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${closingVid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.9rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+    }
+  }
+  closingEl.innerHTML = `<span style="vertical-align:middle;">${closingTitle}</span>${closingHeartBtn}`;
+}
 
   setupLinkBtn('btnClosingSheet', item.closing_sheet_url);
   setupLinkBtn('btnClosingYoutube', item.closing_youtube_url);
@@ -3575,15 +3586,6 @@ applyTheme(localStorage.getItem('shift_theme') || 'light');
       });
     }
 
-    function renderArchive() {
-      const filtered = getFilteredArchiveData();
-      if (currentArchiveSubTab === 'conti') {
-        renderContiArchive(filtered);
-      } else {
-        renderMembersArchive(filtered);
-      }
-    }
-
     function renderContiArchive(list) {
       const container = document.getElementById('archiveContiList');
       if (!container) return;
@@ -3593,12 +3595,49 @@ applyTheme(localStorage.getItem('shift_theme') || 'light');
         return;
       }
 
+      const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+
       container.innerHTML = list.map((item, idx) => {
         const rawTitle = (item.worship_title || '').trim();
         const isCanceled = /^x_/i.test(rawTitle);
         const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
         const computedYt = buildYoutubePlaylistUrl(item.youtube_url);
         const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
+
+        // --- 💡 11자리 코드 분별 및 곡별 하트(❤️) 렌더링 로직 ---
+        let songListHtml = '';
+        const songLines = (item.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
+        const rawYtTokens = (item.youtube_url || '').split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+
+        // 모든 토큰이 11자리 영문/숫자 코드인지 검사
+        const is11CodeFormat = rawYtTokens.length > 0 && rawYtTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
+
+        if (is11CodeFormat && songLines.length > 0) {
+          songListHtml = songLines.map((line, sIdx) => {
+            const vid = rawYtTokens[sIdx];
+            let heartBtn = '';
+            if (vid) {
+              const isFav = favorites.some(f => f.id === vid);
+              const cleanTitle = line.replace(/^\d+[\.\)]\s*/, '').replace(/'/g, "\\'");
+              heartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+            }
+            return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><span>${line}</span>${heartBtn}</div>`;
+          }).join('');
+        } else {
+          // 예전 주차(단일 URL 또는 포맷 이전): 기존 텍스트 형태 유지
+          songListHtml = `<div style="white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>`;
+        }
+
+        // --- 🕊️ 결단 찬양 하트 렌더링 ---
+        let closingHeartBtn = '';
+        if (item.closing_youtube_url && typeof extractYoutubeId === 'function') {
+          const closingVid = extractYoutubeId(item.closing_youtube_url);
+          if (closingVid) {
+            const isFav = favorites.some(f => f.id === closingVid);
+            const cleanClosingTitle = ('[결단] ' + (item.closing_song || '결단 찬양')).replace(/'/g, "\\'");
+            closingHeartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${closingVid}', '${cleanClosingTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+          }
+        }
 
         return `
           <div class="archive-item-card" style="${isCanceled ? 'border-left: 4px solid #ef4444;' : ''}">
@@ -3626,11 +3665,11 @@ applyTheme(localStorage.getItem('shift_theme') || 'light');
               ` : `
                 <div style="margin: 12px 0 8px 0;">
                   <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
-                  <div style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>
+                  <div style="font-size: 0.88rem; line-height: 1.6;">${songListHtml}</div>
                 </div>
                 ${item.closing_song ? `
-                  <div style="margin: 8px 0; font-size: 0.88rem;">
-                    <strong>🕊️ 결단찬양:</strong> ${item.closing_song}
+                  <div style="margin: 8px 0; font-size: 0.88rem; display: flex; align-items: center;">
+                    <strong>🕊️ 결단찬양:</strong>&nbsp;<span>${item.closing_song}</span>${closingHeartBtn}
                   </div>` : ''}
                 <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
                   ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
@@ -5736,14 +5775,57 @@ function stopTimerGame() {
           return;
         }
 
+        const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+
+        // 하트 버튼 렌더링 헬퍼 함수
+        const createHeartBtn = (rawSongText) => {
+          if (!rawSongText || typeof extractYoutubeId !== 'function') return '';
+          const vid = extractYoutubeId(rawSongText);
+          if (!vid) return '';
+          
+          const isFav = favorites.some(f => f.id === vid);
+          // 곡 제목 정제: URL이나 특수문자 제거 후 기본 텍스트 추출
+          let cleanTitle = rawSongText.replace(/https?:\/\/\S+/gi, '').trim();
+          if (!cleanTitle || cleanTitle.length === 11) cleanTitle = '추천 찬양';
+          cleanTitle = cleanTitle.replace(/'/g, "\\'");
+
+          return ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.95rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+        };
+
         listEl.innerHTML = data.map(item => {
           const dateStr = item.created_at ? item.created_at.split('T')[0] : '';
           const authorBadge = item.is_anonymous ? '🎭 익명' : '👤 실명';
           const cardBorderColor = item.card_color || 'var(--accent-color)';
 
           let wordHtml = item.word_qt ? `<div style="font-size: 0.83rem; margin-bottom: 8px;"><span style="color: var(--sub-text); font-weight: 700; display: block;">📖 말씀</span><div>${item.word_qt}</div></div>` : '';
-          let favHtml = item.favorite_songs ? `<div style="font-size: 0.83rem; margin-bottom: 8px;"><div style="display: flex; justify-content: space-between;"><span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span><a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브 검색</a></div><div>${item.favorite_songs}</div></div>` : '';
-          let recHtml = item.recommended_song ? `<div style="font-size: 0.83rem;"><div style="display: flex; justify-content: space-between;"><span style="color: var(--sub-text); font-weight: 700;">🎧 추천 찬양</span><a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브 바로듣기</a></div><div>${item.recommended_song}</div></div>` : '';
+
+          // 🕊️ 인생 찬양 (하트 버튼 추가)
+          const favHeartBtn = createHeartBtn(item.favorite_songs);
+          let favHtml = item.favorite_songs ? `
+            <div style="font-size: 0.83rem; margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  ${favHeartBtn}
+                  <a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
+                </div>
+              </div>
+              <div style="margin-top: 2px;">${item.favorite_songs}</div>
+            </div>` : '';
+
+          // 🎧 추천 찬양 (하트 버튼 추가)
+          const recHeartBtn = createHeartBtn(item.recommended_song);
+          let recHtml = item.recommended_song ? `
+            <div style="font-size: 0.83rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--sub-text); font-weight: 700;">🎧 추천 찬양</span>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  ${recHeartBtn}
+                  <a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
+                </div>
+              </div>
+              <div style="margin-top: 2px;">${item.recommended_song}</div>
+            </div>` : '';
 
           return `
             <div class="card" style="border-top: 5px solid ${cardBorderColor}; padding: 14px; margin-bottom: 0;">
@@ -5762,7 +5844,7 @@ function stopTimerGame() {
         console.error('SNS 피드 로드 오류:', err);
       }
     }
-
+    
 // 익명 선택 토글 핸들러
 async function handleSnsAnonymousChange(isAnonValue) {
   const isAnon = (isAnonValue === 'true');
@@ -7441,25 +7523,28 @@ async function setBgmPlaylistMode(mode) {
 
   if (mode === 'this_week') {
     if (modeTitleEl) modeTitleEl.innerText = '🎼 이번 주 콘티';
-    await loadScheduleBgm(0); // 가장 최근 스케줄
+    await (0); // 가장 최근 스케줄
   } else if (mode === 'last_week') {
     if (modeTitleEl) modeTitleEl.innerText = '⏮ 저번 주 콘티';
-    await loadScheduleBgm(1); // 직전 스케줄
+    await (1); // 직전 스케줄
   } else if (mode === 'my_playlist') {
     if (modeTitleEl) modeTitleEl.innerText = '❤️ 나만의 플레이리스트';
     loadMyPlaylistBgm();
   }
 }
 
-/* 2. 스케줄(이번 주 / 저번 주) 곡 파싱 공통 함수 */
+/* 개선된 loadScheduleBgm */
 async function loadScheduleBgm(offsetIndex) {
   bgmPlaylist = [];
   currentBgmIndex = 0;
 
   try {
-    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+      updateBgmUI('DB 연결 오류', 'Supabase 클라이언트 없음');
+      return;
+    }
 
-    // date 컬럼 기준으로 최신 2주치 스케줄 조회
+    // 최신 순으로 2주치 스케줄 가져오기
     const { data, error } = await supabaseClient
       .from('schedules')
       .select('*')
@@ -7474,37 +7559,30 @@ async function loadScheduleBgm(offsetIndex) {
 
     const sched = data[offsetIndex];
     const dateLabel = sched.date ? '(' + sched.date.substring(5) + ')' : '';
-
-    // 1) 본 찬양 유튜브 파싱
-    // youtube_url이 콤마(,)나 줄바꿈으로 여러 개 들어있거나 단일 링크인 경우 대응
-    if (sched.youtube_url) {
-  // 쉼표(,), 줄바꿈(\n), 공백으로 분리
-  const rawList = sched.youtube_url.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
-  const songNames = (sched.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
-
-  rawList.forEach((item, idx) => {
-    const vid = extractYoutubeId(item);
-    if (vid) {
-      const title = songNames[idx] || ('찬양 ' + (idx + 1));
-      bgmPlaylist.push({ id: vid, title: title });
-    }
-  });
-}
     
-    // 2) 혹시 songs JSON 컬럼이 별도로 있는 경우 대비 (하위 호환)
-    if (bgmPlaylist.length === 0 && sched.songs) {
-      let songArr = [];
-      if (Array.isArray(sched.songs)) songArr = sched.songs;
-      else {
-        try { songArr = JSON.parse(sched.songs); } catch (e) { songArr = []; }
-      }
-      songArr.forEach(s => {
-        const vid = extractYoutubeId(s.youtube_url || s.youtube || s.url);
-        if (vid) bgmPlaylist.push({ id: vid, title: s.title || s.song_title || '찬양곡' });
+    // 콘티 곡 제목 텍스트 분리 (1. 곡명\n2. 곡명 ...)
+    const songTitles = (sched.song_list || '')
+      .split('\n')
+      .map(s => s.replace(/^\d+[\.\)]\s*/, '').trim()) // 앞자리 번호 제거
+      .filter(Boolean);
+
+    // 1) youtube_url 파싱 (쉼표, 줄바꿈, 띄어쓰기 기준 분리)
+    if (sched.youtube_url) {
+      // 쉼표나 줄바꿈으로 연결된 11자리 ID 목록 분리
+      const rawTokens = sched.youtube_url.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+      
+      let titleIdx = 0;
+      rawTokens.forEach(token => {
+        const vid = extractYoutubeId(token);
+        if (vid) {
+          const songName = songTitles[titleIdx] || ('찬양곡 ' + (titleIdx + 1));
+          bgmPlaylist.push({ id: vid, title: songName });
+          titleIdx++;
+        }
       });
     }
 
-    // 3) 결단 찬양 유튜브 포함
+    // 2) 결단 찬양 추가
     if (sched.closing_youtube_url) {
       const closingVid = extractYoutubeId(sched.closing_youtube_url);
       if (closingVid) {
@@ -7516,20 +7594,20 @@ async function loadScheduleBgm(offsetIndex) {
     }
 
     if (bgmPlaylist.length === 0) {
-      updateBgmUI('음원 준비 중', '유튜브 링크 없음');
+      updateBgmUI('등록된 음원 없음', '유튜브 ID 추출 실패');
+      console.warn('파싱 대상 원본 youtube_url 데이터:', sched.youtube_url);
       return;
     }
 
     const modeName = offsetIndex === 0 ? '이번 주' : '저번 주';
     updateBgmUI(bgmPlaylist[0].title, modeName + ' ' + dateLabel + ' (' + bgmPlaylist.length + '곡)');
-
-    // 팝업 목록 즉시 갱신 및 재생 큐 준비
-    renderBgmPlaylistItems();
+    
+    if (typeof renderBgmPlaylistItems === 'function') renderBgmPlaylistItems();
     initHiddenYoutubePlayer();
 
   } catch (err) {
     console.error('콘티 BGM 로드 실패:', err);
-    updateBgmUI('로드 실패', '오류');
+    updateBgmUI('로드 오류 발생', '콘솔 확인');
   }
 }
 
@@ -7579,6 +7657,24 @@ function updateBgmModeButtonsUI() {
       }
     }
   });
+}
+
+    /* 유튜브 링크/ID로 실제 영상 제목 가져오기 (noembed 활용) */
+async function fetchYoutubeTitle(urlOrId) {
+  const vid = extractYoutubeId(urlOrId);
+  if (!vid) return null;
+
+  try {
+    const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vid}`);
+    const data = await res.json();
+    return {
+      id: vid,
+      title: data.title || '찬양 영상'
+    };
+  } catch (e) {
+    console.warn('유튜브 제목 불러오기 실패:', e);
+    return { id: vid, title: '찬양 영상' };
+  }
 }
     
 /* 15. 페이지 시작 진입점 */
