@@ -3733,13 +3733,24 @@ function renderContiArchive(list) {
   }).join('');
 }
 
-    function toggleArchiveAccordion(idx) {
-      const body = document.getElementById(`acc-body-${idx}`);
-      const btn = document.getElementById(`acc-btn-${idx}`);
-      if (!body || !btn) return;
-      body.classList.toggle('open');
-      btn.classList.toggle('open');
-    }
+    /* 아카이브 아코디언 열기/닫기 토글 함수 */
+function toggleArchiveAccordion(idx) {
+  const bodyEl = document.getElementById(`acc-body-${idx}`);
+  const btnEl = document.getElementById(`acc-btn-${idx}`);
+
+  if (!bodyEl) return;
+
+  // 현재 열려있는 상태인지 확인 (인라인 display 속성 또는 계산된 스타일 기준)
+  const isHidden = bodyEl.style.display === 'none' || getComputedStyle(bodyEl).display === 'none';
+
+  if (isHidden) {
+    bodyEl.style.display = 'block';
+    if (btnEl) btnEl.innerText = '▲';
+  } else {
+    bodyEl.style.display = 'none';
+    if (btnEl) btnEl.innerText = '▼';
+  }
+}
 
     function renderMembersArchive(list) {
       const container = document.getElementById('archiveMembersList');
