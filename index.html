@@ -7726,11 +7726,28 @@ function toggleBgmPlay() {
     
 // 재생 버튼 아이콘 토글 헬퍼 (▶ / ⏸)
 function updatePlayButtonIcon(isPlaying) {
-  const playBtn = document.getElementById('btnBgmPlay') 
-               || document.getElementById('btnPlayPause')
-               || document.getElementById('bgmPlayToggle');
+  // 1. 재생 / 일시정지 버튼 아이콘 갱신
+  const playBtn = document.getElementById('btnTogglePlay') 
+               || document.getElementById('btnBgmPlay');
   if (playBtn) {
     playBtn.innerText = isPlaying ? '⏸' : '▶';
+  }
+
+  // 2. 상태 텍스트 ('재생 중' / '일시정지됨') 갱신
+  const statusEl = document.getElementById('currentBgmStatus');
+  if (statusEl) {
+    statusEl.innerText = isPlaying ? '재생 중' : '일시정지됨';
+    statusEl.style.color = isPlaying ? '#10b981' : 'var(--sub-text, #888)'; // 재생 중일 때 산뜻한 초록색
+  }
+
+  // 3. 디스크 아이콘 회전 효과 (선택 사항)
+  const discIcon = document.getElementById('playerDiscIcon');
+  if (discIcon) {
+    if (isPlaying) {
+      discIcon.classList.add('spin-animation');
+    } else {
+      discIcon.classList.remove('spin-animation');
+    }
   }
 }
 
@@ -7747,16 +7764,24 @@ function playBgmAtIndex(index) {
 
 // 다음 곡
 function playNextBgm() {
-  if (bgmPlaylist.length === 0) return;
-  currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
-  playBgmAtIndex(currentBgmIndex);
+  if (!bgmPlaylist || bgmPlaylist.length === 0) return;
+
+  // 다음 트랙으로 인덱스 이동 (마지막 곡이면 첫 곡으로 루프)
+  if (typeof currentTrackIndex === 'undefined') currentTrackIndex = 0;
+  currentTrackIndex = (currentTrackIndex + 1) % bgmPlaylist.length;
+
+  playCurrentTrackDirectly();
 }
 
 // 이전 곡
 function playPrevBgm() {
-  if (bgmPlaylist.length === 0) return;
-  currentBgmIndex = (currentBgmIndex - 1 + bgmPlaylist.length) % bgmPlaylist.length;
-  playBgmAtIndex(currentBgmIndex);
+  if (!bgmPlaylist || bgmPlaylist.length === 0) return;
+
+  // 이전 트랙으로 인덱스 이동 (첫 곡이면 마지막 곡으로 루프)
+  if (typeof currentTrackIndex === 'undefined') currentTrackIndex = 0;
+  currentTrackIndex = (currentTrackIndex - 1 + bgmPlaylist.length) % bgmPlaylist.length;
+
+  playCurrentTrackDirectly();
 }
 
 // 완전 정지 (실험실 기능 끌 때)
