@@ -2871,21 +2871,29 @@ if (closingEl) {
       if (kb2 && !['X', 'x', '-'].includes(kb2)) kbParts.push(`${kb2} (세컨)`);
       const kbText = kbParts.length > 0 ? kbParts.join(', ') : '-';
 
-      const message = 
-`[${titleStr}] SHIFT 세션 라인업 안내 🕊️
-📅 일시: ${dateStr}
-━━━━━━━━━━━━━━
-🎤 인도: ${currentScheduleData?.leader || getText('viewLeader')}
-👥 보컬: ${currentScheduleData?.vocal || getText('viewVocal')}
-🎹 건반: ${kbText}
-🥁 드럼: ${currentScheduleData?.drum || getText('viewDrum')}
-🎸 기타: ${currentScheduleData?.guitar || getText('viewGuitar')}
-🎸 베이스: ${currentScheduleData?.bass || getText('viewBass')}
-🎚️ 음향: ${currentScheduleData?.sound || getText('viewSound')}
-💻 방송: ${currentScheduleData?.broadcast || getText('viewBroadcast')}
-📑 자막: ${currentScheduleData?.prompter || currentScheduleData?.Prompter || getText('viewPrompter')}
-🎬 영상: ${currentScheduleData?.video || currentScheduleData?.Video || getText('viewVideo')}
-━━━━━━━━━━━━━━`;
+      const formattedDate = dateStr
+  ? dateStr.replace(/^20(\d{2})[-/.](\d{2})[-/.](\d{2}).*$/, '$1/$2/$3')
+  : '날짜 미정';
+
+const message = 
+`${formattedDate} 라인업입니다. 수정 필요하시면 말씀해주세요!
+
+SHIFT
+(we will Sing Higher and Imagine Forever. Thanks God.)
+
+Worship Leader ${currentScheduleData?.leader || getText('viewLeader') || ''}
+Vocal ${currentScheduleData?.vocal || getText('viewVocal') || ''}
+Keyboard ${kbText || ''}
+Drum ${currentScheduleData?.drum || getText('viewDrum') || ''}
+E.Guitar ${currentScheduleData?.guitar || getText('viewGuitar') || ''}
+Bass ${currentScheduleData?.bass || getText('viewBass') || ''}
+
+Live Operations
+Sound ${currentScheduleData?.sound || getText('viewSound') || ''}
+Broadcast ${currentScheduleData?.broadcast || getText('viewBroadcast') || ''}
+Prompter ${currentScheduleData?.prompter || currentScheduleData?.Prompter || getText('viewPrompter') || ''}
+Post Production
+Video Editor ${currentScheduleData?.video || currentScheduleData?.Video || getText('viewVideo') || ''}`;
 
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(message).then(() => {
