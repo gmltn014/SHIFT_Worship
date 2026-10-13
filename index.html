@@ -4405,7 +4405,12 @@ applyTheme(localStorage.getItem('shift_theme') || 'light');
       const currentTheme = localStorage.getItem('shift_theme') || 'light';
       const themeSelect = document.getElementById('settingThemeSelect');
       if (themeSelect) themeSelect.value = currentTheme;
-    }
+
+      const isBgmEnabled = localStorage.getItem('shift_lab_bgm') === 'true';
+      const toggleEl = document.getElementById('labToggleBgmPlayer');
+      if (toggleEl) toggleEl.checked = isBgmEnabled;
+      }
+    
 
     function closeSettingsModal() {
       const modal = document.getElementById('settingsModal');
@@ -7122,15 +7127,19 @@ function initLabSettings() {
 /* 실험실 BGM 토글 변경 이벤트 */
 function toggleLabBgmFeature(enabled) {
   localStorage.setItem('shift_lab_bgm', enabled ? 'true' : 'false');
-  const playerEl = document.getElementById('shiftFloatingPlayer');
 
+  const playerEl = document.getElementById('shiftFloatingPlayer');
+  
   if (enabled) {
     if (playerEl) playerEl.style.display = 'flex';
-    // 플레이어 초기화 및 이번 주 콘티 곡 목록 로드
-    setupWeeklyBgmPlaylist();
+    if (typeof setupWeeklyBgmPlaylist === 'function') {
+      setupWeeklyBgmPlaylist();
+    }
   } else {
     if (playerEl) playerEl.style.display = 'none';
-    stopBgm(); // 재생 멈춤
+    if (typeof stopBgm === 'function') {
+      stopBgm();
+    }
   }
 }
     
