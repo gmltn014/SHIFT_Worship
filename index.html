@@ -7463,13 +7463,21 @@ function initLabSettings() {
 function toggleLabBgmFeature(enabled) {
   localStorage.setItem('shift_lab_bgm', enabled ? 'true' : 'false');
 
+  // 0. 설정창의 실제 스위치/체크박스 UI 체크 상태 동기화
+  const switchEl = document.getElementById('toggleLabBgm') 
+                || document.getElementById('switchLabBgm')
+                || document.querySelector('input[onchange*="toggleLabBgmFeature"]');
+  if (switchEl) {
+    switchEl.checked = Boolean(enabled);
+  }
+
   // 1. 모드 선택 상자(이번 주 / 저번 주 / 내 보관함) 토글
   const selectorEl = document.getElementById('labBgmModeSelector');
   if (selectorEl) {
     selectorEl.style.display = enabled ? 'flex' : 'none';
   }
 
-  // 2. 플로팅 플레이어 요소 참조 (중복 선언 방지를 위해 var 또는 직접 할당)
+  // 2. 플로팅 플레이어 요소 참조
   const targetPlayerEl = document.getElementById('shiftFloatingPlayer');
 
   if (enabled) {
@@ -8092,6 +8100,43 @@ async function fetchYoutubeTitle(urlOrId) {
   const modal = document.getElementById('modalBgmSettings');
   if (modal) modal.style.display = 'flex';
 }
+
+    function initLabBgmFeature() {
+  const isEnabled = localStorage.getItem('shift_lab_bgm') === 'true';
+
+  // 스위치 체크 상태 동기화
+  const switchEl = document.getElementById('toggleLabBgm') 
+                || document.getElementById('switchLabBgm')
+                || document.querySelector('input[onchange*="toggleLabBgmFeature"]');
+  if (switchEl) {
+    switchEl.checked = isEnabled;
+  }
+
+  // 모드 선택기 표시 여부
+  const selectorEl = document.getElementById('labBgmModeSelector');
+  if (selectorEl) {
+    selectorEl.style.display = isEnabled ? 'flex' : 'none';
+  }
+
+  // 하단 플레이어 표시 여부
+  const targetPlayerEl = document.getElementById('shiftFloatingPlayer');
+  if (targetPlayerEl) {
+    targetPlayerEl.style.display = isEnabled ? 'flex' : 'none';
+  }
+
+  // 켜져 있었던 상태라면 플레이리스트 준비 (자동 재생 소음 방지를 위해 silentInit)
+  if (isEnabled) {
+    const activeMode = localStorage.getItem('shift_bgm_mode') || 'this_week';
+    if (typeof setBgmPlaylistMode === 'function') {
+      setBgmPlaylistMode(activeMode, true);
+    }
+  }
+}
+
+// DOM 준비 완료 시 실행
+document.addEventListener('DOMContentLoaded', () => {
+  initLabBgmFeature();
+});
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -8103,10 +8148,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof applyFont === 'function') applyFont(localStorage.getItem('shift_font') || 'pretendard');
 
   // 🧪 실험실 BGM 상태 복원 및 플레이리스트 대기
-  if (localStorage.getItem('shift_lab_bgm') === 'true') {
+  const isLabBgmEnabled = localStorage.getItem('shift_lab_bgm') === 'true';
+  if (isLabBgmEnabled) {
+    // 1. 하단 플레이어 표시
     const playerEl = document.getElementById('shiftFloatingPlayer');
     if (playerEl) playerEl.style.display = 'flex';
-    setBgmPlaylistMode(currentBgmMode);
+
+    // 2. 설정창의 실제 스위치/체크박스 ON으로 동기화 (핵심 추가!)
+    const switchEl = document.getElementById('toggleLabBgm') 
+                  || document.getElementById('switchLabBgm')
+                  || document.querySelector('input[onchange*="toggleLabBgmFeature"]');
+    if (switchEl) switchEl.checked = true;
+
+    // 3. 설정창의 모드 선택 상자(이번 주 / 저번 주 / 내 보관함) 표시 (핵심 추가!)
+    const selectorEl = document.getElementById('labBgmModeSelector');
+    if (selectorEl) selectorEl.style.display = 'flex';
+
+    // 4. 저장된 모드로 트랙 준비 (새로고침 직후에는 소리 없이 대기하도록 silent 모드 적용)
+    const activeMode = localStorage.getItem('shift_bgm_mode') 
+                    || (typeof currentBgmMode !== 'undefined' ? currentBgmMode : 'this_week');
+    if (typeof setBgmPlaylistMode === 'function') {
+      setBgmPlaylistMode(activeMode, true);
+    }
   }
 });
 </script>
