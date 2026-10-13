@@ -8694,20 +8694,53 @@ function renderMyFavListModal() {
   const countEl = document.getElementById('myFavCount');
   if (!container) return;
 
-  // 로컬스토리지에서 안전하게 곡 불러오기
   let favs = [];
-  try {
-    const raw = localStorage.getItem('shift_my_favorite_songs');
-    favs = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(favs)) favs = [];
-  } catch (e) {
-    console.error('보관함 데이터 파싱 에러:', e);
-    favs = [];
+
+  // 1) 기존 함수가 정의되어 있다면 최우선 호출
+  if (typeof getMyFavoriteSongs === 'function') {
+    try {
+      favs = getMyFavoriteSongs();
+    } catch (e) {
+      console.warn('getMyFavoriteSongs 호출 실패:', e);
+    }
+  }
+
+  // 2) 비어있다면 프로젝트에서 사용 가능한 로컬스토리지 키들을 차례로 탐색
+  if (!favs || favs.length === 0) {
+    const candidateKeys = [
+      'shift_my_favorite_songs',
+      'my_favorite_songs',
+      'shift_favorite_songs',
+      'shift_my_playlist',
+      'myFavorites'
+    ];
+
+    for (const key of candidateKeys) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            favs = parsed;
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  // 3) 그래도 비어있고 현재 모드가 '내 보관함' 재생 중이라면, 현재 재생 목록(bgmPlaylist)에서 가져오기
+  const currentMode = localStorage.getItem('shift_bgm_mode');
+  if ((!favs || favs.length === 0) && currentMode === 'my_playlist') {
+    const activeList = window.bgmPlaylist || (typeof bgmPlaylist !== 'undefined' ? bgmPlaylist : []);
+    if (activeList && activeList.length > 0) {
+      favs = activeList;
+    }
   }
 
   if (countEl) countEl.innerText = favs.length;
 
-  if (favs.length === 0) {
+  if (!favs || favs.length === 0) {
     container.innerHTML = `
       <div style="text-align: center; padding: 40px 10px; color: #888; font-size: 0.9rem; line-height: 1.5;">
         보관함이 비어 있습니다.<br>
@@ -8717,7 +8750,7 @@ function renderMyFavListModal() {
     return;
   }
 
-  // 곡 리스트 렌더링 (하트 클릭 시 즉시 제거)
+  // 4) 곡 목록 렌더링
   container.innerHTML = favs.map((song, idx) => {
     const isPlaying = (typeof window.currentTrackIndex !== 'undefined' && 
                        window.bgmPlaylist && 
@@ -8742,34 +8775,44 @@ function renderMyFavListModal() {
 // 하트(❤️) 눌러 보관함에서 삭제할 때
 function removeSongFromFavList(vid) {
   let favs = [];
-  try {
-    const raw = localStorage.getItem('shift_my_favorite_songs');
-    favs = raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    favs = [];
+
+  if (typeof getMyFavoriteSongs === 'function') {
+    favs = getMyFavoriteSongs();
+  } else {
+    try {
+      const raw = localStorage.getItem('shift_my_favorite_songs');
+      favs = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      favs = [];
+    }
   }
 
   favs = favs.filter(f => f.id !== vid);
+
+  // 로컬스토리지에 저장 (일관된 키 사용)
   localStorage.setItem('shift_my_favorite_songs', JSON.stringify(favs));
+  localStorage.setItem('my_favorite_songs', JSON.stringify(favs));
 
-  // 1) 모달 목록 즉시 갱신
-  renderMyFavListModal();
-
-  // 2) 아카이브 화면에 떠 있는 하트 아이콘도 🤍로 동기화
-  document.querySelectorAll(`.btn-archive-heart[onclick*="${vid}"]`).forEach(btn => {
-    btn.innerText = '🤍';
-  });
-
-  // 3) 만약 현재 플레이리스트가 내 보관함 모드라면 큐도 실시간 갱신
+  // 현재 활성 플레이리스트 반영
   const currentMode = localStorage.getItem('shift_bgm_mode');
   if (currentMode === 'my_playlist') {
     window.bgmPlaylist = favs;
+    if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favs;
+
     if (favs.length === 0) {
       setBgmPlayerDisplayTitle('내 보관함이 비어있습니다');
       const yt = window.ytPlayer || window.bgmPlayer || window.player;
       if (yt && typeof yt.stopVideo === 'function') yt.stopVideo();
     }
   }
+
+  // 모달 갱신
+  renderMyFavListModal();
+
+  // 아카이브 하트 아이콘 동기화
+  document.querySelectorAll(`.btn-archive-heart[onclick*="${vid}"]`).forEach(btn => {
+    btn.innerText = '🤍';
+  });
 }
 
 // 목록에서 곡 클릭 시 재생
