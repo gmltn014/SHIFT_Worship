@@ -8009,6 +8009,21 @@ async function fetchYoutubeTitle(urlOrId) {
     return { id: vid, title: '찬양 영상' };
   }
 }
+
+    function openBgmSettingsModal() {
+  const currentMode = localStorage.getItem('shift_bgm_mode') || 'current';
+  
+  // 라디오 버튼인 경우
+  const radio = document.querySelector(`input[name="bgmModeRadio"][value="${currentMode}"]`);
+  if (radio) radio.checked = true;
+
+  // 셀렉트 박스인 경우
+  const select = document.getElementById('bgmModeSelect');
+  if (select) select.value = currentMode;
+
+  const modal = document.getElementById('modalBgmSettings');
+  if (modal) modal.style.display = 'flex';
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
