@@ -7451,11 +7451,11 @@ async function loadScheduleBgm(offsetIndex) {
   try {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
 
-    // 최신 2개 주차 스케줄 조회
+    // date 컬럼 기준으로 최신 2주치 스케줄 조회
     const { data, error } = await supabaseClient
       .from('schedules')
       .select('*')
-      .order('worship_date', { ascending: false })
+      .order('date', { ascending: false })
       .limit(2);
 
     if (error || !data || !data[offsetIndex]) {
@@ -7465,27 +7465,37 @@ async function loadScheduleBgm(offsetIndex) {
     }
 
     const sched = data[offsetIndex];
-    const dateLabel = sched.worship_date ? '(' + sched.worship_date.substring(5) + ')' : '';
+    const dateLabel = sched.date ? '(' + sched.date.substring(5) + ')' : '';
 
-    // 곡 파싱 (배열 or JSON 문자열)
-    let songs = [];
-    if (Array.isArray(sched.songs)) {
-      songs = sched.songs;
-    } else if (typeof sched.songs === 'string') {
-      try { songs = JSON.parse(sched.songs); } catch (e) { songs = []; }
+    // 1) 본 찬양 유튜브 파싱
+    // youtube_url이 콤마(,)나 줄바꿈으로 여러 개 들어있거나 단일 링크인 경우 대응
+    if (sched.youtube_url) {
+      const rawUrls = sched.youtube_url.split(/[\n,]+/);
+      const songNames = (sched.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+      rawUrls.forEach((u, idx) => {
+        const vid = extractYoutubeId(u.trim());
+        if (vid) {
+          const title = songNames[idx] || ('찬양 ' + (idx + 1));
+          bgmPlaylist.push({ id: vid, title: title });
+        }
+      });
     }
 
-    songs.forEach(function(s) {
-      const vid = extractYoutubeId(s.youtube_url || s.youtube || s.url);
-      if (vid) {
-        bgmPlaylist.push({
-          id: vid,
-          title: s.title || s.song_title || '찬양곡'
-        });
+    // 2) 혹시 songs JSON 컬럼이 별도로 있는 경우 대비 (하위 호환)
+    if (bgmPlaylist.length === 0 && sched.songs) {
+      let songArr = [];
+      if (Array.isArray(sched.songs)) songArr = sched.songs;
+      else {
+        try { songArr = JSON.parse(sched.songs); } catch (e) { songArr = []; }
       }
-    });
+      songArr.forEach(s => {
+        const vid = extractYoutubeId(s.youtube_url || s.youtube || s.url);
+        if (vid) bgmPlaylist.push({ id: vid, title: s.title || s.song_title || '찬양곡' });
+      });
+    }
 
-    // 결단 찬양 포함
+    // 3) 결단 찬양 유튜브 포함
     if (sched.closing_youtube_url) {
       const closingVid = extractYoutubeId(sched.closing_youtube_url);
       if (closingVid) {
@@ -7503,8 +7513,9 @@ async function loadScheduleBgm(offsetIndex) {
 
     const modeName = offsetIndex === 0 ? '이번 주' : '저번 주';
     updateBgmUI(bgmPlaylist[0].title, modeName + ' ' + dateLabel + ' (' + bgmPlaylist.length + '곡)');
-    
-    // 플레이어 큐 로드
+
+    // 팝업 목록 즉시 갱신 및 재생 큐 준비
+    renderBgmPlaylistItems();
     initHiddenYoutubePlayer();
 
   } catch (err) {
