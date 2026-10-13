@@ -7660,41 +7660,60 @@ function toggleBgmPlay() {
 
   // 1. 현재 모드로 세팅된 bgmPlaylist가 비어있는 경우
   if (!bgmPlaylist || bgmPlaylist.length === 0) {
-    setBgmPlayerDisplayTitle('등록된 유튜브 음원 없음');
+    const mode = localStorage.getItem('shift_bgm_mode') || 'this_week';
+    if (typeof setBgmPlaylistMode === 'function') {
+      setBgmPlaylistMode(mode, false);
+    } else {
+      setBgmPlayerDisplayTitle('등록된 유튜브 음원 없음');
+    }
     return;
   }
 
-  // 2. 플레이어 상태 확인
+  // 2. 플레이어 상태 확인 및 일시정지/재생 분기 (1: PLAYING, 2: PAUSED)
   if (ytInstance && typeof ytInstance.getPlayerState === 'function') {
     const state = ytInstance.getPlayerState();
-    // 재생 중인 상태(1: PLAYING)라면 일시정지
     if (state === 1) {
       ytInstance.pauseVideo();
       updatePlayButtonIcon(false);
       return;
+    } else if (state === 2) {
+      ytInstance.playVideo();
+      updatePlayButtonIcon(true);
+      return;
     }
   }
 
-  // 3. 정지되어 있거나 처음 재생하는 경우: 현재 트랙 재생
+  // 3. 현재 트랙 유효성 검사
   const track = bgmPlaylist[currentTrackIndex || 0];
   if (!track || !track.id) {
     setBgmPlayerDisplayTitle('재생 가능한 트랙이 없습니다.');
     return;
   }
 
-  // 제목 갱신
+  // 4. 제목 및 재생 아이콘 갱신
   setBgmPlayerDisplayTitle(`🎵 ${track.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
+  updatePlayButtonIcon(true);
 
-  // 유튜브 영상 재생 명령
+  // 5. 음원 재생 명령
   if (ytInstance) {
     if (typeof ytInstance.loadVideoById === 'function') {
       ytInstance.loadVideoById(track.id);
     } else if (typeof ytInstance.playVideo === 'function') {
       ytInstance.playVideo();
     }
+  } else {
+    // 💥 핵심 보완: ytInstance가 false일 때 조용히 끝나지 않고 화면 내 iframe 또는 직접 재생 로직 호출
+    if (typeof playCurrentTrackDirectly === 'function') {
+      playCurrentTrackDirectly();
+    } else {
+      const iframeEl = document.getElementById('bgmYoutubeIframe')
+                    || document.getElementById('youtubePlayer')
+                    || document.querySelector('iframe[src*="youtube.com"]');
+      if (iframeEl) {
+        iframeEl.src = `https://www.youtube.com/embed/${track.id}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
+      }
+    }
   }
-
-  updatePlayButtonIcon(true);
 }
     
 // 재생 버튼 아이콘 토글 헬퍼 (▶ / ⏸)
@@ -7884,27 +7903,70 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 
 // 3. 실제 유튜브 플레이어로 영상 로드 및 재생 헬퍼
 function playCurrentTrackDirectly() {
-  if (!bgmPlaylist || bgmPlaylist.length === 0) return;
-  const targetTrack = bgmPlaylist[currentTrackIndex || 0];
-  if (!targetTrack || !targetTrack.id) return;
+  if (!bgmPlaylist || bgmPlaylist.length === 0) {
+    setBgmPlayerDisplayTitle('재생 가능한 음원 없음');
+    return;
+  }
 
-  setBgmPlayerDisplayTitle(`🎵 ${targetTrack.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
+  const track = bgmPlaylist[currentTrackIndex || 0];
+  if (!track || !track.id) return;
 
-  // 유튜브 API 플레이어 객체 안전 탐색 (변수명 충돌 방지)
-  const ytInstance = (typeof ytPlayer !== 'undefined' && ytPlayer)
-                  || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
-                  || (typeof window.player !== 'undefined' && window.player)
-                  || (typeof window.ytPlayer !== 'undefined' && window.ytPlayer);
+  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
+  updatePlayButtonIcon(true);
+
+  // 1) 기존 유튜브 인스턴스 탐색
+  let ytInstance = window.ytPlayer || window.bgmPlayer || window.player;
 
   if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
     try {
-      ytInstance.loadVideoById(targetTrack.id);
+      ytInstance.loadVideoById(track.id);
+      return;
     } catch (e) {
-      console.warn('플레이어 재생 대기 중:', e);
+      console.warn('기존 인스턴스 로드 실패, 대체 재생 시도:', e);
     }
   }
-}
 
+  // 2) 인스턴스가 없을 때: 화면의 유튜브 iframe 또는 플레이어 컨테이너 직접 탐색
+  const iframeEl = document.getElementById('bgmYoutubeIframe')
+                || document.getElementById('youtubePlayer')
+                || document.getElementById('ytPlayer')
+                || document.querySelector('iframe[src*="youtube.com"]');
+
+  if (iframeEl) {
+    // iframe src를 강제로 교체하여 즉시 자동재생 시작
+    iframeEl.src = `https://www.youtube.com/embed/${track.id}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
+    return;
+  }
+
+  // 3) 만약 iframe 태그조차 화면에 없다면: YouTube IFrame API로 즉석 생성
+  const container = document.getElementById('youtubePlayerContainer') 
+                 || document.getElementById('shiftFloatingPlayer')
+                 || document.body;
+
+  let placeholder = document.getElementById('bgmAutoIframeHolder');
+  if (!placeholder) {
+    placeholder = document.createElement('div');
+    placeholder.id = 'bgmAutoIframeHolder';
+    // 눈에 거슬리지 않게 1x1 픽셀 숨김 처리
+    placeholder.style.cssText = 'position:fixed; bottom:0; left:0; width:1px; height:1px; opacity:0.01; pointer-events:none; z-index:-1;';
+    container.appendChild(placeholder);
+  }
+
+  if (window.YT && window.YT.Player) {
+    window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
+      height: '1',
+      width: '1',
+      videoId: track.id,
+      playerVars: { autoplay: 1, playsinline: 1 },
+      events: {
+        onReady: (event) => { event.target.playVideo(); }
+      }
+    });
+  } else {
+    // YouTube API 스크립트 자체가 안 불러와진 경우 비상 iframe 직삽입
+    placeholder.innerHTML = `<iframe width="1" height="1" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+  }
+}
 // 4. 11자리 유튜브 코드 추출 함수 (기존 유지)
 function parseTracksFromSchedule(item) {
   if (!item || !item.youtube_url) return [];
