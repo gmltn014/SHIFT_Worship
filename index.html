@@ -7173,28 +7173,23 @@ function initLabSettings() {
 /* 실험실 BGM 토글 변경 이벤트 */
 function toggleLabBgmFeature(enabled) {
   localStorage.setItem('shift_lab_bgm', enabled ? 'true' : 'false');
-  const playerEl = document.getElementById('shiftFloatingPlayer');
 
-  // 1. 모드 선택 상자(이번 주 / 저번 주 / 내 보관함) 보이기/숨기기
+  // 1. 모드 선택 상자(이번 주 / 저번 주 / 내 보관함) 토글
   const selectorEl = document.getElementById('labBgmModeSelector');
   if (selectorEl) {
     selectorEl.style.display = enabled ? 'flex' : 'none';
   }
 
-  playerEl = document.getElementById('shiftFloatingPlayer');
+  // 2. 플로팅 플레이어 요소 참조 (중복 선언 방지를 위해 var 또는 직접 할당)
+  const targetPlayerEl = document.getElementById('shiftFloatingPlayer');
 
   if (enabled) {
-    // 2. 하단 플로팅 플레이어 활성화
-    if (playerEl) playerEl.style.display = 'flex';
-    setBgmPlaylistMode(currentBgmMode);
-  } else {
-    if (playerEl) playerEl.style.display = 'none';
-    stopBgm();
-  }
+    // 3. 하단 플레이어 활성화
+    if (targetPlayerEl) targetPlayerEl.style.display = 'flex';
 
-    // 3. 현재 설정된 모드(기본값: 이번 주 콘티)로 플레이리스트 로드
-    const activeMode = typeof currentBgmMode !== 'undefined' 
-      ? currentBgmMode 
+    // 4. 활성화된 모드로 플레이리스트 로드
+    const activeMode = (typeof currentBgmMode !== 'undefined')
+      ? currentBgmMode
       : (localStorage.getItem('shift_bgm_mode') || 'this_week');
 
     if (typeof setBgmPlaylistMode === 'function') {
@@ -7203,14 +7198,14 @@ function toggleLabBgmFeature(enabled) {
       setupWeeklyBgmPlaylist();
     }
   } else {
-    // 4. 비활성화 시 화면 숨김 및 재생 정지
-    if (playerEl) playerEl.style.display = 'none';
+    // 5. 비활성화 시 화면 숨김 및 재생 정지
+    if (targetPlayerEl) targetPlayerEl.style.display = 'none';
     if (typeof stopBgm === 'function') {
       stopBgm();
     }
   }
 }
-
+    
     /* ========================================================
    🎵 SHIFT 실험실: 백그라운드 BGM 플레이어 엔진
    ======================================================== */
