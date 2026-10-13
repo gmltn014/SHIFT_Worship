@@ -3545,34 +3545,31 @@ Video Editor ${currentScheduleData?.video || currentScheduleData?.Video || getTe
 }
 
     async function loadAllArchiveData() {
-      const loadingEl = document.getElementById('archiveLoading');
-      try {
-        const { data, error } = await supabaseClient
-          .from('schedules')
-          .select('*')
-          .order('date', { ascending: false });
+  const loadingEl = document.getElementById('archiveLoading');
+  try {
+    const { data, error } = await supabaseClient
+      .from('schedules')
+      .select('*')
+      .order('date', { ascending: false });
 
-        if (error) throw error;
-        allScheduleArchive = data || [];
-        if (loadingEl) loadingEl.style.display = 'none';
+    if (error) throw error;
+    allScheduleArchive = data || [];
+    if (loadingEl) loadingEl.style.display = 'none';
 
-        populateLeaderFilterOptions();
+    populateLeaderFilterOptions();
 
-        if (allScheduleArchive.length > 0) {
-          const latestDate = new Date(allScheduleArchive[0].date);
-          if (!isNaN(latestDate)) {
-            archiveCurrentYear = latestDate.getFullYear();
-            archiveCurrentMonth = latestDate.getMonth() + 1;
-          }
-        }
+    // 💡 [수정] 미리 등록된 미래(11월) 일정이 있더라도, 기본 화면은 항상 오늘 기준(현재 월: 10월)으로 설정
+    const today = new Date();
+    archiveCurrentYear = today.getFullYear();
+    archiveCurrentMonth = today.getMonth() + 1; // 오늘 기준 10월
 
-        updateMonthDisplay();
-        renderArchive();
-      } catch (err) {
-        console.error('아카이브 로드 실패:', err);
-        if (loadingEl) loadingEl.innerText = '데이터 로드 실패: ' + err.message;
-      }
-    }
+    updateMonthDisplay();
+    renderArchive();
+  } catch (err) {
+    console.error('아카이브 로드 실패:', err);
+    if (loadingEl) loadingEl.innerText = '데이터 로드 실패: ' + err.message;
+  }
+}
 
     function switchArchiveSubTab(subTab) {
   currentArchiveSubTab = subTab;
