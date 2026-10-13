@@ -7909,25 +7909,62 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
     }
   }
 
+  // 💡 URL 및 11자리 코드 모두 대응하는 안전한 트랙 추출 헬퍼
+  const getSafeTracks = (scheduleItem) => {
+    if (!scheduleItem) return [];
+    
+    // 기존 parseTracksFromSchedule 시도
+    let tracks = (typeof parseTracksFromSchedule === 'function') 
+      ? parseTracksFromSchedule(scheduleItem) 
+      : [];
+    if (tracks && tracks.length > 0) return tracks;
+
+    // 만약 기존 파서가 빈 배열을 뱉었을 경우, 직접 유튜브 ID 추출 보완
+    const rawYt = (scheduleItem.youtube_url || '').trim();
+    const songLines = (scheduleItem.song_list || '')
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (!rawYt) return [];
+
+    // URL에서 11자리 ID 추출 정규식
+    const idRegex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})|^([a-zA-Z0-9_-]{11})$/;
+    const rawTokens = rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+
+    const extracted = [];
+    rawTokens.forEach((token, idx) => {
+      const match = token.match(idRegex);
+      const vid = match ? (match[1] || match[2]) : (token.length === 11 ? token : null);
+      if (vid) {
+        const title = songLines[idx] ? songLines[idx].replace(/^\d+[\.\)]\s*/, '') : `곡 ${idx + 1}`;
+        extracted.push({ id: vid, title: title });
+      }
+    });
+
+    return extracted;
+  };
+
   let newTrackList = [];
 
   // 3) 모드별 트랙 추출
   if (mode === 'this_week') {
-    // [이번 주] 최신 주차의 11자리 음원 추출
+    // [이번 주] 최신 주차(archiveList[0])에서 음원 추출
     if (archiveList.length > 0) {
-      newTrackList = parseTracksFromSchedule(archiveList[0]);
+      newTrackList = getSafeTracks(archiveList[0]);
     }
   } else if (mode === 'last_week') {
-    // [저번 주] 11자리 코드가 유효하게 존재하는 직전 주차 탐색
-    for (let i = 0; i < archiveList.length; i++) {
-      const tracks = parseTracksFromSchedule(archiveList[i]);
-      if (tracks.length > 0) {
-        const thisWeekTracks = parseTracksFromSchedule(archiveList[0]);
-        // 이번 주에 유효 곡이 이미 있으면 그 이전 주차(i > 0)를 선택, 이번 주가 비어있다면 가장 최근 주차를 선택
-        if (thisWeekTracks.length > 0) {
-          if (i > 0) { newTrackList = tracks; break; }
-        } else {
-          newTrackList = tracks; break;
+    // [저번 주] 직전 주차(archiveList[1])에서 음원 추출 (없을 경우 이전 주차 탐색)
+    if (archiveList.length > 1) {
+      newTrackList = getSafeTracks(archiveList[1]);
+    }
+    // 1번 인덱스가 비어있다면 그 다음 과거 주차 탐색
+    if (newTrackList.length === 0 && archiveList.length > 2) {
+      for (let i = 2; i < archiveList.length; i++) {
+        const tr = getSafeTracks(archiveList[i]);
+        if (tr.length > 0) {
+          newTrackList = tr;
+          break;
         }
       }
     }
