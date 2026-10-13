@@ -3507,6 +3507,24 @@ Video Editor ${currentScheduleData?.video || currentScheduleData?.Video || getTe
     let isArchiveViewAll = false;
     let currentArchiveSubTab = 'conti';
 
+    function updateArchiveHeaderDisplay(year, month) {
+  const headerEl = document.getElementById('archiveCurrentMonthDisplay') 
+                || document.getElementById('archiveMonthTitle');
+  if (!headerEl) return;
+
+  const now = new Date();
+  
+  // 💡 month가 없거나, null이거나, 0 이하인 경우 현재 월(1~12)로 자동 보정
+  const validYear = (year && Number(year) > 2000) ? Number(year) : now.getFullYear();
+  const validMonth = (month && Number(month) >= 1 && Number(month) <= 12) 
+    ? Number(month) 
+    : (now.getMonth() + 1);
+
+  // 2자리 패딩 처리 (예: 10월)
+  const formattedMonth = String(validMonth).padStart(2, '0');
+  headerEl.innerText = `${validYear}년 ${formattedMonth}월`;
+}
+
     async function loadAllArchiveData() {
       const loadingEl = document.getElementById('archiveLoading');
       try {
@@ -3646,27 +3664,33 @@ Video Editor ${currentScheduleData?.video || currentScheduleData?.Video || getTe
     }
 
     function renderArchive() {
-      const filtered = (typeof getFilteredArchiveData === 'function') 
-        ? getFilteredArchiveData() 
-        : allScheduleArchive;
+  // 💥 핵심: 데이터 렌더링에 들어왔으므로 상단 로딩 스피너를 즉시 숨김!
+  const loadingEl = document.getElementById('archiveLoading');
+  if (loadingEl) {
+    loadingEl.style.display = 'none';
+  }
 
-      const contiContainer = document.getElementById('archiveContiList');
-      const membersContainer = document.getElementById('archiveMembersList');
+  const filtered = (typeof getFilteredArchiveData === 'function') 
+    ? getFilteredArchiveData() 
+    : allScheduleArchive;
 
-      if (currentArchiveSubTab === 'conti') {
-        // 콘티 탭 활성화: 콘티 목록 켜고 섬김이 목록 숨김
-        if (contiContainer) contiContainer.style.display = 'flex';
-        if (membersContainer) membersContainer.style.display = 'none';
-        renderContiArchive(filtered);
-      } else {
-        // 섬김이 탭 활성화: 섬김이 목록 켜고 콘티 목록 숨김
-        if (contiContainer) contiContainer.style.display = 'none';
-        if (membersContainer) membersContainer.style.display = 'block';
-        if (typeof renderMembersArchive === 'function') {
-          renderMembersArchive(filtered);
-        }
-      }
+  const contiContainer = document.getElementById('archiveContiList');
+  const membersContainer = document.getElementById('archiveMembersList');
+
+  if (currentArchiveSubTab === 'conti') {
+    // 콘티 탭 활성화: 콘티 목록 켜고 섬김이 목록 숨김
+    if (contiContainer) contiContainer.style.display = 'flex';
+    if (membersContainer) membersContainer.style.display = 'none';
+    renderContiArchive(filtered);
+  } else {
+    // 섬김이 탭 활성화: 섬김이 목록 켜고 콘티 목록 숨김
+    if (contiContainer) contiContainer.style.display = 'none';
+    if (membersContainer) membersContainer.style.display = 'block';
+    if (typeof renderMembersArchive === 'function') {
+      renderMembersArchive(filtered);
     }
+  }
+}
 
 function renderContiArchive(list) {
   const container = document.getElementById('archiveContiList');
