@@ -1996,6 +1996,32 @@
           </div>
         </div>
 
+        <!-- 6. 🧪 SHIFT 실험실 (Beta) -->
+        <div style="background: rgba(147, 51, 234, 0.05); padding: 14px; border-radius: 10px; border: 1px dashed rgba(147, 51, 234, 0.4); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <h4 style="font-size: 0.88rem; font-weight: 700; margin: 0; color: var(--text-color);">🧪 SHIFT 실험실</h4>
+              <span style="font-size: 0.65rem; background: #9333ea; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Beta</span>
+            </div>
+            <span style="font-size: 0.72rem; color: var(--sub-text);">미출시 기능 체험</span>
+          </div>
+          <p style="font-size: 0.74rem; color: var(--sub-text); line-height: 1.4; margin: 0;">
+            정식 도입 전 기능들을 미리 켜볼 수 있습니다. 기기 환경에 따라 동작이 불안정할 수 있습니다.
+          </p>
+
+          <!-- 실험실 1번 기능: 백그라운드 BGM 플레이어 토글 -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 4px;">
+            <div>
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-color);">🎵 백그라운드 찬양 플레이어</div>
+              <div style="font-size: 0.72rem; color: var(--sub-text);">탭을 옮겨도 음악이 끊기지 않는 미니홈피 BGM 모드</div>
+            </div>
+            <label class="lab-switch">
+              <input type="checkbox" id="labToggleBgmPlayer" onchange="toggleLabBgmFeature(this.checked)">
+              <span class="lab-slider"></span>
+            </label>
+          </div>
+        </div>
+
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
@@ -7040,6 +7066,34 @@ async function loadWikiGuideFromGitHub() {
       '</div>';
   }
 }
+
+    /* 실험실 BGM 상태 초기화 (페이지 첫 진입 시 실행) */
+function initLabSettings() {
+  const isBgmEnabled = localStorage.getItem('shift_lab_bgm') === 'true';
+  const toggleEl = document.getElementById('labToggleBgmPlayer');
+  if (toggleEl) toggleEl.checked = isBgmEnabled;
+
+  const playerEl = document.getElementById('shiftFloatingPlayer');
+  if (playerEl) {
+    playerEl.style.display = isBgmEnabled ? 'flex' : 'none';
+  }
+}
+
+/* 실험실 BGM 토글 변경 이벤트 */
+function toggleLabBgmFeature(enabled) {
+  localStorage.setItem('shift_lab_bgm', enabled ? 'true' : 'false');
+  const playerEl = document.getElementById('shiftFloatingPlayer');
+
+  if (enabled) {
+    if (playerEl) playerEl.style.display = 'flex';
+    // 플레이어 초기화 및 이번 주 콘티 곡 목록 로드
+    setupWeeklyBgmPlaylist();
+  } else {
+    if (playerEl) playerEl.style.display = 'none';
+    stopBgm(); // 재생 멈춤
+  }
+}
+    
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof loadMembersData === 'function') loadMembersData();
@@ -7050,5 +7104,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof applyFont === 'function') applyFont(localStorage.getItem('shift_font') || 'pretendard');
 });
 </script>
+
+  <!-- 플로팅 BGM 플레이어 바 (화면 우측 하단 고정) -->
+<div id="shiftFloatingPlayer" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 0 8px 24px rgba(0,0,0,0.18); border-radius: 30px; padding: 6px 14px; align-items: center; gap: 10px; backdrop-filter: blur(8px);">
+  <!-- 음악 아이콘 & 회전 애니메이션 -->
+  <span id="playerDiscIcon" style="font-size: 1.1rem; display: inline-block;">💿</span>
+  
+  <div style="display: flex; flex-direction: column; max-width: 140px;">
+    <span id="currentBgmTitle" style="font-size: 0.76rem; font-weight: 700; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      이번 주 콘티 준비 중
+    </span>
+    <span id="currentBgmStatus" style="font-size: 0.65rem; color: var(--sub-text);">정지됨</span>
+  </div>
+
+  <!-- 컨트롤 버튼 -->
+  <div style="display: flex; align-items: center; gap: 4px;">
+    <button type="button" onclick="playPrevBgm()" style="background: none; border: none; font-size: 0.8rem; cursor: pointer; color: var(--text-color);">⏮</button>
+    <button type="button" id="btnTogglePlay" onclick="toggleBgmPlay()" style="background: var(--accent-color); color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">▶</button>
+    <button type="button" onclick="playNextBgm()" style="background: none; border: none; font-size: 0.8rem; cursor: pointer; color: var(--text-color);">⏭</button>
+  </div>
+
+  <!-- 실제 재생용 숨김 YouTube Iframe 컨테이너 -->
+  <div id="hiddenYoutubePlayer" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"></div>
+</div>
+  
 </body>
 </html>
