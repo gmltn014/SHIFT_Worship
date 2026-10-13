@@ -1440,12 +1440,12 @@
 
       <div style="margin-bottom: 10px;">
         <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🕊️ 내 인생 가장 좋아하는 찬양 (선택)</label>
-        <input type="text" id="snsFavSongs" placeholder="예: 은혜, 꽃들도" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+        <input type="text" id="snsFavSongs" placeholder="유튜브 링크를 입력하거나 곡 제목을 입력해주세요(예: 나의 하나님)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
       </div>
 
       <div style="margin-bottom: 12px;">
         <label style="font-size: 0.78rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">🎧 최근 푹 빠진 추천 찬양 (선택)</label>
-        <input type="text" id="snsRecSong" placeholder="예: 나의 하나님 - 위러브" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+        <input type="text" id="snsRecSong" placeholder="유튜브 링크를 입력하거나 곡 제목을 입력해주세요(예: 나의 하나님)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
@@ -6006,7 +6006,7 @@ function stopTimerGame() {
 
           let wordHtml = item.word_qt ? `<div style="font-size: 0.83rem; margin-bottom: 8px;"><span style="color: var(--sub-text); font-weight: 700; display: block;">📖 말씀</span><div>${item.word_qt}</div></div>` : '';
 
-          // 🕊️ 인생 찬양 (하트 버튼 및 유튜브 제목 치환 적용)
+          // 🕊️ 인생 찬양 (링크 직행 + 제목 자동 치환)
           const favHeartBtn = createHeartBtn(item.favorite_songs);
           let favHtml = item.favorite_songs ? `
             <div style="font-size: 0.83rem; margin-bottom: 8px;">
@@ -6014,13 +6014,13 @@ function stopTimerGame() {
                 <span style="color: var(--sub-text); font-weight: 700;">🕊️ 인생 찬양</span>
                 <div style="display: flex; align-items: center; gap: 4px;">
                   ${favHeartBtn}
-                  <a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
+                  <a href="${getYoutubeLinkOrSearch(item.favorite_songs)}" target="_blank" rel="noopener noreferrer" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
                 </div>
               </div>
               <div style="margin-top: 2px;">${formatTasteSongDisplay(item.favorite_songs)}</div>
             </div>` : '';
 
-          // 🎧 추천 찬양 (하트 버튼 및 유튜브 제목 치환 적용)
+          // 🎧 추천 찬양 (링크 직행 + 제목 자동 치환)
           const recHeartBtn = createHeartBtn(item.recommended_song);
           let recHtml = item.recommended_song ? `
             <div style="font-size: 0.83rem;">
@@ -6028,12 +6028,12 @@ function stopTimerGame() {
                 <span style="color: var(--sub-text); font-weight: 700;">🎧 추천 찬양</span>
                 <div style="display: flex; align-items: center; gap: 4px;">
                   ${recHeartBtn}
-                  <a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
+                  <a href="${getYoutubeLinkOrSearch(item.recommended_song)}" target="_blank" rel="noopener noreferrer" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
                 </div>
               </div>
               <div style="margin-top: 2px;">${formatTasteSongDisplay(item.recommended_song)}</div>
             </div>` : '';
-
+          
           return `
             <div class="card" style="border-top: 5px solid ${cardBorderColor}; padding: 14px; margin-bottom: 0;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -7653,9 +7653,10 @@ function handleBgmPlayerStateChange(event) {
 
 // 4. 재생 / 일시정지 토글
 function toggleBgmPlay() {
-  const player = (typeof ytPlayer !== 'undefined' && ytPlayer)
-              || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
-              || (typeof player !== 'undefined' && player);
+  const ytInstance = (typeof ytPlayer !== 'undefined' && ytPlayer)
+                  || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
+                  || (typeof window.player !== 'undefined' && window.player)
+                  || (typeof window.ytPlayer !== 'undefined' && window.ytPlayer);
 
   // 1. 현재 모드로 세팅된 bgmPlaylist가 비어있는 경우
   if (!bgmPlaylist || bgmPlaylist.length === 0) {
@@ -7664,11 +7665,11 @@ function toggleBgmPlay() {
   }
 
   // 2. 플레이어 상태 확인
-  if (player && typeof player.getPlayerState === 'function') {
-    const state = player.getPlayerState();
+  if (ytInstance && typeof ytInstance.getPlayerState === 'function') {
+    const state = ytInstance.getPlayerState();
     // 재생 중인 상태(1: PLAYING)라면 일시정지
     if (state === 1) {
-      player.pauseVideo();
+      ytInstance.pauseVideo();
       updatePlayButtonIcon(false);
       return;
     }
@@ -7685,17 +7686,17 @@ function toggleBgmPlay() {
   setBgmPlayerDisplayTitle(`🎵 ${track.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
 
   // 유튜브 영상 재생 명령
-  if (player) {
-    if (typeof player.loadVideoById === 'function') {
-      player.loadVideoById(track.id);
-    } else if (typeof player.playVideo === 'function') {
-      player.playVideo();
+  if (ytInstance) {
+    if (typeof ytInstance.loadVideoById === 'function') {
+      ytInstance.loadVideoById(track.id);
+    } else if (typeof ytInstance.playVideo === 'function') {
+      ytInstance.playVideo();
     }
   }
 
   updatePlayButtonIcon(true);
 }
-
+    
 // 재생 버튼 아이콘 토글 헬퍼 (▶ / ⏸)
 function updatePlayButtonIcon(isPlaying) {
   const playBtn = document.getElementById('btnBgmPlay') 
@@ -7889,14 +7890,15 @@ function playCurrentTrackDirectly() {
 
   setBgmPlayerDisplayTitle(`🎵 ${targetTrack.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
 
-  // 유튜브 API 플레이어 객체 탐색
-  const player = (typeof ytPlayer !== 'undefined' && ytPlayer)
-              || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
-              || (typeof player !== 'undefined' && player);
+  // 유튜브 API 플레이어 객체 안전 탐색 (변수명 충돌 방지)
+  const ytInstance = (typeof ytPlayer !== 'undefined' && ytPlayer)
+                  || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
+                  || (typeof window.player !== 'undefined' && window.player)
+                  || (typeof window.ytPlayer !== 'undefined' && window.ytPlayer);
 
-  if (player && typeof player.loadVideoById === 'function') {
+  if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
     try {
-      player.loadVideoById(targetTrack.id);
+      ytInstance.loadVideoById(targetTrack.id);
     } catch (e) {
       console.warn('플레이어 재생 대기 중:', e);
     }
@@ -8237,6 +8239,26 @@ function formatTasteSongDisplay(rawText) {
   }, 10);
 
   return `<span id="${uniqueId}" style="color: var(--text-color); font-weight: 500;">영상 제목 조회 중...</span>`;
+}
+
+    /* 🔗 입력값이 유튜브 링크면 그대로 반환하고, 일반 텍스트면 검색 링크 생성 */
+function getYoutubeLinkOrSearch(rawText) {
+  if (!rawText || !rawText.trim()) return '#';
+  const trimmed = rawText.trim();
+
+  // 유튜브 URL 형식(http, youtu.be 등)인지 확인
+  const isUrl = /^https?:\/\//i.test(trimmed) || /youtu\.?be/i.test(trimmed);
+
+  if (isUrl) {
+    // 이미 URL인 경우 해당 주소로 직행
+    return trimmed;
+  }
+
+  // 일반 텍스트(곡명)인 경우 기존 검색 함수 사용 (또는 기본 유튜브 검색 링크)
+  if (typeof getYoutubeSearchUrl === 'function') {
+    return getYoutubeSearchUrl(trimmed);
+  }
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(trimmed)}`;
 }
     
 /* 15. 페이지 시작 진입점 */
