@@ -8041,11 +8041,12 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 
 // 3. 실제 유튜브 플레이어로 영상 로드 및 재생 헬퍼
 function playCurrentTrackDirectly() {
-  // 전역/로컬 양방향 안전 참조
-  const list = window.bgmPlaylist || (typeof bgmPlaylist !== 'undefined' ? bgmPlaylist : []);
+  const playlist = window.bgmPlaylist || (typeof bgmPlaylist !== 'undefined' ? bgmPlaylist : []);
 
-  if (!list || list.length === 0) {
-    setBgmPlayerDisplayTitle('재생 가능한 음원 없음');
+  if (!playlist || playlist.length === 0) {
+    if (typeof setBgmPlayerDisplayTitle === 'function') {
+      setBgmPlayerDisplayTitle('재생 가능한 음원 없음');
+    }
     return;
   }
 
@@ -8053,44 +8054,43 @@ function playCurrentTrackDirectly() {
   if (typeof window.currentTrackIndex === 'undefined') {
     window.currentTrackIndex = (typeof currentTrackIndex !== 'undefined') ? currentTrackIndex : 0;
   }
-  if (typeof currentTrackIndex !== 'undefined') {
-    currentTrackIndex = window.currentTrackIndex;
+  let idx = window.currentTrackIndex;
+  if (idx < 0 || idx >= playlist.length) {
+    idx = 0;
+    window.currentTrackIndex = 0;
+    if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = 0;
   }
 
-  const idx = window.currentTrackIndex;
-  const track = list[idx];
+  const track = playlist[idx];
+  if (!track || !track.id) return;
 
-  if (!track || !track.id) {
-    console.warn('[BGM] 유효하지 않은 트랙 인덱스:', idx, list);
-    return;
+  // UI 곡 정보 표시 및 버튼 상태 갱신
+  if (typeof setBgmPlayerDisplayTitle === 'function') {
+    setBgmPlayerDisplayTitle(`🎵 ${track.title} (${idx + 1}/${playlist.length})`);
   }
-
-  // 1) UI 타이틀 및 버튼 상태 갱신
-  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${idx + 1}/${list.length})`);
-  if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+  if (typeof updatePlayButtonIcon === 'function') {
+    updatePlayButtonIcon(true);
+  }
   const slider = document.getElementById('bgmSeekSlider');
   if (slider) slider.value = 0;
 
-  // 2) 유튜브 인스턴스 탐색
+  // 1) 기존 유튜브 플레이어가 이미 존재할 경우 (곡 교체)
   let ytInstance = window.ytPlayer || window.bgmPlayer || window.player;
-
-  // 3) 기존 유튜브 플레이어가 이미 로드되어 있는 경우 (곡 교체)
   if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
     try {
       ytInstance.loadVideoById(track.id);
 
-      // 볼륨 설정 적용
       const vol = parseInt(localStorage.getItem('shift_bgm_volume') || '80', 10);
       if (typeof ytInstance.setVolume === 'function') {
         ytInstance.setVolume(vol);
       }
       return;
     } catch (e) {
-      console.warn('기존 인스턴스 재생 실패, 재초기화:', e);
+      console.warn('기존 인스턴스 재생 실패, 재생성 진행:', e);
     }
   }
 
-  // 4) 신규 플레이어 컨테이너 준비
+  // 2) 플레이어 홀더 준비
   const container = document.getElementById('youtubePlayerContainer') 
                  || document.getElementById('shiftFloatingPlayer') 
                  || document.body;
@@ -8103,7 +8103,7 @@ function playCurrentTrackDirectly() {
     container.appendChild(placeholder);
   }
 
-  // 5) YouTube IFrame API 생성 및 onStateChange(곡 종료 감지) 연결
+  // 3) YouTube IFrame API 생성 및 onStateChange 이벤트 바인딩
   if (window.YT && window.YT.Player) {
     window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
       height: '1',
@@ -8123,34 +8123,30 @@ function playCurrentTrackDirectly() {
           }
           event.target.playVideo();
         },
-        // 💥 곡 종료(상태 0: ENDED) 감지 시 무조건 다음 곡 실행
         onStateChange: (event) => {
+          // 0 = YT.PlayerState.ENDED (곡 종료)
           if (event.data === 0 || (window.YT && event.data === window.YT.PlayerState.ENDED)) {
-            console.log('[BGM] 곡 종료 감지! 다음 곡으로 넘어갑니다.');
+            console.log('[BGM] 곡 종료 감지 -> 다음 곡 전환');
             playNextBgmTrack();
           }
         }
       }
     });
   } else {
-    // API 미지원 대체
     placeholder.innerHTML = `<iframe width="1" height="1" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
   }
 }
 
-// ⏭️ 다음 곡 전환 함수 (단독 분리)
+// ⏭️ 다음 곡 이동 전용 함수
 function playNextBgmTrack() {
-  const list = window.bgmPlaylist || (typeof bgmPlaylist !== 'undefined' ? bgmPlaylist : []);
-  if (!list || list.length === 0) return;
+  const playlist = window.bgmPlaylist || (typeof bgmPlaylist !== 'undefined' ? bgmPlaylist : []);
+  if (!playlist || playlist.length === 0) return;
 
-  let currentIdx = (typeof window.currentTrackIndex !== 'undefined') ? window.currentTrackIndex : 0;
-
-  if (currentIdx < list.length - 1) {
-    currentIdx++;
-    window.currentTrackIndex = currentIdx;
-    if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = currentIdx;
-    
-    console.log(`[BGM] ${currentIdx + 1}번째 곡으로 이동:`, list[currentIdx].title);
+  let curIdx = (typeof window.currentTrackIndex !== 'undefined') ? window.currentTrackIndex : 0;
+  if (curIdx < playlist.length - 1) {
+    curIdx++;
+    window.currentTrackIndex = curIdx;
+    if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = curIdx;
     playCurrentTrackDirectly();
   } else {
     console.log('[BGM] 플레이리스트 모든 곡 재생 완료');
