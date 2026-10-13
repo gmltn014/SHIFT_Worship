@@ -7874,7 +7874,7 @@ function setBgmPlayerDisplayTitle(titleText) {
 async function setBgmPlaylistMode(mode, isSilentInit = false) {
   localStorage.setItem('shift_bgm_mode', mode);
 
-  // 1) 버튼 활성화 UI 토글 (btn-primary / btn-secondary)
+  // 1) 버튼 스타일 토글
   const btnThis = document.getElementById('btnBgmModeThisWeek');
   const btnLast = document.getElementById('btnBgmModeLastWeek');
   const btnMy = document.getElementById('btnBgmModeMy');
@@ -7889,8 +7889,8 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
   updateBtnStyle(btnLast, mode === 'last_week');
   updateBtnStyle(btnMy, mode === 'my_playlist');
 
-  // 2) 아카이브 데이터 준비 상태 확인 및 필요 시 자동 보완 조회
-  let archiveList = (typeof allScheduleArchive !== 'undefined' && Array.isArray(allScheduleArchive))
+  // 2) 데이터 준비 (없으면 Supabase에서 로드)
+  let archiveList = (typeof allScheduleArchive !== 'undefined' && Array.isArray(allScheduleArchive) && allScheduleArchive.length > 0)
     ? allScheduleArchive
     : [];
 
@@ -7900,7 +7900,7 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
         .from('schedules')
         .select('*')
         .order('date', { ascending: false });
-      if (data) {
+      if (data && data.length > 0) {
         archiveList = data;
         if (typeof allScheduleArchive !== 'undefined') allScheduleArchive = data;
       }
@@ -7909,71 +7909,95 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
     }
   }
 
-  // 💡 URL 및 11자리 코드 모두 대응하는 안전한 트랙 추출 헬퍼
-  const getSafeTracks = (scheduleItem) => {
-    if (!scheduleItem) return [];
+  // 3) 오늘 기준 이번 주일(Sunday)과 지난 주일(Sunday) 날짜 계산
+  const now = new Date();
+  const day = now.getDay(); // 0: 일, 1: 월, 2: 화...
+  const daysUntilSunday = (7 - day) % 7; // 오늘이 주일이면 0, 평일이면 다가오는 주일까지 남은 날짜
+
+  const thisSunday = new Date(now);
+  thisSunday.setDate(now.getDate() + daysUntilSunday);
+  
+  const lastSunday = new Date(thisSunday);
+  lastSunday.setDate(thisSunday.getDate() - 7);
+
+  const fmt = (d) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const thisWeekDateStr = fmt(thisSunday); // 예: 2026-10-18
+  const lastWeekDateStr = fmt(lastSunday); // 예: 2026-10-11
+
+  // 날짜 비교 헬퍼 (구분자 무시 비교)
+  const isMatchDate = (itemDate, targetStr) => {
+    if (!itemDate || !targetStr) return false;
+    const cleanItem = String(itemDate).replace(/[^0-9]/g, '');
+    const cleanTarget = String(targetStr).replace(/[^0-9]/g, '');
+    return cleanItem.endsWith(cleanTarget.slice(-6)) || cleanItem.includes(cleanTarget);
+  };
+
+  // 4) 트랙 추출 헬퍼 (URL/ID 모두 유연하게 처리)
+  const extractSafeTracks = (item) => {
+    if (!item || !item.youtube_url) return [];
     
-    // 기존 parseTracksFromSchedule 시도
-    let tracks = (typeof parseTracksFromSchedule === 'function') 
-      ? parseTracksFromSchedule(scheduleItem) 
-      : [];
+    // 기존 함수 시도
+    let tracks = (typeof parseTracksFromSchedule === 'function') ? parseTracksFromSchedule(item) : [];
     if (tracks && tracks.length > 0) return tracks;
 
-    // 만약 기존 파서가 빈 배열을 뱉었을 경우, 직접 유튜브 ID 추출 보완
-    const rawYt = (scheduleItem.youtube_url || '').trim();
-    const songLines = (scheduleItem.song_list || '')
-      .split('\n')
-      .map(s => s.trim())
-      .filter(Boolean);
+    // 만약 기존 함수가 빈 배열을 주면 URL 패턴에서 11자리 ID 직접 추출
+    const rawYt = item.youtube_url.trim();
+    const songLines = (item.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
+    const tokens = rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+    const result = [];
 
-    if (!rawYt) return [];
-
-    // URL에서 11자리 ID 추출 정규식
-    const idRegex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})|^([a-zA-Z0-9_-]{11})$/;
-    const rawTokens = rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
-
-    const extracted = [];
-    rawTokens.forEach((token, idx) => {
-      const match = token.match(idRegex);
-      const vid = match ? (match[1] || match[2]) : (token.length === 11 ? token : null);
+    const idRegex = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)?([a-zA-Z0-9_-]{11})/;
+    tokens.forEach((t, idx) => {
+      const m = t.match(idRegex);
+      const vid = m ? m[1] : (t.length === 11 ? t : null);
       if (vid) {
-        const title = songLines[idx] ? songLines[idx].replace(/^\d+[\.\)]\s*/, '') : `곡 ${idx + 1}`;
-        extracted.push({ id: vid, title: title });
+        const title = (songLines[idx] || `찬양 ${idx + 1}`).replace(/^\d+[\.\)]\s*/, '');
+        result.push({ id: vid, title: title });
       }
     });
 
-    return extracted;
+    if (item.closing_youtube_url) {
+      const cm = item.closing_youtube_url.match(idRegex);
+      const cvid = cm ? cm[1] : (item.closing_youtube_url.trim().length === 11 ? item.closing_youtube_url.trim() : null);
+      if (cvid) {
+        result.push({ id: cvid, title: item.closing_song ? `[결단] ${item.closing_song}` : '결단 찬양' });
+      }
+    }
+    return result;
   };
 
   let newTrackList = [];
 
-  // 3) 모드별 트랙 추출
+  // 5) 모드별 스케줄 타겟팅
   if (mode === 'this_week') {
-    // [이번 주] 최신 주차(archiveList[0])에서 음원 추출
-    if (archiveList.length > 0) {
-      newTrackList = getSafeTracks(archiveList[0]);
+    // 1차: 이번 주 주일 날짜와 일치하는 데이터 탐색
+    let target = archiveList.find(item => isMatchDate(item.date, thisWeekDateStr));
+    // 2차 fallback: 날짜가 완벽히 안 맞으면 현재 콘티(currentScheduleData) 또는 최신 데이터
+    if (!target) {
+      target = (typeof currentScheduleData !== 'undefined' && currentScheduleData) ? currentScheduleData : archiveList[0];
     }
+    newTrackList = extractSafeTracks(target);
+
   } else if (mode === 'last_week') {
-    // [저번 주] 직전 주차(archiveList[1])에서 음원 추출 (없을 경우 이전 주차 탐색)
-    if (archiveList.length > 1) {
-      newTrackList = getSafeTracks(archiveList[1]);
+    // 1차: 지난 주 주일 날짜와 일치하는 데이터 탐색
+    let target = archiveList.find(item => isMatchDate(item.date, lastWeekDateStr));
+    // 2차 fallback: 못 찾으면 이번 주가 아닌 그 다음 과거 데이터 탐색
+    if (!target && archiveList.length > 1) {
+      target = archiveList.find(item => !isMatchDate(item.date, thisWeekDateStr) && extractSafeTracks(item).length > 0);
     }
-    // 1번 인덱스가 비어있다면 그 다음 과거 주차 탐색
-    if (newTrackList.length === 0 && archiveList.length > 2) {
-      for (let i = 2; i < archiveList.length; i++) {
-        const tr = getSafeTracks(archiveList[i]);
-        if (tr.length > 0) {
-          newTrackList = tr;
-          break;
-        }
-      }
-    }
+    newTrackList = extractSafeTracks(target);
+
   } else if (mode === 'my_playlist') {
-    // [내 보관함]
     newTrackList = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
   }
 
-  // 4) 곡이 없을 때 처리 (alert 없이 화면 텍스트로 조용히 안내)
+  // 6) 곡이 없을 때 처리
   if (!newTrackList || newTrackList.length === 0) {
     if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = [];
     if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = 0;
@@ -7986,7 +8010,6 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 
     setBgmPlayerDisplayTitle(emptyMessages[mode] || '등록된 음원 없음');
 
-    // 유튜브 플레이어 정지
     const player = (typeof ytPlayer !== 'undefined' && ytPlayer)
                 || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
                 || (typeof player !== 'undefined' && player);
@@ -7996,16 +8019,14 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
     return;
   }
 
-  // 5) BGM 플레이어 재생 큐 및 인덱스 갱신
+  // 7) BGM 플레이어 재생 큐 및 인덱스 갱신
   bgmPlaylist = newTrackList;
   currentTrackIndex = 0;
 
-  // 6) 첫 곡 정보 화면에 즉시 표시
   const firstTrack = bgmPlaylist[0];
   const songTitle = firstTrack.title || '재생 준비 완료';
   setBgmPlayerDisplayTitle(`🎵 ${songTitle} (1/${bgmPlaylist.length})`);
 
-  // 7) 유튜브 플레이어로 즉시 로드 및 재생
   if (!isSilentInit) {
     playCurrentTrackDirectly();
   }
