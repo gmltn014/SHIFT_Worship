@@ -2067,9 +2067,25 @@
               <span class="lab-slider"></span>
             </label>
           </div>
-        </div>
 
-      </div>
+          <!-- 💡 3종 플레이리스트 모드 선택 버튼 (BGM 토글 아래 추가) -->
+          <div id="labBgmModeSelector" style="display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 10px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.72rem; font-weight: 700; color: var(--sub-text);">재생할 플레이리스트 선택</span>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" id="btnBgmModeThisWeek" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('this_week')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
+                🎼 이번 주
+              </button>
+              <button type="button" id="btnBgmModeLastWeek" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('last_week')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
+                ⏮ 저번 주
+              </button>
+              <button type="button" id="btnBgmModeMy" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('my_playlist')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
+                ❤️ 내 보관함
+              </button>
+            </div>
+          </div>
+        </div> <!-- 실험실 섹션 닫기 -->
+
+      </div> <!-- 설정 모달 컨텐츠 닫기 -->
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
         <button type="button" class="btn-action btn-primary" onclick="closeSettingsModal()" style="font-size: 0.85rem; padding: 7px 18px;">확인</button>
@@ -2666,95 +2682,118 @@ applyTheme(localStorage.getItem('shift_theme') || 'light');
     }
 
     function renderContiView(item) {
-      if (!item) return;
-      currentScheduleData = item;
+  if (!item) return;
+  currentScheduleData = item;
 
-      const rawTitle = (item.worship_title || '').trim();
-      const isCanceled = /^x_/i.test(rawTitle);
-      const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
+  const rawTitle = (item.worship_title || '').trim();
+  const isCanceled = /^x_/i.test(rawTitle);
+  const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
 
-      const dateEl = document.getElementById('viewWorshipDate');
-      const titleEl = document.getElementById('viewWorshipTitle');
-      const songBox = document.querySelector('#tab-conti .song-box');
-      const closingBox = songBox ? songBox.nextElementSibling : null;
-      const actionGroup = document.querySelector('#tab-conti .action-btn-group');
-      const lineupSection = document.querySelector('.lineup-header-wrapper');
-      const lineupCapture = document.getElementById('lineupCaptureArea');
+  const dateEl = document.getElementById('viewWorshipDate');
+  const titleEl = document.getElementById('viewWorshipTitle');
+  const songBox = document.querySelector('#tab-conti .song-box');
+  const closingBox = songBox ? songBox.nextElementSibling : null;
+  const actionGroup = document.querySelector('#tab-conti .action-btn-group');
+  const lineupSection = document.querySelector('.lineup-header-wrapper');
+  const lineupCapture = document.getElementById('lineupCaptureArea');
 
-      let cancelNoticeEl = document.getElementById('contiCancelNotice');
-      if (!cancelNoticeEl) {
-        cancelNoticeEl = document.createElement('div');
-        cancelNoticeEl.id = 'contiCancelNotice';
-        cancelNoticeEl.style.cssText = 'background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 24px; text-align: center; margin-top: 14px;';
-        const cardHeader = document.querySelector('#tab-conti .card-header');
-        if (cardHeader && cardHeader.parentNode) {
-          cardHeader.parentNode.insertBefore(cancelNoticeEl, cardHeader.nextSibling);
-        }
-      }
-
-      if (dateEl) dateEl.innerText = item.date || '';
-
-      if (isCanceled) {
-        if (titleEl) titleEl.innerHTML = `<span style="color: #ef4444;">🚫 [예배 없음]</span> ${cancelReason || '예배 일정이 취소되었습니다.'}`;
-        cancelNoticeEl.innerHTML = `
-          <div style="font-size: 2rem; margin-bottom: 8px;">🚫</div>
-          <h3 style="font-size: 1.15rem; font-weight: 700; color: #ef4444; margin-bottom: 6px;">해당 주차는 예배가 없습니다</h3>
-          <p style="font-size: 0.95rem; color: var(--sub-text);"><strong>안내 사유:</strong> ${cancelReason || '사유 미입력'}</p>
-        `;
-        cancelNoticeEl.style.display = 'block';
-        if (songBox) songBox.style.display = 'none';
-        if (closingBox) closingBox.style.display = 'none';
-        if (actionGroup) actionGroup.style.display = 'none';
-        if (lineupSection) lineupSection.style.display = 'none';
-        if (lineupCapture) lineupCapture.style.display = 'none';
-        return;
-      }
-
-      if (cancelNoticeEl) cancelNoticeEl.style.display = 'none';
-      if (songBox) songBox.style.display = 'block';
-      if (closingBox) closingBox.style.display = 'block';
-      if (actionGroup) actionGroup.style.display = 'flex';
-      if (lineupSection) lineupSection.style.display = 'flex';
-      if (lineupCapture) lineupCapture.style.display = 'block';
-
-      if (titleEl) titleEl.innerText = rawTitle || `${item.date} 주일예배`;
-
-      const capDate = document.getElementById('captureDate');
-      const capTitle = document.getElementById('captureTitle');
-      if (capDate) capDate.innerText = item.date || '';
-      if (capTitle) capTitle.innerText = rawTitle || `${item.date} 주일예배`;
-
-      const songEl = document.getElementById('viewSongList');
-      if (songEl) songEl.innerText = item.song_list || '등록된 곡 목록이 없습니다.';
-
-      const closingEl = document.getElementById('viewClosingSong');
-      if (closingEl) closingEl.innerText = item.closing_song || '해당 없음';
-      setupLinkBtn('btnClosingSheet', item.closing_sheet_url);
-      setupLinkBtn('btnClosingYoutube', item.closing_youtube_url);
-
-      setupLinkBtn('btnSheet', item.sheet_url);
-      const computedYoutubeUrl = buildYoutubePlaylistUrl(item.youtube_url);
-      setupLinkBtn('btnYoutube', computedYoutubeUrl);
-      setupLinkBtn('btnMonitoring', item.monitoring_url);
-
-      const setSession = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = (val && val.trim() !== '' && val.trim() !== 'X') ? val.trim() : '-';
-      };
-
-      setSession('viewLeader', item.leader);
-      setSession('viewVocal', item.vocal);
-      setSession('viewKeyboard1', item.keyboard1);
-      setSession('viewKeyboard2', item.keyboard2);
-      setSession('viewDrum', item.drum);
-      setSession('viewGuitar', item.guitar);
-      setSession('viewBass', item.bass);
-      setSession('viewSound', item.sound);
-      setSession('viewBroadcast', item.broadcast);
-      setSession('viewPrompter', item.prompter || item.Prompter);
-      setSession('viewVideo', item.video || item.Video);
+  let cancelNoticeEl = document.getElementById('contiCancelNotice');
+  if (!cancelNoticeEl) {
+    cancelNoticeEl = document.createElement('div');
+    cancelNoticeEl.id = 'contiCancelNotice';
+    cancelNoticeEl.style.cssText = 'background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 24px; text-align: center; margin-top: 14px;';
+    const cardHeader = document.querySelector('#tab-conti .card-header');
+    if (cardHeader && cardHeader.parentNode) {
+      cardHeader.parentNode.insertBefore(cancelNoticeEl, cardHeader.nextSibling);
     }
+  }
 
+  if (dateEl) dateEl.innerText = item.date || '';
+
+  if (isCanceled) {
+    if (titleEl) titleEl.innerHTML = '<span style="color: #ef4444;">🚫 [예배 없음]</span> ' + (cancelReason || '예배 일정이 취소되었습니다.');
+    cancelNoticeEl.innerHTML = 
+      '<div style="font-size: 2rem; margin-bottom: 8px;">🚫</div>' +
+      '<h3 style="font-size: 1.15rem; font-weight: 700; color: #ef4444; margin-bottom: 6px;">해당 주차는 예배가 없습니다</h3>' +
+      '<p style="font-size: 0.95rem; color: var(--sub-text);"><strong>안내 사유:</strong> ' + (cancelReason || '사유 미입력') + '</p>';
+    cancelNoticeEl.style.display = 'block';
+    if (songBox) songBox.style.display = 'none';
+    if (closingBox) closingBox.style.display = 'none';
+    if (actionGroup) actionGroup.style.display = 'none';
+    if (lineupSection) lineupSection.style.display = 'none';
+    if (lineupCapture) lineupCapture.style.display = 'none';
+    return;
+  }
+
+  if (cancelNoticeEl) cancelNoticeEl.style.display = 'none';
+  if (songBox) songBox.style.display = 'block';
+  if (closingBox) closingBox.style.display = 'block';
+  if (actionGroup) actionGroup.style.display = 'flex';
+  if (lineupSection) lineupSection.style.display = 'flex';
+  if (lineupCapture) lineupCapture.style.display = 'block';
+
+  if (titleEl) titleEl.innerText = rawTitle || (item.date + ' 주일예배');
+
+  const capDate = document.getElementById('captureDate');
+  const capTitle = document.getElementById('captureTitle');
+  if (capDate) capDate.innerText = item.date || '';
+  if (capTitle) capTitle.innerText = rawTitle || (item.date + ' 주일예배');
+
+  // 1. 본 찬양 목록 출력
+  const songEl = document.getElementById('viewSongList');
+  if (songEl) songEl.innerText = item.song_list || '등록된 곡 목록이 없습니다.';
+
+  // 2. 결단 찬양 출력 + 하트(❤️/🤍) 보관함 버튼 추가
+  const closingEl = document.getElementById('viewClosingSong');
+  if (closingEl) {
+    const closingTitle = item.closing_song || '해당 없음';
+    let closingHeartBtn = '';
+
+    // 결단 찬양에 유튜브 영상 링크가 있다면 하트 버튼 생성
+    if (item.closing_youtube_url && typeof extractYoutubeId === 'function') {
+      const closingVid = extractYoutubeId(item.closing_youtube_url);
+      if (closingVid) {
+        const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+        const isFav = favorites.some(function(f) { return f.id === closingVid; });
+        const cleanTitle = ('[결단] ' + closingTitle).replace(/'/g, "\\'");
+
+        closingHeartBtn = ' <button type="button" onclick="handleHeartClick(event, this, \'' + closingVid + '\', \'' + cleanTitle + '\')" ' +
+          'style="background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 0 4px; vertical-align: middle;" ' +
+          'title="' + (isFav ? '내 보관함에서 제거' : '내 보관함에 담기') + '">' +
+          (isFav ? '❤️' : '🤍') +
+          '</button>';
+      }
+    }
+    // 글자 + 하트 버튼 함께 렌더링
+    closingEl.innerHTML = closingTitle + closingHeartBtn;
+  }
+
+  setupLinkBtn('btnClosingSheet', item.closing_sheet_url);
+  setupLinkBtn('btnClosingYoutube', item.closing_youtube_url);
+
+  setupLinkBtn('btnSheet', item.sheet_url);
+  const computedYoutubeUrl = buildYoutubePlaylistUrl(item.youtube_url);
+  setupLinkBtn('btnYoutube', computedYoutubeUrl);
+  setupLinkBtn('btnMonitoring', item.monitoring_url);
+
+  const setSession = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = (val && val.trim() !== '' && val.trim() !== 'X') ? val.trim() : '-';
+  };
+
+  setSession('viewLeader', item.leader);
+  setSession('viewVocal', item.vocal);
+  setSession('viewKeyboard1', item.keyboard1);
+  setSession('viewKeyboard2', item.keyboard2);
+  setSession('viewDrum', item.drum);
+  setSession('viewGuitar', item.guitar);
+  setSession('viewBass', item.bass);
+  setSession('viewSound', item.sound);
+  setSession('viewBroadcast', item.broadcast);
+  setSession('viewPrompter', item.prompter || item.Prompter);
+  setSession('viewVideo', item.video || item.Video);
+}
+    
     function copyLineupText() {
       const getText = (id) => {
         const el = document.getElementById(id);
@@ -7134,15 +7173,37 @@ function initLabSettings() {
 /* 실험실 BGM 토글 변경 이벤트 */
 function toggleLabBgmFeature(enabled) {
   localStorage.setItem('shift_lab_bgm', enabled ? 'true' : 'false');
+  const playerEl = document.getElementById('shiftFloatingPlayer');
+
+  // 1. 모드 선택 상자(이번 주 / 저번 주 / 내 보관함) 보이기/숨기기
+  const selectorEl = document.getElementById('labBgmModeSelector');
+  if (selectorEl) {
+    selectorEl.style.display = enabled ? 'flex' : 'none';
+  }
 
   const playerEl = document.getElementById('shiftFloatingPlayer');
-  
+
   if (enabled) {
+    // 2. 하단 플로팅 플레이어 활성화
     if (playerEl) playerEl.style.display = 'flex';
-    if (typeof setupWeeklyBgmPlaylist === 'function') {
+    setBgmPlaylistMode(currentBgmMode);
+  } else {
+    if (playerEl) playerEl.style.display = 'none';
+    stopBgm();
+  }
+
+    // 3. 현재 설정된 모드(기본값: 이번 주 콘티)로 플레이리스트 로드
+    const activeMode = typeof currentBgmMode !== 'undefined' 
+      ? currentBgmMode 
+      : (localStorage.getItem('shift_bgm_mode') || 'this_week');
+
+    if (typeof setBgmPlaylistMode === 'function') {
+      setBgmPlaylistMode(activeMode);
+    } else if (typeof setupWeeklyBgmPlaylist === 'function') {
       setupWeeklyBgmPlaylist();
     }
   } else {
+    // 4. 비활성화 시 화면 숨김 및 재생 정지
     if (playerEl) playerEl.style.display = 'none';
     if (typeof stopBgm === 'function') {
       stopBgm();
@@ -7359,6 +7420,151 @@ function updateBgmControlsUI(playing) {
       : '일시정지됨';
   }
 }
+
+    /* ========================================================
+   🎵 SHIFT BGM 3-Mode 플레이리스트 로직
+   ======================================================== */
+
+// 현재 모드 (기본값: this_week)
+let currentBgmMode = localStorage.getItem('shift_bgm_mode') || 'this_week';
+
+/* 1. 모드 변경 함수 */
+async function setBgmPlaylistMode(mode) {
+  currentBgmMode = mode;
+  localStorage.setItem('shift_bgm_mode', mode);
+  updateBgmModeButtonsUI();
+
+  const modeTitleEl = document.getElementById('bgmModeTitle');
+
+  if (mode === 'this_week') {
+    if (modeTitleEl) modeTitleEl.innerText = '🎼 이번 주 콘티';
+    await loadScheduleBgm(0); // 가장 최근 스케줄
+  } else if (mode === 'last_week') {
+    if (modeTitleEl) modeTitleEl.innerText = '⏮ 저번 주 콘티';
+    await loadScheduleBgm(1); // 직전 스케줄
+  } else if (mode === 'my_playlist') {
+    if (modeTitleEl) modeTitleEl.innerText = '❤️ 나만의 플레이리스트';
+    loadMyPlaylistBgm();
+  }
+}
+
+/* 2. 스케줄(이번 주 / 저번 주) 곡 파싱 공통 함수 */
+async function loadScheduleBgm(offsetIndex) {
+  bgmPlaylist = [];
+  currentBgmIndex = 0;
+
+  try {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+
+    // 최신 2개 주차 스케줄 조회
+    const { data, error } = await supabaseClient
+      .from('schedules')
+      .select('*')
+      .order('worship_date', { ascending: false })
+      .limit(2);
+
+    if (error || !data || !data[offsetIndex]) {
+      const label = offsetIndex === 0 ? '이번 주' : '저번 주';
+      updateBgmUI(label + ' 콘티 없음', '콘티 준비 중');
+      return;
+    }
+
+    const sched = data[offsetIndex];
+    const dateLabel = sched.worship_date ? '(' + sched.worship_date.substring(5) + ')' : '';
+
+    // 곡 파싱 (배열 or JSON 문자열)
+    let songs = [];
+    if (Array.isArray(sched.songs)) {
+      songs = sched.songs;
+    } else if (typeof sched.songs === 'string') {
+      try { songs = JSON.parse(sched.songs); } catch (e) { songs = []; }
+    }
+
+    songs.forEach(function(s) {
+      const vid = extractYoutubeId(s.youtube_url || s.youtube || s.url);
+      if (vid) {
+        bgmPlaylist.push({
+          id: vid,
+          title: s.title || s.song_title || '찬양곡'
+        });
+      }
+    });
+
+    // 결단 찬양 포함
+    if (sched.closing_youtube_url) {
+      const closingVid = extractYoutubeId(sched.closing_youtube_url);
+      if (closingVid) {
+        bgmPlaylist.push({
+          id: closingVid,
+          title: '[결단] ' + (sched.closing_song || '결단 찬양')
+        });
+      }
+    }
+
+    if (bgmPlaylist.length === 0) {
+      updateBgmUI('음원 준비 중', '유튜브 링크 없음');
+      return;
+    }
+
+    const modeName = offsetIndex === 0 ? '이번 주' : '저번 주';
+    updateBgmUI(bgmPlaylist[0].title, modeName + ' ' + dateLabel + ' (' + bgmPlaylist.length + '곡)');
+    
+    // 플레이어 큐 로드
+    initHiddenYoutubePlayer();
+
+  } catch (err) {
+    console.error('콘티 BGM 로드 실패:', err);
+    updateBgmUI('로드 실패', '오류');
+  }
+}
+
+/* 3. 나만의 플레이리스트 로드 */
+function loadMyPlaylistBgm() {
+  bgmPlaylist = getMyFavoriteSongs();
+  currentBgmIndex = 0;
+
+  if (bgmPlaylist.length === 0) {
+    updateBgmUI('보관함이 비어 있음', '찬양에 하트(♥)를 눌러보세요');
+    return;
+  }
+
+  updateBgmUI(bgmPlaylist[0].title, '내 보관함 (' + bgmPlaylist.length + '곡)');
+  initHiddenYoutubePlayer();
+}
+
+    function handleHeartClick(event, btn, vid, title) {
+  if (event) event.stopPropagation(); // 카드나 다른 행 클릭 이벤트 방지
+  if (typeof toggleFavoriteSong === 'function') {
+    const isAdded = toggleFavoriteSong(vid, title);
+    btn.innerText = isAdded ? '❤️' : '🤍';
+    btn.title = isAdded ? '내 보관함에서 제거' : '내 보관함에 담기';
+  }
+}
+
+/* 4. 모드 선택 버튼 활성화(Active) UI 처리 */
+function updateBgmModeButtonsUI() {
+  const modes = ['this_week', 'last_week', 'my_playlist'];
+  const btnMap = {
+    this_week: 'btnBgmModeThisWeek',
+    last_week: 'btnBgmModeLastWeek',
+    my_playlist: 'btnBgmModeMy'
+  };
+
+  modes.forEach(function(m) {
+    const el = document.getElementById(btnMap[m]);
+    if (el) {
+      if (m === currentBgmMode) {
+        el.style.borderColor = 'var(--accent-color)';
+        el.style.color = 'var(--accent-color)';
+        el.style.fontWeight = '700';
+      } else {
+        el.style.borderColor = 'var(--border-color)';
+        el.style.color = 'var(--text-color)';
+        el.style.fontWeight = '500';
+      }
+    }
+  });
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -7373,7 +7579,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (localStorage.getItem('shift_lab_bgm') === 'true') {
     const playerEl = document.getElementById('shiftFloatingPlayer');
     if (playerEl) playerEl.style.display = 'flex';
-    if (typeof setupWeeklyBgmPlaylist === 'function') setupWeeklyBgmPlaylist();
+    setBgmPlaylistMode(currentBgmMode);
   }
 });
 </script>
