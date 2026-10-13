@@ -8039,88 +8039,81 @@ function playCurrentTrackDirectly() {
     return;
   }
 
-  const track = bgmPlaylist[currentTrackIndex || 0];
+  // 1) 트랙 유효성 검사
+  const trackIdx = (typeof currentTrackIndex !== 'undefined') ? currentTrackIndex : 0;
+  const track = bgmPlaylist[trackIdx];
   if (!track || !track.id) return;
 
-  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
-  updatePlayButtonIcon(true);
+  // 2) UI 업데이트
+  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${trackIdx + 1}/${bgmPlaylist.length})`);
+  if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+  const slider = document.getElementById('bgmSeekSlider');
+  if (slider) slider.value = 0;
 
-  // 1) 기존 유튜브 인스턴스 탐색
+  // 3) 기존 유튜브 API 인스턴스가 준비되어 있으면 즉시 곡 교체
   let ytInstance = window.ytPlayer || window.bgmPlayer || window.player;
-
   if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
     try {
       ytInstance.loadVideoById(track.id);
       return;
     } catch (e) {
-      console.warn('기존 인스턴스 로드 실패, 대체 재생 시도:', e);
+      console.warn('기존 인스턴스 재생 실패, 재초기화 진행:', e);
     }
   }
 
-  // 2) 인스턴스가 없을 때: 화면의 유튜브 iframe 또는 플레이어 컨테이너 직접 탐색
-  const iframeEl = document.getElementById('bgmYoutubeIframe')
-                || document.getElementById('youtubePlayer')
-                || document.getElementById('ytPlayer')
-                || document.querySelector('iframe[src*="youtube.com"]');
-
-  if (iframeEl) {
-    // iframe src를 강제로 교체하여 즉시 자동재생 시작
-    iframeEl.src = `https://www.youtube.com/embed/${track.id}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
-    return;
-  }
-
-  // 3) 만약 iframe 태그조차 화면에 없다면: YouTube IFrame API로 즉석 생성
+  // 4) 플레이어 컨테이너 준비
   const container = document.getElementById('youtubePlayerContainer') 
-                 || document.getElementById('shiftFloatingPlayer')
+                 || document.getElementById('shiftFloatingPlayer') 
                  || document.body;
 
   let placeholder = document.getElementById('bgmAutoIframeHolder');
   if (!placeholder) {
     placeholder = document.createElement('div');
     placeholder.id = 'bgmAutoIframeHolder';
-    // 눈에 거슬리지 않게 1x1 픽셀 숨김 처리
     placeholder.style.cssText = 'position:fixed; bottom:0; left:0; width:1px; height:1px; opacity:0.01; pointer-events:none; z-index:-1;';
     container.appendChild(placeholder);
   }
 
+  // 5) YouTube IFrame API 인스턴스 생성 및 상태 감지(onStateChange) 연결
   if (window.YT && window.YT.Player) {
-  window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
-    height: '1',
-    width: '1',
-    videoId: track.id,
-    playerVars: { autoplay: 1, playsinline: 1 },
-    events: {
-      onReady: (event) => {
-        event.target.playVideo();
+    window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
+      height: '1',
+      width: '1',
+      videoId: track.id,
+      playerVars: { 
+        autoplay: 1, 
+        playsinline: 1,
+        controls: 0,
+        rel: 0
       },
-      // 💥 [추가] 곡 종료(상태 0: ENDED) 감지 시 다음 곡 자동 재생
-      onStateChange: (event) => {
-        if (event.data === 0 || (window.YT && event.data === window.YT.PlayerState.ENDED)) {
-          // 기존 프로젝트에 정의된 다음 곡 함수 호출
-          if (typeof playNextBgmTrack === 'function') {
-            playNextBgmTrack();
-          } else if (typeof playNextTrack === 'function') {
-            playNextTrack();
-          } else if (typeof nextTrack === 'function') {
-            nextTrack();
-          } else {
-            // 별도 함수가 없을 경우 직접 인덱스 증가 후 재생
-            if (window.bgmPlaylist && currentTrackIndex < window.bgmPlaylist.length - 1) {
-              currentTrackIndex++;
-              playCurrentTrackDirectly();
+      events: {
+        onReady: (event) => {
+          event.target.playVideo();
+        },
+        // 💥 곡 종료(상태 0: ENDED) 감지 시 자동으로 다음 곡 진행
+        onStateChange: (event) => {
+          if (event.data === 0 || (window.YT && event.data === window.YT.PlayerState.ENDED)) {
+            if (typeof playNextBgmTrack === 'function') {
+              playNextBgmTrack();
+            } else if (typeof playNextTrack === 'function') {
+              playNextTrack();
+            } else {
+              // 다음 트랙 자동 재생
+              if (window.bgmPlaylist && currentTrackIndex < window.bgmPlaylist.length - 1) {
+                currentTrackIndex++;
+                playCurrentTrackDirectly();
+              } else {
+                console.log('플레이리스트 모든 곡 재생 완료');
+              }
             }
           }
         }
       }
-    }
-  });
+    });
   } else {
-    // YouTube API 스크립트 자체가 안 불러와진 경우 비상 iframe 직삽입
+    // API 미로드 비상 대체
     placeholder.innerHTML = `<iframe width="1" height="1" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
   }
-
-  const slider = document.getElementById('bgmSeekSlider');
-if (slider) slider.value = 0;
 }
     
 // 4. 11자리 유튜브 코드 추출 함수 (기존 유지)
