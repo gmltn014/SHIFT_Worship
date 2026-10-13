@@ -2459,6 +2459,57 @@
   </div>
 </div>
 
+  <!-- ✏️ 아카이브 콘티 빠른 수정 모달 -->
+<div id="modalArchiveEdit" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: var(--card-bg, #ffffff); color: var(--text-color, #1e293b); width: 100%; max-width: 500px; border-radius: 16px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0;">✏️ 예배 콘티 수정</h3>
+      <button type="button" onclick="closeArchiveEditModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--sub-text);">✕</button>
+    </div>
+
+    <!-- 수정 폼 -->
+    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem;">
+      <div>
+        <label style="font-weight: 600; display: block; margin-bottom: 4px; color: var(--sub-text);">예배 일자</label>
+        <input type="text" id="editArchiveDate" readonly style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px; background: rgba(0,0,0,0.04); font-weight: 600;" />
+      </div>
+
+      <div>
+        <label style="font-weight: 600; display: block; margin-bottom: 4px;">예배 명칭 / 타이틀</label>
+        <input type="text" id="editArchiveTitle" placeholder="예: 주일 2부 청년예배" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px;" />
+      </div>
+
+      <div>
+        <label style="font-weight: 600; display: block; margin-bottom: 4px;">찬양 콘티 목록 (줄바꿈 구분)</label>
+        <textarea id="editArchiveSongList" rows="4" placeholder="1. 주의 친절한 팔에 안기세&#10;2. 예수 늘 함께 계시네" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px; font-family: inherit; resize: vertical;"></textarea>
+      </div>
+
+      <div>
+        <label style="font-weight: 600; display: block; margin-bottom: 4px;">유튜브 11자리 코드 (쉼표나 줄바꿈 구분)</label>
+        <input type="text" id="editArchiveYoutube" placeholder="예: 7wnov7cuUI8, dQw4w9WgXcQ" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px;" />
+        <small style="color: var(--sub-text); font-size: 0.75rem;">곡 순서대로 11자리 코드를 쉼표(,)로 넣어주면 하트 기능이 작동합니다.</small>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <label style="font-weight: 600; display: block; margin-bottom: 4px;">결단 찬양</label>
+          <input type="text" id="editArchiveClosingSong" placeholder="결단 찬양 제목" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px;" />
+        </div>
+        <div>
+          <label style="font-weight: 600; display: block; margin-bottom: 4px;">결단 찬양 유튜브 ID/링크</label>
+          <input type="text" id="editArchiveClosingYoutube" placeholder="11자리 코드 또는 링크" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 버튼 -->
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+      <button type="button" onclick="closeArchiveEditModal()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color, #cbd5e1); background: none; cursor: pointer;">취소</button>
+      <button type="button" id="btnSaveArchiveEdit" onclick="saveArchiveEditData()" style="padding: 8px 18px; border-radius: 8px; border: none; background: var(--accent-color, #3b82f6); color: #fff; font-weight: 700; cursor: pointer;">저장하기</button>
+    </div>
+  </div>
+</div>
+
   <!-- 메인 푸터 -->
   <footer id="mainFooter" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--sub-text); font-size: 0.8rem;">
     <div>© 2026 SHIFT WORSHIP TEAM. All rights reserved.</div>
@@ -3714,6 +3765,11 @@ function renderContiArchive(list) {
               <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
                 <span>🎼</span> 세션 악보 ${hasSessionScore ? '✓' : ''}
               </button>
+
+              <!-- ✏️ 리더용 아카이브 콘티 수정 버튼 추가 -->
+              <button type="button" class="btn-action btn-secondary" onclick="openArchiveEditModal('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
+              <span>✏️</span> 수정
+              </button>
             </div>
           `}
         </div>
@@ -3825,6 +3881,91 @@ function toggleArchiveAccordion(idx) {
 
       leaderSelect.value = currentVal;
     }
+
+    /* 아카이브 콘티 수정 모달 열기 */
+/* ========================================================
+   ✏️ 아카이브 콘티 관리자 빠른 수정 기능
+   ======================================================== */
+
+// 모달 열기
+function openArchiveEditModal(targetDate) {
+  const allList = (typeof getFilteredArchiveData === 'function') ? getFilteredArchiveData() : [];
+  const targetItem = allList.find(i => i.date === targetDate);
+  if (!targetItem) {
+    alert('해당 주차 정보를 불러올 수 없습니다.');
+    return;
+  }
+
+  // 데이터 인풋에 채우기
+  document.getElementById('editArchiveDate').value = targetItem.date || '';
+  document.getElementById('editArchiveTitle').value = targetItem.worship_title || '';
+  document.getElementById('editArchiveSongList').value = targetItem.song_list || '';
+  document.getElementById('editArchiveYoutube').value = targetItem.youtube_url || '';
+  document.getElementById('editArchiveClosingSong').value = targetItem.closing_song || '';
+  document.getElementById('editArchiveClosingYoutube').value = targetItem.closing_youtube_url || '';
+
+  const modalEl = document.getElementById('modalArchiveEdit');
+  if (modalEl) modalEl.style.display = 'flex';
+}
+
+// 모달 닫기
+function closeArchiveEditModal() {
+  const modalEl = document.getElementById('modalArchiveEdit');
+  if (modalEl) modalEl.style.display = 'none';
+}
+
+// Supabase DB에 업데이트 저장
+async function saveArchiveEditData() {
+  const targetDate = document.getElementById('editArchiveDate').value;
+  if (!targetDate) return;
+
+  const saveBtn = document.getElementById('btnSaveArchiveEdit');
+  if (saveBtn) {
+    saveBtn.innerText = '저장 중...';
+    saveBtn.disabled = true;
+  }
+
+  try {
+    const updatePayload = {
+      worship_title: document.getElementById('editArchiveTitle').value.trim(),
+      song_list: document.getElementById('editArchiveSongList').value.trim(),
+      youtube_url: document.getElementById('editArchiveYoutube').value.trim(),
+      closing_song: document.getElementById('editArchiveClosingSong').value.trim(),
+      closing_youtube_url: document.getElementById('editArchiveClosingYoutube').value.trim()
+    };
+
+    // schedules 테이블의 해당 날짜 행 업데이트
+    const { error } = await supabaseClient
+      .from('schedules')
+      .update(updatePayload)
+      .eq('date', targetDate);
+
+    if (error) throw error;
+
+    alert('콘티 정보가 성공적으로 수정되었습니다!');
+    closeArchiveEditModal();
+
+    // 💡 화면 갱신 (아카이브 목록 및 이번 주 콘티 즉시 다시 로드)
+    if (typeof loadArchiveData === 'function') {
+      await loadArchiveData();
+    } else if (typeof renderArchive === 'function') {
+      renderArchive();
+    }
+
+    if (typeof loadCurrentConti === 'function') {
+      loadCurrentConti();
+    }
+
+  } catch (err) {
+    console.error('아카이브 수정 실패:', err);
+    alert('저장 중 오류가 발생했습니다: ' + (err.message || '다시 시도해 주세요.'));
+  } finally {
+    if (saveBtn) {
+      saveBtn.innerText = '저장하기';
+      saveBtn.disabled = false;
+    }
+  }
+}
 
     /* 8. 공지사항 모듈 */
     let allNotices = [];
