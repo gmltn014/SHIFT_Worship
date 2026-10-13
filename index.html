@@ -7222,10 +7222,18 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 // 유튜브 URL에서 11자리 Video ID 추출 헬퍼
-function extractYoutubeId(url) {
-  if (!url) return null;
+function extractYoutubeId(val) {
+  if (!val) return null;
+  const str = val.trim();
+
+  // 1. 이미 11자리 고유 ID 형태인 경우 바로 반환
+  if (/^[a-zA-Z0-9_-]{11}$/.test(str)) {
+    return str;
+  }
+
+  // 2. 전체 URL 형식인 경우 ID 추출
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
+  const match = str.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
@@ -7470,18 +7478,19 @@ async function loadScheduleBgm(offsetIndex) {
     // 1) 본 찬양 유튜브 파싱
     // youtube_url이 콤마(,)나 줄바꿈으로 여러 개 들어있거나 단일 링크인 경우 대응
     if (sched.youtube_url) {
-      const rawUrls = sched.youtube_url.split(/[\n,]+/);
-      const songNames = (sched.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
+  // 쉼표(,), 줄바꿈(\n), 공백으로 분리
+  const rawList = sched.youtube_url.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+  const songNames = (sched.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
 
-      rawUrls.forEach((u, idx) => {
-        const vid = extractYoutubeId(u.trim());
-        if (vid) {
-          const title = songNames[idx] || ('찬양 ' + (idx + 1));
-          bgmPlaylist.push({ id: vid, title: title });
-        }
-      });
+  rawList.forEach((item, idx) => {
+    const vid = extractYoutubeId(item);
+    if (vid) {
+      const title = songNames[idx] || ('찬양 ' + (idx + 1));
+      bgmPlaylist.push({ id: vid, title: title });
     }
-
+  });
+}
+    
     // 2) 혹시 songs JSON 컬럼이 별도로 있는 경우 대비 (하위 호환)
     if (bgmPlaylist.length === 0 && sched.songs) {
       let songArr = [];
