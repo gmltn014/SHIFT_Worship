@@ -17,6 +17,8 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <!-- 가벼운 마크다운 파서 (무게 약 20KB) -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- YouTube IFrame Player API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
 
   <style>
     @font-face {
@@ -871,6 +873,11 @@
 }
 .lab-switch input:checked + .lab-slider:before {
   transform: translateX(18px);
+}
+
+    @keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
   </style>
 </head>
@@ -7142,6 +7149,216 @@ function toggleLabBgmFeature(enabled) {
     }
   }
 }
+
+    /* ========================================================
+   🎵 SHIFT 실험실: 백그라운드 BGM 플레이어 엔진
+   ======================================================== */
+
+let bgmPlayer = null;
+let bgmPlaylist = [];        // [{ id: 'dQw4w9WgXcQ', title: '곡명' }, ...]
+let currentBgmIndex = 0;
+let isBgmPlaying = false;
+let isYtApiReady = false;
+
+// YouTube IFrame API 준비 완료 콜백 (API 표준 규격)
+window.onYouTubeIframeAPIReady = function() {
+  isYtApiReady = true;
+};
+
+// 유튜브 URL에서 11자리 Video ID 추출 헬퍼
+function extractYoutubeId(url) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// 1. 이번 주 콘티 곡 목록으로 플레이리스트 조립
+async function setupWeeklyBgmPlaylist() {
+  bgmPlaylist = [];
+  currentBgmIndex = 0;
+
+  try {
+    // Supabase에서 가장 최신(이번 주) 스케줄 가져오기
+    let currentSched = null;
+    if (typeof currentScheduleData !== 'undefined' && currentScheduleData) {
+      currentSched = currentScheduleData;
+    } else if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const { data } = await supabaseClient
+        .from('schedules')
+        .select('*')
+        .order('worship_date', { ascending: false })
+        .limit(1)
+        .single();
+      currentSched = data;
+    }
+
+    if (!currentSched) {
+      updateBgmUI('재생할 콘티 없음', '대기 중');
+      return;
+    }
+
+    // 본 찬양 곡 목록 (JSON 또는 쉼표 파싱 대응)
+    let songs = [];
+    if (Array.isArray(currentSched.songs)) {
+      songs = currentSched.songs;
+    } else if (typeof currentSched.songs === 'string') {
+      try { songs = JSON.parse(currentSched.songs); } catch (e) { songs = []; }
+    }
+
+    // 유튜브 링크가 있는 곡만 플레이리스트에 담기
+    songs.forEach(function(s) {
+      const vid = extractYoutubeId(s.youtube_url || s.youtube || s.url);
+      if (vid) {
+        bgmPlaylist.push({
+          id: vid,
+          title: s.title || s.song_title || '찬양곡'
+        });
+      }
+    });
+
+    // 결단 찬양에 유튜브 링크가 있다면 포함
+    if (currentSched.closing_youtube_url) {
+      const closingVid = extractYoutubeId(currentSched.closing_youtube_url);
+      if (closingVid) {
+        bgmPlaylist.push({
+          id: closingVid,
+          title: '[결단] ' + (currentSched.closing_song || '결단 찬양')
+        });
+      }
+    }
+
+    if (bgmPlaylist.length === 0) {
+      updateBgmUI('등록된 유튜브 음원 없음', '대기 중');
+      return;
+    }
+
+    updateBgmUI(bgmPlaylist[0].title, '재생 대기 (총 ' + bgmPlaylist.length + '곡)');
+    initHiddenYoutubePlayer();
+
+  } catch (err) {
+    console.error('BGM 플레이리스트 로드 오류:', err);
+    updateBgmUI('플레이리스트 로드 오류', '오류');
+  }
+}
+
+// 2. 백그라운드 YouTube 플레이어 객체 생성
+function initHiddenYoutubePlayer() {
+  if (!isYtApiReady || typeof YT === 'undefined') {
+    // API 로드가 지연되면 0.5초 후 재시도
+    setTimeout(initHiddenYoutubePlayer, 500);
+    return;
+  }
+
+  if (bgmPlayer) return; // 이미 생성되었으면 중복 생성 방지
+
+  bgmPlayer = new YT.Player('hiddenYoutubePlayer', {
+    height: '1',
+    width: '1',
+    videoId: bgmPlaylist.length > 0 ? bgmPlaylist[0].id : '',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      disablekb: 1,
+      playsinline: 1
+    },
+    events: {
+      onStateChange: handleBgmPlayerStateChange,
+      onError: function(e) {
+        console.warn('BGM 재생 오류 (다음 곡 재생 시도):', e.data);
+        playNextBgm();
+      }
+    }
+  });
+}
+
+// 3. 곡 상태 감지 (곡이 끝나면 다음 곡 자동 재생)
+function handleBgmPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.PLAYING) {
+    isBgmPlaying = true;
+    updateBgmControlsUI(true);
+    const disc = document.getElementById('playerDiscIcon');
+    if (disc) disc.style.animation = 'spin 3s linear infinite';
+  } else if (event.data === YT.PlayerState.PAUSED) {
+    isBgmPlaying = false;
+    updateBgmControlsUI(false);
+    const disc = document.getElementById('playerDiscIcon');
+    if (disc) disc.style.animation = 'none';
+  } else if (event.data === YT.PlayerState.ENDED) {
+    // 💡 곡이 끝나면 다음 곡으로 연속 재생
+    playNextBgm();
+  }
+}
+
+// 4. 재생 / 일시정지 토글
+function toggleBgmPlay() {
+  if (!bgmPlayer || bgmPlaylist.length === 0) {
+    setupWeeklyBgmPlaylist().then(function() {
+      if (bgmPlaylist.length > 0) playBgmAtIndex(0);
+    });
+    return;
+  }
+
+  if (isBgmPlaying) {
+    bgmPlayer.pauseVideo();
+  } else {
+    bgmPlayer.playVideo();
+  }
+}
+
+// 특정 인덱스 곡 재생
+function playBgmAtIndex(index) {
+  if (!bgmPlayer || !bgmPlaylist[index]) return;
+  currentBgmIndex = index;
+  const song = bgmPlaylist[currentBgmIndex];
+
+  updateBgmUI(song.title, (currentBgmIndex + 1) + ' / ' + bgmPlaylist.length + ' 재생 중');
+  bgmPlayer.loadVideoById(song.id);
+  bgmPlayer.playVideo();
+}
+
+// 다음 곡
+function playNextBgm() {
+  if (bgmPlaylist.length === 0) return;
+  currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
+  playBgmAtIndex(currentBgmIndex);
+}
+
+// 이전 곡
+function playPrevBgm() {
+  if (bgmPlaylist.length === 0) return;
+  currentBgmIndex = (currentBgmIndex - 1 + bgmPlaylist.length) % bgmPlaylist.length;
+  playBgmAtIndex(currentBgmIndex);
+}
+
+// 완전 정지 (실험실 기능 끌 때)
+function stopBgm() {
+  if (bgmPlayer && typeof bgmPlayer.stopVideo === 'function') {
+    bgmPlayer.stopVideo();
+  }
+  isBgmPlaying = false;
+  updateBgmControlsUI(false);
+}
+
+// UI 텍스트 업데이트 헬퍼
+function updateBgmUI(title, status) {
+  const titleEl = document.getElementById('currentBgmTitle');
+  const statusEl = document.getElementById('currentBgmStatus');
+  if (titleEl) titleEl.innerText = title;
+  if (statusEl) statusEl.innerText = status;
+}
+
+// 버튼 모양 업데이트 (▶ / ❚❚)
+function updateBgmControlsUI(playing) {
+  const btn = document.getElementById('btnTogglePlay');
+  if (btn) btn.innerText = playing ? '❚❚' : '▶';
+  const statusEl = document.getElementById('currentBgmStatus');
+  if (statusEl && bgmPlaylist[currentBgmIndex]) {
+    statusEl.innerText = playing 
+      ? (currentBgmIndex + 1) + ' / ' + bgmPlaylist.length + ' 재생 중' 
+      : '일시정지됨';
+  }
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -7151,6 +7368,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof checkUnreadNotifications === 'function') checkUnreadNotifications();
   if (typeof loadAllProfilesAndCheckBirthdays === 'function') loadAllProfilesAndCheckBirthdays();
   if (typeof applyFont === 'function') applyFont(localStorage.getItem('shift_font') || 'pretendard');
+
+  // 🧪 실험실 BGM 상태 복원 및 플레이리스트 대기
+  if (localStorage.getItem('shift_lab_bgm') === 'true') {
+    const playerEl = document.getElementById('shiftFloatingPlayer');
+    if (playerEl) playerEl.style.display = 'flex';
+    if (typeof setupWeeklyBgmPlaylist === 'function') setupWeeklyBgmPlaylist();
+  }
 });
 </script>
 
