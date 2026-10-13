@@ -8084,15 +8084,36 @@ function playCurrentTrackDirectly() {
   }
 
   if (window.YT && window.YT.Player) {
-    window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
-      height: '1',
-      width: '1',
-      videoId: track.id,
-      playerVars: { autoplay: 1, playsinline: 1 },
-      events: {
-        onReady: (event) => { event.target.playVideo(); }
+  window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
+    height: '1',
+    width: '1',
+    videoId: track.id,
+    playerVars: { autoplay: 1, playsinline: 1 },
+    events: {
+      onReady: (event) => {
+        event.target.playVideo();
+      },
+      // 💥 [추가] 곡 종료(상태 0: ENDED) 감지 시 다음 곡 자동 재생
+      onStateChange: (event) => {
+        if (event.data === 0 || (window.YT && event.data === window.YT.PlayerState.ENDED)) {
+          // 기존 프로젝트에 정의된 다음 곡 함수 호출
+          if (typeof playNextBgmTrack === 'function') {
+            playNextBgmTrack();
+          } else if (typeof playNextTrack === 'function') {
+            playNextTrack();
+          } else if (typeof nextTrack === 'function') {
+            nextTrack();
+          } else {
+            // 별도 함수가 없을 경우 직접 인덱스 증가 후 재생
+            if (window.bgmPlaylist && currentTrackIndex < window.bgmPlaylist.length - 1) {
+              currentTrackIndex++;
+              playCurrentTrackDirectly();
+            }
+          }
+        }
       }
-    });
+    }
+  });
   } else {
     // YouTube API 스크립트 자체가 안 불러와진 경우 비상 iframe 직삽입
     placeholder.innerHTML = `<iframe width="1" height="1" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
@@ -8542,6 +8563,31 @@ function onUserSeekComplete(targetSeconds) {
     ytInstance.seekTo(Number(targetSeconds), true);
   }
   isSeekingByUser = false;
+}
+
+    /* 🎵 유튜브 상태 감지 핸들러 */
+function onBgmPlayerStateChange(event) {
+  // YT.PlayerState.ENDED 는 숫자 0 입니다.
+  if (event.data === 0 || (window.YT && event.data === YT.PlayerState.ENDED)) {
+    playNextBgmTrack(); // 다음 곡으로 자동 전환
+  }
+}
+
+/* ⏭️ 다음 곡 재생 함수 */
+function playNextBgmTrack() {
+  if (!window.bgmPlaylist || bgmPlaylist.length === 0) return;
+
+  // 다음 트랙 인덱스로 이동
+  if (currentTrackIndex < bgmPlaylist.length - 1) {
+    currentTrackIndex++;
+    playCurrentTrackDirectly();
+  } else {
+    // 💡 전체 플레이리스트 재생 완료 시:
+    // 처음으로 되감고 정지할지, 혹은 루프 재생할지 선택
+    console.log('플레이리스트의 모든 곡 재생 완료');
+    currentTrackIndex = 0; // 필요시 0으로 초기화
+    // playCurrentTrackDirectly(); // 무한 반복을 원할 경우 주석 해제
+  }
 }
     
 /* 15. 페이지 시작 진입점 */
