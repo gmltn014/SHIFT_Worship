@@ -7885,6 +7885,12 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
     btn.classList.toggle('btn-secondary', !isActive);
   };
 
+  const btnFavListToggle = document.getElementById('btnToggleMyFavList');
+if (btnFavListToggle) {
+  // 내 보관함 모드일 때만 '목록 관리' 버튼 노출
+  btnFavListToggle.style.display = (mode === 'my_playlist') ? 'inline-block' : 'none';
+}
+
   updateBtnStyle(btnThis, mode === 'this_week');
   updateBtnStyle(btnLast, mode === 'last_week');
   updateBtnStyle(btnMy, mode === 'my_playlist');
@@ -8033,19 +8039,45 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 }
 
 // 3. 실제 유튜브 플레이어로 영상 로드 및 재생 헬퍼
+// 💥 전역 상태 리스너: 곡 종료(0: ENDED) 감지 시 확실하게 다음 곡 실행
+function onGlobalBgmStateChange(event) {
+  // event.data === 0 (YT.PlayerState.ENDED)
+  if (event.data === 0 || (window.YT && event.data === window.YT.PlayerState.ENDED)) {
+    console.log('[BGM] 곡 종료 감지! 다음 곡으로 전환합니다.');
+    
+    if (typeof playNextBgmTrack === 'function') {
+      playNextBgmTrack();
+    } else if (typeof playNextTrack === 'function') {
+      playNextTrack();
+    } else {
+      // 자체 다음 트랙 자동 재생 로직
+      if (typeof window.currentTrackIndex === 'undefined') window.currentTrackIndex = 0;
+      if (window.bgmPlaylist && window.currentTrackIndex < window.bgmPlaylist.length - 1) {
+        window.currentTrackIndex++;
+        playCurrentTrackDirectly();
+      } else {
+        console.log('[BGM] 플레이리스트 모든 곡 재생 완료');
+      }
+    }
+  }
+}
+
 function playCurrentTrackDirectly() {
-  if (!bgmPlaylist || bgmPlaylist.length === 0) {
+  if (!window.bgmPlaylist || window.bgmPlaylist.length === 0) {
     setBgmPlayerDisplayTitle('재생 가능한 음원 없음');
     return;
   }
 
-  // 1) 트랙 유효성 검사
-  const trackIdx = (typeof currentTrackIndex !== 'undefined') ? currentTrackIndex : 0;
-  const track = bgmPlaylist[trackIdx];
+  // 1) 트랙 및 인덱스 전역 동기화
+  if (typeof window.currentTrackIndex === 'undefined') {
+    window.currentTrackIndex = (typeof currentTrackIndex !== 'undefined') ? currentTrackIndex : 0;
+  }
+  const trackIdx = window.currentTrackIndex;
+  const track = window.bgmPlaylist[trackIdx];
   if (!track || !track.id) return;
 
   // 2) UI 업데이트
-  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${trackIdx + 1}/${bgmPlaylist.length})`);
+  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${trackIdx + 1}/${window.bgmPlaylist.length})`);
   if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
   const slider = document.getElementById('bgmSeekSlider');
   if (slider) slider.value = 0;
@@ -8054,7 +8086,21 @@ function playCurrentTrackDirectly() {
   let ytInstance = window.ytPlayer || window.bgmPlayer || window.player;
   if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
     try {
+      // 💡 [핵심 보완] 기존 플레이어에도 곡 종료 이벤트 감지 리스너를 확실하게 재등록
+      if (typeof ytInstance.addEventListener === 'function') {
+        ytInstance.addEventListener('onStateChange', onGlobalBgmStateChange);
+      }
+
       ytInstance.loadVideoById(track.id);
+
+      // 🔊 볼륨 및 음소거 상태 동기화
+      if (typeof currentBgmVolume !== 'undefined' && typeof ytInstance.setVolume === 'function') {
+        ytInstance.setVolume(currentBgmVolume);
+        if (typeof isBgmMuted !== 'undefined' && isBgmMuted && typeof ytInstance.mute === 'function') {
+          ytInstance.mute();
+        }
+      }
+
       return;
     } catch (e) {
       console.warn('기존 인스턴스 재생 실패, 재초기화 진행:', e);
@@ -8074,7 +8120,7 @@ function playCurrentTrackDirectly() {
     container.appendChild(placeholder);
   }
 
-  // 5) YouTube IFrame API 인스턴스 생성 및 상태 감지(onStateChange) 연결
+  // 5) YouTube IFrame API 신규 생성 시 리스너 연결
   if (window.YT && window.YT.Player) {
     window.ytPlayer = new window.YT.Player('bgmAutoIframeHolder', {
       height: '1',
@@ -8088,26 +8134,12 @@ function playCurrentTrackDirectly() {
       },
       events: {
         onReady: (event) => {
+          if (typeof currentBgmVolume !== 'undefined' && typeof event.target.setVolume === 'function') {
+            event.target.setVolume(currentBgmVolume);
+          }
           event.target.playVideo();
         },
-        // 💥 곡 종료(상태 0: ENDED) 감지 시 자동으로 다음 곡 진행
-        onStateChange: (event) => {
-          if (event.data === 0 || (window.YT && event.data === window.YT.PlayerState.ENDED)) {
-            if (typeof playNextBgmTrack === 'function') {
-              playNextBgmTrack();
-            } else if (typeof playNextTrack === 'function') {
-              playNextTrack();
-            } else {
-              // 다음 트랙 자동 재생
-              if (window.bgmPlaylist && currentTrackIndex < window.bgmPlaylist.length - 1) {
-                currentTrackIndex++;
-                playCurrentTrackDirectly();
-              } else {
-                console.log('플레이리스트 모든 곡 재생 완료');
-              }
-            }
-          }
-        }
+        onStateChange: onGlobalBgmStateChange
       }
     });
   } else {
@@ -8582,6 +8614,219 @@ function playNextBgmTrack() {
     // playCurrentTrackDirectly(); // 무한 반복을 원할 경우 주석 해제
   }
 }
+
+    // 초기 볼륨 설정 불러오기
+let currentBgmVolume = parseInt(localStorage.getItem('shift_bgm_volume') || '80', 10);
+let isBgmMuted = false;
+
+function initBgmVolume() {
+  const slider = document.getElementById('bgmVolumeSlider');
+  if (slider) slider.value = currentBgmVolume;
+}
+
+function handleBgmVolumeChange(val) {
+  currentBgmVolume = parseInt(val, 10);
+  localStorage.setItem('shift_bgm_volume', currentBgmVolume);
+  isBgmMuted = (currentBgmVolume === 0);
+
+  const ytInstance = window.ytPlayer || window.bgmPlayer || window.player;
+  if (ytInstance && typeof ytInstance.setVolume === 'function') {
+    ytInstance.setVolume(currentBgmVolume);
+    if (isBgmMuted && typeof ytInstance.mute === 'function') ytInstance.mute();
+    else if (typeof ytInstance.unMute === 'function') ytInstance.unMute();
+  }
+
+  updateVolumeIcon();
+}
+
+function toggleBgmPlayerMute() {
+  const ytInstance = window.ytPlayer || window.bgmPlayer || window.player;
+  isBgmMuted = !isBgmMuted;
+
+  if (ytInstance) {
+    if (isBgmMuted) {
+      if (typeof ytInstance.mute === 'function') ytInstance.mute();
+    } else {
+      if (typeof ytInstance.unMute === 'function') ytInstance.unMute();
+      if (typeof ytInstance.setVolume === 'function') ytInstance.setVolume(currentBgmVolume || 50);
+    }
+  }
+  updateVolumeIcon();
+}
+
+function updateVolumeIcon() {
+  const icon = document.getElementById('bgmVolumeIcon');
+  if (!icon) return;
+  if (isBgmMuted || currentBgmVolume === 0) icon.innerText = '🔇';
+  else if (currentBgmVolume < 40) icon.innerText = '🔉';
+  else icon.innerText = '🔊';
+}
+
+    // 모달 열기/닫기
+function toggleMyFavModal(show) {
+  const modal = document.getElementById('modalMyFavoritesList');
+  if (!modal) return;
+  modal.style.display = show ? 'flex' : 'none';
+  if (show) renderMyFavListModal();
+}
+
+// 모달 내부 곡 목록 렌더링
+function renderMyFavListModal() {
+  const container = document.getElementById('myFavSongsContainer');
+  const countEl = document.getElementById('myFavCount');
+  if (!container) return;
+
+  const favs = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+  if (countEl) countEl.innerText = favs.length;
+
+  if (favs.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:30px 10px; color:var(--sub-text,#888); font-size:0.88rem;">보관함이 비어 있습니다.<br>아카이브 콘티에서 ❤️를 눌러 곡을 담아보세요.</div>';
+    return;
+  }
+
+  container.innerHTML = favs.map((song, idx) => {
+    const isPlaying = (typeof currentTrackIndex !== 'undefined' && bgmPlaylist[currentTrackIndex]?.id === song.id);
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:rgba(0,0,0,0.03); border-radius:8px;">
+        <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.88rem; cursor:pointer;" onclick="playFavSongDirectly(${idx})">
+          <span style="${isPlaying ? 'color:var(--primary-color,#4f46e5); font-weight:700;' : ''}">
+            ${idx + 1}. ${song.title || '찬양'}
+          </span>
+        </div>
+        <button type="button" style="background:none; border:none; cursor:pointer; font-size:1.05rem; padding:0 6px;" 
+                onclick="removeSongFromFavList('${song.id}')" title="보관함에서 삭제">
+          ❤️
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+// 보관함 모달 내에서 하트를 눌러 삭제할 때
+function removeSongFromFavList(vid) {
+  let favs = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+  favs = favs.filter(f => f.id !== vid);
+  localStorage.setItem('shift_my_favorite_songs', JSON.stringify(favs));
+
+  // 1) 모달 목록 즉시 다시 렌더링
+  renderMyFavListModal();
+
+  // 2) 아카이브 화면에 있는 하트 버튼들도 동기화 (❤️ -> 🤍)
+  document.querySelectorAll(`.btn-archive-heart[onclick*="${vid}"]`).forEach(btn => {
+    btn.innerText = '🤍';
+    btn.title = '보관함 담기';
+  });
+
+  // 3) 현재 플레이리스트가 '내 보관함' 모드인 경우 큐 실시간 동기화
+  const currentMode = localStorage.getItem('shift_bgm_mode');
+  if (currentMode === 'my_playlist') {
+    bgmPlaylist = favs;
+    if (bgmPlaylist.length === 0) {
+      setBgmPlayerDisplayTitle('내 보관함이 비어있습니다');
+      const yt = window.ytPlayer || window.bgmPlayer;
+      if (yt && yt.stopVideo) yt.stopVideo();
+    }
+  }
+}
+
+// 모달에서 특정 곡 클릭 시 즉시 재생
+function playFavSongDirectly(idx) {
+  if (localStorage.getItem('shift_bgm_mode') !== 'my_playlist') {
+    setBgmPlaylistMode('my_playlist', true);
+  }
+  currentTrackIndex = idx;
+  playCurrentTrackDirectly();
+  renderMyFavListModal();
+}
+
+    // 1) 내 보관함 플리 공유하기
+async function openShareFavPlaylistDialog() {
+  const favs = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+  if (favs.length === 0) {
+    alert('보관함에 담긴 찬양이 없습니다.');
+    return;
+  }
+
+  const title = prompt('공유할 플레이리스트 제목을 입력해주세요:', '추천 찬양 콘티 모음');
+  if (!title || !title.trim()) return;
+
+  const creator = prompt('작성자(이름 또는 닉네임)를 입력해주세요:', '익명의 찬양팀원');
+  if (!creator || !creator.trim()) return;
+
+  try {
+    const payload = {
+      title: title.trim(),
+      creator: creator.trim(),
+      tracks: favs, // [{ id: '...', title: '...' }]
+      created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabaseClient
+      .from('shared_playlists')
+      .insert([payload]);
+
+    if (error) throw error;
+
+    alert('🎉 찬양팀 놀이터에 플레이리스트가 공유되었습니다!');
+    toggleMyFavModal(false);
+
+    // 놀이터 탭 데이터가 열려있다면 갱신
+    if (typeof loadPlaygroundPlaylists === 'function') {
+      loadPlaygroundPlaylists();
+    }
+  } catch (err) {
+    console.error('플리 공유 실패:', err);
+    alert('공유 실패: ' + err.message);
+  }
+}
+
+// 2) 놀이터에 등록된 공유 플레이리스트 렌더링 함수
+async function loadPlaygroundPlaylists() {
+  const container = document.getElementById('playgroundSharedPlaylists');
+  if (!container) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('shared_playlists')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div style="color:var(--sub-text,#888); padding:15px; text-align:center;">아직 공유된 플레이리스트가 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(item => `
+      <div class="archive-item-card" style="padding:12px; margin-bottom:10px; border-radius:10px; background:var(--bg-card,#fff); border:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <strong style="font-size:0.98rem; display:block;">${item.title}</strong>
+            <span style="font-size:0.8rem; color:var(--sub-text,#777);">공유자: ${item.creator} • ${item.tracks?.length || 0}곡</span>
+          </div>
+          <button type="button" class="btn-action btn-primary" style="font-size:0.78rem; padding:5px 10px;" 
+                  onclick='playSharedPlaylist(${JSON.stringify(item.tracks || [])}, "${item.title.replace(/"/g, '&quot;')}")'>
+            ▶ 바로 재생
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.warn('놀이터 플리 로드 실패:', e);
+  }
+}
+
+// 3) 다른 사람이 공유한 플레이리스트를 내 BGM 플레이어로 즉시 재생
+function playSharedPlaylist(tracks, playlistTitle) {
+  if (!tracks || tracks.length === 0) {
+    alert('재생 가능한 곡이 없습니다.');
+    return;
+  }
+  bgmPlaylist = tracks;
+  currentTrackIndex = 0;
+  setBgmPlayerDisplayTitle(`🎵 [${playlistTitle}] ${tracks[0].title} (1/${tracks.length})`);
+  playCurrentTrackDirectly();
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -8656,6 +8901,46 @@ document.addEventListener('DOMContentLoaded', () => {
   
   <!-- 총 곡 길이 -->
   <span id="bgmTotalDuration" style="font-size: 0.72rem; color: var(--sub-text, #666); min-width: 35px;">0:00</span>
+</div>
+
+  <div class="bgm-player-extra-controls" style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+  <!-- 볼륨 조절 -->
+  <div style="display: flex; align-items: center; gap: 4px;">
+    <span id="bgmVolumeIcon" style="font-size: 0.85rem; cursor: pointer;" onclick="toggleBgmPlayerMute()">🔊</span>
+    <input type="range" id="bgmVolumeSlider" min="0" max="100" value="80" 
+           style="width: 70px; height: 4px; accent-color: var(--primary-color, #4f46e5); cursor: pointer;" 
+           oninput="handleBgmVolumeChange(this.value)">
+  </div>
+
+  <!-- '내 보관함' 모드일 때만 동적으로 노출되는 [목록 관리] 버튼 -->
+  <button type="button" id="btnToggleMyFavList" class="btn-action btn-secondary" 
+          style="display: none; font-size: 0.75rem; padding: 3px 8px;" 
+          onclick="toggleMyFavModal(true)">
+    📋 보관함 목록
+  </button>
+</div>
+
+<!-- 2) 내 보관함 곡 목록 관리 모달 -->
+<div id="modalMyFavoritesList" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+  <div class="modal-card" style="background: var(--bg-card, #ffffff); width: 90%; max-width: 420px; border-radius: 12px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 80vh; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 12px;">
+      <h3 style="margin: 0; font-size: 1.05rem;">❤️ 내 보관함 찬양 목록</h3>
+      <button type="button" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;" onclick="toggleMyFavModal(false)">✕</button>
+    </div>
+    
+    <!-- 곡 목록 컨테이너 -->
+    <div id="myFavSongsContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+      <!-- JS에서 동적 렌더링 -->
+    </div>
+
+    <!-- 하단 놀이터 공유 버튼 -->
+    <div style="margin-top: 14px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 0.8rem; color: var(--sub-text, #666);">총 <strong id="myFavCount">0</strong>곡 저장됨</span>
+      <button type="button" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="openShareFavPlaylistDialog()">
+        🚀 놀이터에 공유하기
+      </button>
+    </div>
+  </div>
 </div>
 
   <!-- 실제 재생용 숨김 YouTube Iframe 컨테이너 -->
