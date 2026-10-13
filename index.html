@@ -8033,18 +8033,21 @@ if (btnFavListToggle) {
     return;
   }
 
-  // 7) BGM 플레이어 재생 큐 및 인덱스 갱신
-  bgmPlaylist = newTrackList;
-  currentTrackIndex = 0;
+  // 7) BGM 플레이어 재생 큐 및 인덱스 갱신 (전역 + 로컬 동시 반영)
+  window.bgmPlaylist = newTrackList;
+  if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = newTrackList;
 
-  const firstTrack = bgmPlaylist[0];
+  window.currentTrackIndex = 0;
+  if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = 0;
+
+  // 8) 첫 곡 정보 화면 표시 및 즉시 재생
+  const firstTrack = newTrackList[0];
   const songTitle = firstTrack.title || '재생 준비 완료';
-  setBgmPlayerDisplayTitle(`🎵 ${songTitle} (1/${bgmPlaylist.length})`);
+  setBgmPlayerDisplayTitle(`🎵 ${songTitle} (1/${newTrackList.length})`);
 
   if (!isSilentInit) {
     playCurrentTrackDirectly();
   }
-}
 
 // 3. 실제 유튜브 플레이어로 영상 로드 및 재생 헬퍼
 function playCurrentTrackDirectly() {
