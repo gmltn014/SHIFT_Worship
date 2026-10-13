@@ -7720,12 +7720,21 @@ function updateBgmControlsUI(playing) {
 // 현재 모드 (기본값: this_week)
 let currentBgmMode = localStorage.getItem('shift_bgm_mode') || 'this_week';
 
-/* 1. 모드 변경 함수 */
-async function setBgmPlaylistMode(mode) {
-  console.log('🔄 BGM 모드 변경 요청:', mode);
+// 플레이어 제목 표시창 텍스트 안전 업데이트 헬퍼
+function setBgmPlayerDisplayTitle(titleText) {
+  // 프로젝트에서 사용 중인 BGM 제목 요소 ID들에 대응
+  const titleEl = document.getElementById('bgmTrackTitle') 
+               || document.getElementById('bgmTitle') 
+               || document.getElementById('playerSongTitle');
+  if (titleEl) {
+    titleEl.innerText = titleText;
+  }
+}
+
+async function setBgmPlaylistMode(mode, isSilentInit = false) {
   localStorage.setItem('shift_bgm_mode', mode);
 
-  // 1. 버튼 활성화(Active) 시각 피드백 스타일 갱신
+  // 1. 버튼 활성화 UI 토글
   const btnThis = document.getElementById('btnBgmModeThisWeek');
   const btnLast = document.getElementById('btnBgmModeLastWeek');
   const btnMy = document.getElementById('btnBgmModeMy');
@@ -7740,60 +7749,96 @@ async function setBgmPlaylistMode(mode) {
   updateBtnStyle(btnLast, mode === 'last_week');
   updateBtnStyle(btnMy, mode === 'my_playlist');
 
-  // 2. 모드에 맞는 트랙 목록 추출
+  // 2. 아카이브 데이터 준비 상태 확인
+  let archiveList = (typeof allScheduleArchive !== 'undefined' && Array.isArray(allScheduleArchive))
+    ? allScheduleArchive
+    : [];
+
+  // 혹시라도 아직 아카이브를 안 불러왔다면 즉시 조회 시도
+  if (archiveList.length === 0 && typeof supabaseClient !== 'undefined') {
+    try {
+      const { data } = await supabaseClient
+        .from('schedules')
+        .select('*')
+        .order('date', { ascending: false });
+      if (data) {
+        archiveList = data;
+        if (typeof allScheduleArchive !== 'undefined') allScheduleArchive = data;
+      }
+    } catch (e) {
+      console.warn('아카이브 임시 로드 실패:', e);
+    }
+  }
+
   let newTrackList = [];
 
+  // --- 모드별 트랙 추출 ---
   if (mode === 'this_week') {
-    // [이번 주 콘티] (최신 주차: allScheduleArchive[0] 또는 currentScheduleData)
-    if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length > 0) {
-      newTrackList = parseTracksFromSchedule(allScheduleArchive[0]);
-    } else if (typeof currentScheduleData !== 'undefined' && currentScheduleData) {
-      newTrackList = parseTracksFromSchedule(currentScheduleData);
+    // 이번 주: 최신 주차 중 오늘 날짜 이후거나 가장 최신 항목
+    if (archiveList.length > 0) {
+      newTrackList = parseTracksFromSchedule(archiveList[0]);
     }
   } else if (mode === 'last_week') {
-    // [저번 주 콘티] (두 번째 주차: allScheduleArchive[1])
-    if (typeof allScheduleArchive !== 'undefined' && allScheduleArchive.length >= 2) {
-      newTrackList = parseTracksFromSchedule(allScheduleArchive[1]);
-    } else {
-      alert('저번 주 예배 콘티 데이터가 존재하지 않습니다.');
-      return;
+    // 저번 주: 최신 주차 중 '실제 재생 가능한 음원(11자리 코드)'이 들어있는 주차 자동 탐색
+    // (만약 이번주가 등록되어 있다면 2번째 항목, 이번주가 아예 없으면 1번째 항목이 저번주가 됨)
+    for (let i = 0; i < archiveList.length; i++) {
+      const tracks = parseTracksFromSchedule(archiveList[i]);
+      // 이번 주 모드와 겹치지 않는 이전 주차이거나, 첫 번째로 유효한 과거 콘티를 찾음
+      if (tracks.length > 0) {
+        // 만약 이번주 콘티가 등록되어 있다면 두 번째 주차를 우선하고, 없으면 첫 유효 주차 사용
+        if (i > 0 || archiveList.length === 1 || !parseTracksFromSchedule(archiveList[0]).length) {
+          newTrackList = tracks;
+          break;
+        }
+      }
     }
   } else if (mode === 'my_playlist') {
-    // [내 보관함]
+    // 내 보관함
     newTrackList = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
   }
 
-  // 3. 곡이 없는 경우 처리
+  // 3. 곡이 없을 때 처리 (alert 제거! 화면 텍스트로 조용히 안내)
   if (!newTrackList || newTrackList.length === 0) {
-    const modeNames = {
-      this_week: '이번 주 콘티',
-      last_week: '저번 주 콘티',
-      my_playlist: '내 보관함'
+    bgmPlaylist = [];
+    currentTrackIndex = 0;
+
+    const emptyMessages = {
+      this_week: '이번 주 콘티 준비 중 (등록된 음원 없음)',
+      last_week: '저번 주 콘티 음원 없음',
+      my_playlist: '내 보관함이 비어있습니다 (🤍를 눌러 찬양을 담아보세요)'
     };
-    alert(`${modeNames[mode] || '선택한 모드'}에 재생 가능한 찬양(11자리 코드)이 없습니다.`);
+
+    const emptyText = emptyMessages[mode] || '아직 등록되지 않았음';
+    setBgmPlayerDisplayTitle(emptyText);
+
+    // 재생 중인 오디오 정지
+    if (typeof stopBgm === 'function') stopBgm();
     return;
   }
 
   // 4. BGM 플레이어 재생 큐 및 인덱스 갱신
   bgmPlaylist = newTrackList;
-  currentTrackIndex = 0; // 첫 곡으로 리셋
+  currentTrackIndex = 0;
 
-  console.log(`✅ [${mode}] 모드로 전환 완료. 총 ${bgmPlaylist.length}곡 준비됨.`);
-
-  // 5. 플레이어가 켜져 있다면 첫 곡 즉시 교체 및 재생 준비
-  if (typeof loadAndPlayTrack === 'function') {
-    loadAndPlayTrack(0);
-  } else if (typeof updatePlayerUI === 'function') {
+  // 5. 플레이어 UI 업데이트 및 재생
+  if (typeof updatePlayerUI === 'function') {
     updatePlayerUI();
+  } else {
+    setBgmPlayerDisplayTitle(bgmPlaylist[0]?.title || '찬양 재생 준비 완료');
+  }
+
+  // 초기 로드가 아닐 때(사용자가 직접 버튼을 클릭했을 때) 바로 첫 곡 재생
+  if (!isSilentInit && typeof loadAndPlayTrack === 'function') {
+    loadAndPlayTrack(0);
   }
 }
 
-// 스케줄 데이터에서 11자리 코드 트랙 목록 추출 함수
+// 11자리 유튜브 코드 추출 함수 (URL 들어있는 주차는 자동 배제)
 function parseTracksFromSchedule(item) {
   if (!item || !item.youtube_url) return [];
 
   const rawYt = item.youtube_url.trim();
-  // URL 형태(http, list= 등)가 포함된 구형 주차 배제
+  // http, youtu.be, list= 가 들어있는 옛날 링크는 배제
   if (/https?|\/|\?|=|&|youtu/i.test(rawYt)) return [];
 
   const tokens = rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
@@ -7807,7 +7852,7 @@ function parseTracksFromSchedule(item) {
     }
   });
 
-  // 결단 찬양이 순수 11자리인 경우 추가
+  // 결단 찬양이 순수 11자리 코드인 경우 포함
   if (item.closing_youtube_url && /^[a-zA-Z0-9_-]{11}$/.test(item.closing_youtube_url.trim())) {
     tracks.push({
       id: item.closing_youtube_url.trim(),
