@@ -7653,17 +7653,56 @@ function handleBgmPlayerStateChange(event) {
 
 // 4. 재생 / 일시정지 토글
 function toggleBgmPlay() {
-  if (!bgmPlayer || bgmPlaylist.length === 0) {
-    setupWeeklyBgmPlaylist().then(function() {
-      if (bgmPlaylist.length > 0) playBgmAtIndex(0);
-    });
+  const player = (typeof ytPlayer !== 'undefined' && ytPlayer)
+              || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
+              || (typeof player !== 'undefined' && player);
+
+  // 1. 현재 모드로 세팅된 bgmPlaylist가 비어있는 경우
+  if (!bgmPlaylist || bgmPlaylist.length === 0) {
+    setBgmPlayerDisplayTitle('등록된 유튜브 음원 없음');
     return;
   }
 
-  if (isBgmPlaying) {
-    bgmPlayer.pauseVideo();
-  } else {
-    bgmPlayer.playVideo();
+  // 2. 플레이어 상태 확인
+  if (player && typeof player.getPlayerState === 'function') {
+    const state = player.getPlayerState();
+    // 재생 중인 상태(1: PLAYING)라면 일시정지
+    if (state === 1) {
+      player.pauseVideo();
+      updatePlayButtonIcon(false);
+      return;
+    }
+  }
+
+  // 3. 정지되어 있거나 처음 재생하는 경우: 현재 트랙 재생
+  const track = bgmPlaylist[currentTrackIndex || 0];
+  if (!track || !track.id) {
+    setBgmPlayerDisplayTitle('재생 가능한 트랙이 없습니다.');
+    return;
+  }
+
+  // 제목 갱신
+  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
+
+  // 유튜브 영상 재생 명령
+  if (player) {
+    if (typeof player.loadVideoById === 'function') {
+      player.loadVideoById(track.id);
+    } else if (typeof player.playVideo === 'function') {
+      player.playVideo();
+    }
+  }
+
+  updatePlayButtonIcon(true);
+}
+
+// 재생 버튼 아이콘 토글 헬퍼 (▶ / ⏸)
+function updatePlayButtonIcon(isPlaying) {
+  const playBtn = document.getElementById('btnBgmPlay') 
+               || document.getElementById('btnPlayPause')
+               || document.getElementById('bgmPlayToggle');
+  if (playBtn) {
+    playBtn.innerText = isPlaying ? '⏸' : '▶';
   }
 }
 
@@ -8131,6 +8170,35 @@ async function fetchYoutubeTitle(urlOrId) {
       setBgmPlaylistMode(activeMode, true);
     }
   }
+}
+
+    async function fetchYoutubeTitle(url) {
+  try {
+    const cleanUrl = url.trim();
+    // YouTube oEmbed 공식 엔드포인트
+    const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(cleanUrl)}`);
+    const data = await res.json();
+    return data.title || cleanUrl;
+  } catch (e) {
+    return url;
+  }
+}
+
+// 게시글 텍스트 내 유튜브 URL을 클릭 가능한 제목 링크로 치환하는 함수
+async function formatPostContentWithYoutube(content) {
+  if (!content) return '';
+  const ytRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+[^\s]*)/gi;
+  
+  const matches = content.match(ytRegex);
+  if (!matches) return content;
+
+  let formatted = content;
+  for (const url of matches) {
+    const title = await fetchYoutubeTitle(url);
+    const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-color, #2563eb); font-weight: 600; text-decoration: underline;">🎧 ${title}</a>`;
+    formatted = formatted.replace(url, linkHtml);
+  }
+  return formatted;
 }
 
 // DOM 준비 완료 시 실행
