@@ -6006,7 +6006,7 @@ function stopTimerGame() {
 
           let wordHtml = item.word_qt ? `<div style="font-size: 0.83rem; margin-bottom: 8px;"><span style="color: var(--sub-text); font-weight: 700; display: block;">📖 말씀</span><div>${item.word_qt}</div></div>` : '';
 
-          // 🕊️ 인생 찬양 (하트 버튼 추가)
+          // 🕊️ 인생 찬양 (하트 버튼 및 유튜브 제목 치환 적용)
           const favHeartBtn = createHeartBtn(item.favorite_songs);
           let favHtml = item.favorite_songs ? `
             <div style="font-size: 0.83rem; margin-bottom: 8px;">
@@ -6017,10 +6017,10 @@ function stopTimerGame() {
                   <a href="${getYoutubeSearchUrl(item.favorite_songs)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
                 </div>
               </div>
-              <div style="margin-top: 2px;">${item.favorite_songs}</div>
+              <div style="margin-top: 2px;">${formatTasteSongDisplay(item.favorite_songs)}</div>
             </div>` : '';
 
-          // 🎧 추천 찬양 (하트 버튼 추가)
+          // 🎧 추천 찬양 (하트 버튼 및 유튜브 제목 치환 적용)
           const recHeartBtn = createHeartBtn(item.recommended_song);
           let recHtml = item.recommended_song ? `
             <div style="font-size: 0.83rem;">
@@ -6031,7 +6031,7 @@ function stopTimerGame() {
                   <a href="${getYoutubeSearchUrl(item.recommended_song)}" target="_blank" style="font-size: 0.72rem; color: #ef4444; text-decoration: none;">▶️ 유튜브</a>
                 </div>
               </div>
-              <div style="margin-top: 2px;">${item.recommended_song}</div>
+              <div style="margin-top: 2px;">${formatTasteSongDisplay(item.recommended_song)}</div>
             </div>` : '';
 
           return `
@@ -8201,10 +8201,43 @@ async function formatPostContentWithYoutube(content) {
   return formatted;
 }
 
-// DOM 준비 완료 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-  initLabBgmFeature();
-});
+    /* 🎧 찬양취향표 텍스트/유튜브 URL 자동 감지 및 제목 치환 헬퍼 */
+let tasteTitleCounter = 0;
+function formatTasteSongDisplay(rawText) {
+  if (!rawText || !rawText.trim()) return '';
+
+  const trimmed = rawText.trim();
+  const isUrl = /^https?:\/\//i.test(trimmed) || /youtu\.?be/i.test(trimmed);
+
+  // 1. 일반 텍스트(곡명)로 입력한 경우 -> 그대로 반환
+  if (!isUrl) {
+    return trimmed;
+  }
+
+  // 2. 유튜브 URL 형태로 입력한 경우 -> oEmbed로 실제 영상 제목 치환
+  const uniqueId = `taste-song-${Date.now()}-${tasteTitleCounter++}`;
+
+  setTimeout(async () => {
+    try {
+      const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(trimmed)}`);
+      const data = await res.json();
+      const targetEl = document.getElementById(uniqueId);
+      if (targetEl) {
+        if (data && data.title) {
+          targetEl.innerText = data.title;
+          targetEl.title = data.title;
+        } else {
+          targetEl.innerText = trimmed; // 실패 시 원문
+        }
+      }
+    } catch (e) {
+      const targetEl = document.getElementById(uniqueId);
+      if (targetEl) targetEl.innerText = trimmed;
+    }
+  }, 10);
+
+  return `<span id="${uniqueId}" style="color: var(--text-color); font-weight: 500;">영상 제목 조회 중...</span>`;
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
