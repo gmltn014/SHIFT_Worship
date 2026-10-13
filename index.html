@@ -3669,21 +3669,15 @@ function renderContiArchive(list) {
     return;
   }
 
-  // 보관함(하트) 데이터 안전 조회
-  let favorites = [];
-  try {
-    favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
-  } catch (e) {
-    favorites = [];
-  }
+  const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
 
-  container.innerHTML = list.map((item, idx) => {
+  const htmlArray = list.map((item, idx) => {
     try {
       const rawTitle = (item.worship_title || '').trim();
       const isCanceled = /^x_/i.test(rawTitle);
       const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
 
-      // 음원 URL 처리
+      // 음원 URL 생성
       let computedYt = '';
       try {
         if (typeof buildYoutubePlaylistUrl === 'function' && item.youtube_url) {
@@ -3697,42 +3691,51 @@ function renderContiArchive(list) {
 
       const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
 
-      // 1. 찬양 목록 및 11자리 코드 파싱 (null-safe)
+      // --- 🔍 순수 11자리 코드 포맷 엄격 검사 ---
       let songListHtml = '';
       const songText = item.song_list || '';
       const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
       const rawYt = (item.youtube_url || '').trim();
 
-      // 일반 URL 키워드가 포함되어 있는지 검사 (옛날 주차 배제)
-      const hasUrlKeyword = /https?:\/\/|youtube\.com|youtu\.be|list=/i.test(rawYt);
+      // 1) URL 관련 문자(http, youtu, /, ?, =, & 등)가 하나라도 있으면 순수 코드가 아님
+      const hasUrlPattern = /https?|\/|\?|=|&|youtu/i.test(rawYt);
+
+      // 2) 쉼표나 공백으로 토큰 분리
       const rawTokens = rawYt ? rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean) : [];
 
-      // 순수 11자리 ID 목록인지 확인
-      const isPure11CodeFormat = !hasUrlKeyword && rawTokens.length > 0 && rawTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
+      // 3) 모든 토큰이 정확히 11자리 코드 규격인지 확인
+      const isPure11CodeFormat = !hasUrlPattern && rawTokens.length > 0 && rawTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
 
       if (isPure11CodeFormat && songLines.length > 0) {
         songListHtml = songLines.map((line, sIdx) => {
           const vid = rawTokens[sIdx];
           let heartBtn = '';
-          if (vid && typeof handleHeartClick === 'function') {
+          if (vid && /^[a-zA-Z0-9_-]{11}$/.test(vid)) {
             const isFav = favorites.some(f => f.id === vid);
-            const cleanTitle = line.replace(/^\d+[\.\)]\s*/, '').replace(/'/g, "\\'");
-            heartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+            const safeTitle = line.replace(/^\d+[\.\)]\s*/, '').replace(/["']/g, '');
+            heartBtn = ` <button type="button" class="btn-archive-heart" onclick="handleHeartClick(event, this, '${vid}', '${safeTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.95rem; padding:0 6px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
           }
           return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><span>${line}</span>${heartBtn}</div>`;
         }).join('');
       } else {
+        // 일반 URL 주차 (10월 1주차 등): 하트 없이 텍스트만 표시
         songListHtml = `<div style="white-space: pre-wrap;">${songText || '등록된 곡이 없습니다.'}</div>`;
       }
 
-      // 2. 결단 찬양 처리
+      // --- 🕊️ 결단 찬양 (단일 11자리 ID가 확실한 경우만 하트 허용) ---
       let closingHeartBtn = '';
-      if (item.closing_youtube_url && !/list=/i.test(item.closing_youtube_url) && typeof extractYoutubeId === 'function') {
-        const closingVid = extractYoutubeId(item.closing_youtube_url);
-        if (closingVid && typeof handleHeartClick === 'function') {
+      if (item.closing_youtube_url && !/list=/i.test(item.closing_youtube_url)) {
+        let closingVid = null;
+        if (typeof extractYoutubeId === 'function') {
+          closingVid = extractYoutubeId(item.closing_youtube_url);
+        } else if (/^[a-zA-Z0-9_-]{11}$/.test(item.closing_youtube_url.trim())) {
+          closingVid = item.closing_youtube_url.trim();
+        }
+
+        if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
           const isFav = favorites.some(f => f.id === closingVid);
-          const cleanClosingTitle = ('[결단] ' + (item.closing_song || '결단 찬양')).replace(/'/g, "\\'");
-          closingHeartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${closingVid}', '${cleanClosingTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+          const safeClosingTitle = ('[결단] ' + (item.closing_song || '결단 찬양')).replace(/["']/g, '');
+          closingHeartBtn = ` <button type="button" class="btn-archive-heart" onclick="handleHeartClick(event, this, '${closingVid}', '${safeClosingTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.95rem; padding:0 6px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
         }
       }
 
@@ -3773,10 +3776,10 @@ function renderContiArchive(list) {
               <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
                 ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px; text-decoration: none;">📑 악보</a>` : ''}
                 ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px; text-decoration: none;">🎧 음원</a>` : ''}
-                <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="if(typeof openArchiveSessionScore==='function')openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
                   <span>🎼</span> 세션 악보 ${hasSessionScore ? '✓' : ''}
                 </button>
-                <button type="button" class="btn-action btn-secondary" onclick="openArchiveEditModal('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                <button type="button" class="btn-action btn-secondary" onclick="if(typeof openArchiveEditModal==='function')openArchiveEditModal('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
                   <span>✏️</span> 수정
                 </button>
               </div>
@@ -3784,11 +3787,13 @@ function renderContiArchive(list) {
           </div>
         </div>
       `;
-    } catch (itemErr) {
-      console.warn('특정 주차 렌더링 건너뜀:', item.date, itemErr);
+    } catch (err) {
+      console.error('아이템 생성 에러:', err);
       return '';
     }
-  }).join('');
+  });
+
+  container.innerHTML = htmlArray.join('');
 }
 
     /* 아카이브 아코디언 열기/닫기 토글 함수 */
@@ -7827,12 +7832,60 @@ function loadMyPlaylistBgm() {
   initHiddenYoutubePlayer();
 }
 
-    function handleHeartClick(event, btn, vid, title) {
-  if (event) event.stopPropagation(); // 카드나 다른 행 클릭 이벤트 방지
-  if (typeof toggleFavoriteSong === 'function') {
-    const isAdded = toggleFavoriteSong(vid, title);
-    btn.innerText = isAdded ? '❤️' : '🤍';
-    btn.title = isAdded ? '내 보관함에서 제거' : '내 보관함에 담기';
+    function handleHeartClick(event, btnEl, vid, title) {
+  // 1. 아코디언이 접히거나 다른 클릭 이벤트가 실행되지 않도록 차단
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  if (!vid) return;
+
+  // 2. 보관함 불러오기 (localStorage 기준)
+  let favorites = [];
+  try {
+    favorites = JSON.parse(localStorage.getItem('shift_favorite_songs') || '[]');
+  } catch (e) {
+    favorites = [];
+  }
+
+  const existingIdx = favorites.findIndex(f => f.id === vid);
+
+  if (existingIdx > -1) {
+    // 이미 있으면 제거
+    favorites.splice(existingIdx, 1);
+    if (btnEl) {
+      btnEl.innerText = '🤍';
+      btnEl.title = '보관함 담기';
+    }
+  } else {
+    // 없으면 추가
+    favorites.push({
+      id: vid,
+      title: title || '찬양 곡',
+      addedAt: new Date().toISOString()
+    });
+    if (btnEl) {
+      btnEl.innerText = '❤️';
+      btnEl.title = '보관함 제거';
+    }
+  }
+
+  // 3. 로컬스토리지 저장
+  localStorage.setItem('shift_favorite_songs', JSON.stringify(favorites));
+
+  // 4. BGM 플레이어 보관함 UI가 열려있다면 즉시 동기화
+  if (typeof renderFavoritesPlaylist === 'function') {
+    renderFavoritesPlaylist();
+  }
+}
+
+// 즐겨찾기 목록 가져오는 헬퍼 함수
+function getMyFavoriteSongs() {
+  try {
+    return JSON.parse(localStorage.getItem('shift_favorite_songs') || '[]');
+  } catch (e) {
+    return [];
   }
 }
 
