@@ -3586,7 +3586,19 @@ if (closingEl) {
       });
     }
 
-    function renderContiArchive(list) {
+    function renderArchive() {
+  const filtered = (typeof getFilteredArchiveData === 'function') 
+    ? getFilteredArchiveData() 
+    : [];
+
+  if (typeof currentArchiveSubTab !== 'undefined' && currentArchiveSubTab === 'members') {
+    if (typeof renderMembersArchive === 'function') renderMembersArchive(filtered);
+  } else {
+    renderContiArchive(filtered);
+  }
+}
+
+function renderContiArchive(list) {
   const container = document.getElementById('archiveContiList');
   if (!container) return;
 
@@ -3595,7 +3607,6 @@ if (closingEl) {
     return;
   }
 
-  // 로컬 스토리지 보관함 데이터 안전 조회
   let favorites = [];
   try {
     favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
@@ -3608,7 +3619,6 @@ if (closingEl) {
     const isCanceled = /^x_/i.test(rawTitle);
     const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
 
-    // 음원 링크 생성 안전 처리
     let computedYt = '';
     try {
       if (typeof buildYoutubePlaylistUrl === 'function') {
@@ -3622,12 +3632,10 @@ if (closingEl) {
 
     const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
 
-    // --- 1. 찬양 목록 & 하트(❤️) 안전 파싱 ---
+    // 찬양 목록 파싱 & 하트 처리
     let songListHtml = '';
     const songLines = (item.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
     const rawYtTokens = (item.youtube_url || '').split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
-
-    // 11자리 ID 포맷 여부 확인
     const is11CodeFormat = rawYtTokens.length > 0 && rawYtTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
 
     if (is11CodeFormat && songLines.length > 0) {
@@ -3645,7 +3653,7 @@ if (closingEl) {
       songListHtml = `<div style="white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>`;
     }
 
-    // --- 2. 결단 찬양 하트 ---
+    // 결단 찬양 하트
     let closingHeartBtn = '';
     if (item.closing_youtube_url && typeof extractYoutubeId === 'function') {
       const closingVid = extractYoutubeId(item.closing_youtube_url);
@@ -3656,7 +3664,7 @@ if (closingEl) {
       }
     }
 
-    // --- 3. 세션 라인업 포맷팅 헬퍼 ---
+    // 세션 라인업 표시 헬퍼
     const formatSession = (label, val) => {
       const text = (val && val.trim() !== '' && val.trim() !== 'X') ? val.trim() : '-';
       return `<div style="display:flex; justify-content:space-between; font-size:0.8rem; padding:2px 0; border-bottom:1px dashed var(--border-color);"><span style="color:var(--sub-text);">${label}</span><strong style="color:var(--text-color);">${text}</strong></div>`;
@@ -3686,7 +3694,6 @@ if (closingEl) {
               <div style="font-size: 0.92rem; color: var(--text-color);">${cancelReason || '사유가 없습니다.'}</div>
             </div>
           ` : `
-            <!-- 찬양 콘티 섹션 -->
             <div style="margin: 12px 0 8px 0;">
               <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
               <div style="font-size: 0.88rem; line-height: 1.6;">${songListHtml}</div>
@@ -3697,7 +3704,6 @@ if (closingEl) {
                 <strong>🕊️ 결단찬양:</strong>&nbsp;<span>${item.closing_song}</span>${closingHeartBtn}
               </div>` : ''}
 
-            <!-- 👥 세션 라인업 그리드 섹션 -->
             <div style="margin: 14px 0 10px 0; background: var(--card-sub-bg, rgba(0,0,0,0.03)); border-radius: 8px; padding: 10px 12px;">
               <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-color);">👥 섬김 라인업</div>
               <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px 12px;">
@@ -3713,7 +3719,6 @@ if (closingEl) {
               </div>
             </div>
 
-            <!-- 하단 액션 버튼 그룹 -->
             <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
               ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px; text-decoration: none;">📑 악보</a>` : ''}
               ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px; text-decoration: none;">🎧 음원</a>` : ''}
