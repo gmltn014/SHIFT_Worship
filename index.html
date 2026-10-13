@@ -3638,16 +3638,27 @@ if (closingEl) {
     }
 
     function renderArchive() {
-  const filtered = (typeof getFilteredArchiveData === 'function') 
-    ? getFilteredArchiveData() 
-    : [];
+      const filtered = (typeof getFilteredArchiveData === 'function') 
+        ? getFilteredArchiveData() 
+        : allScheduleArchive;
 
-  if (typeof currentArchiveSubTab !== 'undefined' && currentArchiveSubTab === 'members') {
-    if (typeof renderMembersArchive === 'function') renderMembersArchive(filtered);
-  } else {
-    (filtered);
-  }
-}
+      const contiContainer = document.getElementById('archiveContiList');
+      const membersContainer = document.getElementById('archiveMembersList');
+
+      if (currentArchiveSubTab === 'conti') {
+        // 콘티 탭 활성화: 콘티 목록 켜고 섬김이 목록 숨김
+        if (contiContainer) contiContainer.style.display = 'flex';
+        if (membersContainer) membersContainer.style.display = 'none';
+        renderContiArchive(filtered);
+      } else {
+        // 섬김이 탭 활성화: 섬김이 목록 켜고 콘티 목록 숨김
+        if (contiContainer) contiContainer.style.display = 'none';
+        if (membersContainer) membersContainer.style.display = 'block';
+        if (typeof renderMembersArchive === 'function') {
+          renderMembersArchive(filtered);
+        }
+      }
+    }
 
 function renderContiArchive(list) {
   const container = document.getElementById('archiveContiList');
