@@ -3587,103 +3587,146 @@ if (closingEl) {
     }
 
     function renderContiArchive(list) {
-      const container = document.getElementById('archiveContiList');
-      if (!container) return;
+  const container = document.getElementById('archiveContiList');
+  if (!container) return;
 
-      if (list.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">해당 기간의 예배 기록이 없습니다.</div>';
-        return;
+  if (!list || list.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text);">해당 기간의 예배 기록이 없습니다.</div>';
+    return;
+  }
+
+  // 로컬 스토리지 보관함 데이터 안전 조회
+  let favorites = [];
+  try {
+    favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
+  } catch (e) {
+    favorites = [];
+  }
+
+  container.innerHTML = list.map((item, idx) => {
+    const rawTitle = (item.worship_title || '').trim();
+    const isCanceled = /^x_/i.test(rawTitle);
+    const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
+
+    // 음원 링크 생성 안전 처리
+    let computedYt = '';
+    try {
+      if (typeof buildYoutubePlaylistUrl === 'function') {
+        computedYt = buildYoutubePlaylistUrl(item.youtube_url);
+      } else {
+        computedYt = item.youtube_url || '';
       }
-
-      const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
-
-      container.innerHTML = list.map((item, idx) => {
-        const rawTitle = (item.worship_title || '').trim();
-        const isCanceled = /^x_/i.test(rawTitle);
-        const cancelReason = isCanceled ? rawTitle.replace(/^x_/i, '').trim() : '';
-        const computedYt = buildYoutubePlaylistUrl(item.youtube_url);
-        const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
-
-        // --- 💡 11자리 코드 분별 및 곡별 하트(❤️) 렌더링 로직 ---
-        let songListHtml = '';
-        const songLines = (item.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
-        const rawYtTokens = (item.youtube_url || '').split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
-
-        // 모든 토큰이 11자리 영문/숫자 코드인지 검사
-        const is11CodeFormat = rawYtTokens.length > 0 && rawYtTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
-
-        if (is11CodeFormat && songLines.length > 0) {
-          songListHtml = songLines.map((line, sIdx) => {
-            const vid = rawYtTokens[sIdx];
-            let heartBtn = '';
-            if (vid) {
-              const isFav = favorites.some(f => f.id === vid);
-              const cleanTitle = line.replace(/^\d+[\.\)]\s*/, '').replace(/'/g, "\\'");
-              heartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
-            }
-            return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><span>${line}</span>${heartBtn}</div>`;
-          }).join('');
-        } else {
-          // 예전 주차(단일 URL 또는 포맷 이전): 기존 텍스트 형태 유지
-          songListHtml = `<div style="white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>`;
-        }
-
-        // --- 🕊️ 결단 찬양 하트 렌더링 ---
-        let closingHeartBtn = '';
-        if (item.closing_youtube_url && typeof extractYoutubeId === 'function') {
-          const closingVid = extractYoutubeId(item.closing_youtube_url);
-          if (closingVid) {
-            const isFav = favorites.some(f => f.id === closingVid);
-            const cleanClosingTitle = ('[결단] ' + (item.closing_song || '결단 찬양')).replace(/'/g, "\\'");
-            closingHeartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${closingVid}', '${cleanClosingTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
-          }
-        }
-
-        return `
-          <div class="archive-item-card" style="${isCanceled ? 'border-left: 4px solid #ef4444;' : ''}">
-            <div class="archive-item-header" onclick="toggleArchiveAccordion(${idx})">
-              <div>
-                <span class="worship-date-badge" style="${isCanceled ? 'background-color: #fee2e2; color: #b91c1c;' : ''}">
-                  ${item.date} ${isCanceled ? '• 예배 없음' : ''}
-                </span>
-                <strong style="font-size: 1.05rem; display: block; margin-top: 4px; ${isCanceled ? 'color: #ef4444;' : ''}">
-                  ${isCanceled ? `🚫 [예배 없음] ${cancelReason || '취소'}` : (rawTitle || item.date + ' 주일예배')}
-                </strong>
-                <span style="font-size: 0.82rem; color: var(--sub-text);">
-                  ${isCanceled ? '⚠️ 취소 사유 확인' : `인도: ${item.leader || '-'}`}
-                </span>
-              </div>
-              <button class="accordion-toggle-btn" id="acc-btn-${idx}">▼</button>
-            </div>
-            
-            <div class="archive-item-body" id="acc-body-${idx}">
-              ${isCanceled ? `
-                <div style="background: rgba(239, 68, 68, 0.08); border-radius: 8px; padding: 14px; margin: 12px 0; border: 1px dashed #ef4444;">
-                  <strong style="color: #ef4444; display: block; margin-bottom: 4px;">🚫 예배 미진행 안내</strong>
-                  <div style="font-size: 0.92rem; color: var(--text-color);">${cancelReason || '사유가 없습니다.'}</div>
-                </div>
-              ` : `
-                <div style="margin: 12px 0 8px 0;">
-                  <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
-                  <div style="font-size: 0.88rem; line-height: 1.6;">${songListHtml}</div>
-                </div>
-                ${item.closing_song ? `
-                  <div style="margin: 8px 0; font-size: 0.88rem; display: flex; align-items: center;">
-                    <strong>🕊️ 결단찬양:</strong>&nbsp;<span>${item.closing_song}</span>${closingHeartBtn}
-                  </div>` : ''}
-                <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
-                  ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px;">📑 악보</a>` : ''}
-                  ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px;">🎧 음원</a>` : ''}
-                  <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
-                    <span>🎼</span> 세션 악보 ${hasSessionScore ? '✓' : ''}
-                  </button>
-                </div>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('');
+    } catch (e) {
+      computedYt = item.youtube_url || '';
     }
+
+    const hasSessionScore = Boolean(item.session_score_url && item.session_score_url.trim() && item.session_score_url !== '-');
+
+    // --- 1. 찬양 목록 & 하트(❤️) 안전 파싱 ---
+    let songListHtml = '';
+    const songLines = (item.song_list || '').split('\n').map(s => s.trim()).filter(Boolean);
+    const rawYtTokens = (item.youtube_url || '').split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean);
+
+    // 11자리 ID 포맷 여부 확인
+    const is11CodeFormat = rawYtTokens.length > 0 && rawYtTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
+
+    if (is11CodeFormat && songLines.length > 0) {
+      songListHtml = songLines.map((line, sIdx) => {
+        const vid = rawYtTokens[sIdx];
+        let heartBtn = '';
+        if (vid) {
+          const isFav = favorites.some(f => f.id === vid);
+          const cleanTitle = line.replace(/^\d+[\.\)]\s*/, '').replace(/'/g, "\\'");
+          heartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+        }
+        return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><span>${line}</span>${heartBtn}</div>`;
+      }).join('');
+    } else {
+      songListHtml = `<div style="white-space: pre-wrap;">${item.song_list || '등록된 곡이 없습니다.'}</div>`;
+    }
+
+    // --- 2. 결단 찬양 하트 ---
+    let closingHeartBtn = '';
+    if (item.closing_youtube_url && typeof extractYoutubeId === 'function') {
+      const closingVid = extractYoutubeId(item.closing_youtube_url);
+      if (closingVid) {
+        const isFav = favorites.some(f => f.id === closingVid);
+        const cleanClosingTitle = ('[결단] ' + (item.closing_song || '결단 찬양')).replace(/'/g, "\\'");
+        closingHeartBtn = ` <button type="button" onclick="handleHeartClick(event, this, '${closingVid}', '${cleanClosingTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+      }
+    }
+
+    // --- 3. 세션 라인업 포맷팅 헬퍼 ---
+    const formatSession = (label, val) => {
+      const text = (val && val.trim() !== '' && val.trim() !== 'X') ? val.trim() : '-';
+      return `<div style="display:flex; justify-content:space-between; font-size:0.8rem; padding:2px 0; border-bottom:1px dashed var(--border-color);"><span style="color:var(--sub-text);">${label}</span><strong style="color:var(--text-color);">${text}</strong></div>`;
+    };
+
+    return `
+      <div class="archive-item-card" style="${isCanceled ? 'border-left: 4px solid #ef4444;' : ''}">
+        <div class="archive-item-header" onclick="toggleArchiveAccordion(${idx})">
+          <div>
+            <span class="worship-date-badge" style="${isCanceled ? 'background-color: #fee2e2; color: #b91c1c;' : ''}">
+              ${item.date} ${isCanceled ? '• 예배 없음' : ''}
+            </span>
+            <strong style="font-size: 1.05rem; display: block; margin-top: 4px; ${isCanceled ? 'color: #ef4444;' : ''}">
+              ${isCanceled ? `🚫 [예배 없음] ${cancelReason || '취소'}` : (rawTitle || item.date + ' 주일예배')}
+            </strong>
+            <span style="font-size: 0.82rem; color: var(--sub-text);">
+              ${isCanceled ? '⚠️ 취소 사유 확인' : `인도: ${item.leader || '-'}`}
+            </span>
+          </div>
+          <button class="accordion-toggle-btn" id="acc-btn-${idx}">▼</button>
+        </div>
+        
+        <div class="archive-item-body" id="acc-body-${idx}" style="display: none;">
+          ${isCanceled ? `
+            <div style="background: rgba(239, 68, 68, 0.08); border-radius: 8px; padding: 14px; margin: 12px 0; border: 1px dashed #ef4444;">
+              <strong style="color: #ef4444; display: block; margin-bottom: 4px;">🚫 예배 미진행 안내</strong>
+              <div style="font-size: 0.92rem; color: var(--text-color);">${cancelReason || '사유가 없습니다.'}</div>
+            </div>
+          ` : `
+            <!-- 찬양 콘티 섹션 -->
+            <div style="margin: 12px 0 8px 0;">
+              <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">📋 찬양 콘티</div>
+              <div style="font-size: 0.88rem; line-height: 1.6;">${songListHtml}</div>
+            </div>
+
+            ${item.closing_song ? `
+              <div style="margin: 8px 0; font-size: 0.88rem; display: flex; align-items: center;">
+                <strong>🕊️ 결단찬양:</strong>&nbsp;<span>${item.closing_song}</span>${closingHeartBtn}
+              </div>` : ''}
+
+            <!-- 👥 세션 라인업 그리드 섹션 -->
+            <div style="margin: 14px 0 10px 0; background: var(--card-sub-bg, rgba(0,0,0,0.03)); border-radius: 8px; padding: 10px 12px;">
+              <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-color);">👥 섬김 라인업</div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px 12px;">
+                ${formatSession('인도', item.leader)}
+                ${formatSession('싱어', item.vocal)}
+                ${formatSession('건반 1', item.keyboard1)}
+                ${formatSession('건반 2', item.keyboard2)}
+                ${formatSession('드럼', item.drum)}
+                ${formatSession('기타', item.guitar)}
+                ${formatSession('베이스', item.bass)}
+                ${formatSession('음향', item.sound)}
+                ${formatSession('자막/방송', item.broadcast || item.prompter)}
+              </div>
+            </div>
+
+            <!-- 하단 액션 버튼 그룹 -->
+            <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
+              ${item.sheet_url ? `<a href="${item.sheet_url}" target="_blank" class="btn-action btn-primary" style="font-size: 0.8rem; padding: 6px 10px; text-decoration: none;">📑 악보</a>` : ''}
+              ${computedYt ? `<a href="${computedYt}" target="_blank" class="btn-action btn-secondary" style="font-size: 0.8rem; padding: 6px 10px; text-decoration: none;">🎧 음원</a>` : ''}
+              <button type="button" class="btn-action ${hasSessionScore ? 'btn-primary' : 'btn-secondary'}" onclick="openArchiveSessionScore('${item.date}')" style="font-size: 0.8rem; padding: 6px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                <span>🎼</span> 세션 악보 ${hasSessionScore ? '✓' : ''}
+              </button>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
     function toggleArchiveAccordion(idx) {
       const body = document.getElementById(`acc-body-${idx}`);
