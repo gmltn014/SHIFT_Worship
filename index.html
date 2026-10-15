@@ -2524,6 +2524,8 @@
   <script>
     const SYNC_KEY_STORAGE = 'shift_portal_sync_key';
 
+    const SHIFT_PLAYLIST_API_URL = "https://script.google.com/macros/s/AKfycbxmzVfQVrcLBwPYYvG3C8ox0HToKn-QWfA0Ff5dz3QHJFjlxbgjgQNAysJwp4-y4WIImg/exec";
+
     /* 0. 기본 테마 & 탭 전환 */
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
@@ -8914,6 +8916,205 @@ function playSharedPlaylist(tracks, playlistTitle) {
   setBgmPlayerDisplayTitle(`🎵 [${playlistTitle}] ${tracks[0].title} (1/${tracks.length})`);
   playCurrentTrackDirectly();
 }
+
+    /* =========================================================================
+   구글 시트 연동: 1) 내 보관함 백업/동기화 (UserPlaylists)
+   ========================================================================= */
+
+// 1. 내 보관함을 구글 시트에 백업
+async function backupMyFavToSheet() {
+  const raw = localStorage.getItem('shift_my_favorite_songs');
+  const favs = raw ? JSON.parse(raw) : [];
+
+  if (favs.length === 0) {
+    alert('백업할 찬양이 보관함에 없습니다.');
+    return;
+  }
+
+  let userKey = localStorage.getItem('shift_user_key');
+  if (!userKey) {
+    userKey = prompt('보관함을 식별할 이름 또는 닉네임(또는 전화번호 뒷자리)을 입력하세요:', '');
+    if (!userKey || !userKey.trim()) return;
+    userKey = userKey.trim();
+    localStorage.setItem('shift_user_key', userKey);
+  }
+
+  try {
+    const payload = {
+      action: 'saveUserPlaylist',
+      user_key: userKey,
+      tracks: favs,
+      backup_title: `${userKey}의 보관함`
+    };
+
+    // Google Apps Script는 redirect 처리를 위해 no-cors 대신 text/plain 페이로드로 전송
+    const res = await fetch(SHIFT_PLAYLIST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+
+    if (result.status === 'success') {
+      alert(`☁️ [${userKey}]님의 구글 시트 백업이 완료되었습니다! (총 ${favs.length}곡)`);
+    } else {
+      throw new Error(result.error || '백업 실패');
+    }
+  } catch (err) {
+    console.error('구글 시트 백업 에러:', err);
+    alert('구글 시트 백업 중 오류가 발생했습니다.');
+  }
+}
+
+// 2. 구글 시트에서 내 보관함 불러오기(복원)
+async function loadMyFavFromSheet() {
+  let userKey = localStorage.getItem('shift_user_key') || '';
+  userKey = prompt('불러올 보관함의 이름(닉네임)을 입력하세요:', userKey);
+  if (!userKey || !userKey.trim()) return;
+  userKey = userKey.trim();
+
+  try {
+    const url = `${SHIFT_PLAYLIST_API_URL}?action=getUserPlaylist&user_key=${encodeURIComponent(userKey)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.tracks || data.tracks.length === 0) {
+      alert(`[${userKey}] 이름으로 저장된 보관함을 찾을 수 없습니다.`);
+      return;
+    }
+
+    if (confirm(`구글 시트에서 [${data.tracks.length}곡]을 찾았습니다. 현재 보관함에 덮어쓸까요?`)) {
+      localStorage.setItem('shift_user_key', userKey);
+      localStorage.setItem('shift_my_favorite_songs', JSON.stringify(data.tracks));
+      
+      // 화면 및 플레이어 상태 갱신
+      renderMyFavListModal();
+      const currentMode = localStorage.getItem('shift_bgm_mode');
+      if (currentMode === 'my_playlist') {
+        window.bgmPlaylist = data.tracks;
+        if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = data.tracks;
+        window.currentTrackIndex = 0;
+        playCurrentTrackDirectly();
+      }
+      alert('✅ 보관함 복원이 완료되었습니다!');
+    }
+  } catch (err) {
+    console.error('구글 시트 불러오기 에러:', err);
+    alert('구글 시트에서 데이터를 가져오는 데 실패했습니다.');
+  }
+}
+
+/* =========================================================================
+   구글 시트 연동: 2) 찬양팀 놀이터 공개 플레이리스트 (SharedPlaylists)
+   ========================================================================= */
+
+// 1. 내 보관함을 놀이터에 공유하기
+async function openShareFavPlaylistDialog() {
+  const raw = localStorage.getItem('shift_my_favorite_songs');
+  const favs = raw ? JSON.parse(raw) : [];
+
+  if (favs.length === 0) {
+    alert('공유할 찬양이 보관함에 없습니다.');
+    return;
+  }
+
+  const title = prompt('공유할 플레이리스트 제목을 입력해주세요:', '추천 찬양 콘티');
+  if (!title || !title.trim()) return;
+
+  const defaultCreator = localStorage.getItem('shift_user_key') || '';
+  const creator = prompt('공유자 이름(닉네임)을 입력해주세요:', defaultCreator);
+  if (!creator || !creator.trim()) return;
+
+  try {
+    const payload = {
+      action: 'saveSharedPlaylist',
+      title: title.trim(),
+      creator: creator.trim(),
+      tracks: favs
+    };
+
+    const res = await fetch(SHIFT_PLAYLIST_API_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+
+    if (result.status === 'success') {
+      alert('🎉 찬양팀 놀이터에 플레이리스트가 등록되었습니다!');
+      toggleMyFavModal(false);
+      
+      // 놀이터 화면이 열려 있다면 목록 갱신
+      if (typeof loadPlaygroundPlaylists === 'function') {
+        loadPlaygroundPlaylists();
+      }
+    } else {
+      throw new Error(result.error || '공유 실패');
+    }
+  } catch (err) {
+    console.error('놀이터 공유 에러:', err);
+    alert('플레이리스트 공유 중 오류가 발생했습니다.');
+  }
+}
+
+// 2. 놀이터 탭에서 공유된 플레이리스트 목록 불러오기
+async function loadPlaygroundPlaylists() {
+  const container = document.getElementById('playgroundSharedPlaylists');
+  if (!container) return;
+
+  container.innerHTML = '<div style="text-align:center; padding:15px; color:#888;">구글 시트에서 목록을 불러오는 중...</div>';
+
+  try {
+    const url = `${SHIFT_PLAYLIST_API_URL}?action=getSharedPlaylists`;
+    const res = await fetch(url);
+    const playlists = await res.json();
+
+    if (!playlists || playlists.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">공유된 플레이리스트가 아직 없습니다. 첫 번째 플리를 공유해보세요!</div>';
+      return;
+    }
+
+    container.innerHTML = playlists.map(item => `
+      <div class="archive-item-card" style="padding:14px; margin-bottom:10px; border-radius:10px; background:var(--bg-card,#fff); border:1px solid #e5e7eb; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="flex:1; padding-right:10px;">
+            <strong style="font-size:0.98rem; display:block; color:#111; margin-bottom:4px;">${item.title}</strong>
+            <span style="font-size:0.8rem; color:#6b7280;">공유자: <strong>${item.creator}</strong> • ${item.tracks?.length || 0}곡</span>
+          </div>
+          <button type="button" class="btn-action btn-primary" style="font-size:0.8rem; padding:6px 12px; border-radius:6px; cursor:pointer;" 
+                  onclick='playSharedPlaylistDirectly(${JSON.stringify(item.tracks || []).replace(/'/g, "&apos;")}, "${item.title.replace(/"/g, '&quot;')}")'>
+            ▶ 바로 재생
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('놀이터 플리 불러오기 에러:', err);
+    container.innerHTML = '<div style="text-align:center; padding:15px; color:#ef4444;">플레이리스트 목록을 불러오지 못했습니다.</div>';
+  }
+}
+
+// 3. 놀이터에서 '▶ 바로 재생'을 눌렀을 때 BGM 플레이어로 즉시 전환 재생
+function playSharedPlaylistDirectly(tracks, title) {
+  if (!tracks || tracks.length === 0) {
+    alert('재생 가능한 찬양이 없습니다.');
+    return;
+  }
+
+  // 모드 버튼 스타일 초기화
+  const btnThis = document.getElementById('btnBgmModeThisWeek');
+  const btnLast = document.getElementById('btnBgmModeLastWeek');
+  const btnMy = document.getElementById('btnBgmModeMy');
+  if (btnThis) { btnThis.classList.remove('btn-primary'); btnThis.classList.add('btn-secondary'); }
+  if (btnLast) { btnLast.classList.remove('btn-primary'); btnLast.classList.add('btn-secondary'); }
+  if (btnMy) { btnMy.classList.remove('btn-primary'); btnMy.classList.add('btn-secondary'); }
+
+  // 플레이리스트 주입 및 재생
+  window.bgmPlaylist = tracks;
+  if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = tracks;
+  window.currentTrackIndex = 0;
+  if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = 0;
+
+  playCurrentTrackDirectly();
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -9023,15 +9224,23 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <!-- 모달 푸터 -->
-    <div style="margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-size: 0.85rem; color: #666;">저장된 곡: <strong id="myFavCount" style="color: #4f46e5;">0</strong>곡</span>
-      <button type="button" class="btn-action btn-primary" style="font-size: 0.82rem; padding: 7px 12px; border-radius: 6px; cursor: pointer;" onclick="openShareFavPlaylistDialog()">
-        🚀 놀이터에 공유
+    <div style="margin-top: 14px; border-top: 1px solid #e5e7eb; padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-size: 0.82rem; color: #666;">저장된 곡: <strong id="myFavCount" style="color: #4f46e5;">0</strong>곡</span>
+    <div style="display: flex; gap: 6px;">
+      <button type="button" class="btn-action btn-secondary" style="font-size: 0.75rem; padding: 5px 8px;" onclick="backupMyFavToSheet()" title="구글 시트에 백업">
+        ☁️ 시트 백업
+      </button>
+      <button type="button" class="btn-action btn-secondary" style="font-size: 0.75rem; padding: 5px 8px;" onclick="loadMyFavFromSheet()" title="구글 시트에서 복원">
+        📥 시트 복원
       </button>
     </div>
   </div>
+  
+  <button type="button" class="btn-action btn-primary" style="width: 100%; font-size: 0.85rem; padding: 8px; border-radius: 6px; cursor: pointer;" onclick="openShareFavPlaylistDialog()">
+    🚀 찬양팀 놀이터에 이 플레이리스트 공유하기
+  </button>
 </div>
-
   <!-- 실제 재생용 숨김 YouTube Iframe 컨테이너 -->
   <div id="hiddenYoutubePlayer" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"></div>
 </div>
