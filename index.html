@@ -8337,26 +8337,55 @@ function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
     btnEl = document.querySelector(`[data-song-id="${vid}"]`);
   }
 
-  // 💥 핵심: 인자로 넘어온 title이 '찬양 곡 1'이거나 기본값이면, 화면의 실제 텍스트로 교체
+  // 1) 제목 유효성 검사 (기본값, '유튜브', 빈값 등인지 판별)
+  const isInvalidTitle = (t) => {
+    if (!t) return true;
+    const clean = String(t).trim();
+    return (
+      clean === '' ||
+      clean === '유튜브' ||
+      clean.toLowerCase() === 'youtube' ||
+      clean === '추천 찬양' ||
+      clean === '찬양 곡' ||
+      clean.startsWith('찬양 곡') ||
+      clean === '링크' ||
+      clean === '영상' ||
+      clean.length === 11 // 유튜브 ID 11자리
+    );
+  };
+
   let finalTitle = String(title || '').trim();
-  if (!finalTitle || finalTitle.startsWith('찬양 곡') || finalTitle === '추천 찬양') {
+
+  // 2) 유효하지 않은 제목이면 DOM에서 '유튜브' 단어와 버튼들을 빼고 진짜 찬양명만 추출
+  if (isInvalidTitle(finalTitle)) {
     if (btnEl) {
-      // 하트 버튼이 속한 부모 요소(카드, 리스트 아이템) 탐색
       const container = btnEl.closest('.sns-song-item, .song-row, li, .track-item, div');
       if (container) {
-        // 복제 후 버튼, 스크립트 등을 제거하고 순수 텍스트만 추출
         const clone = container.cloneNode(true);
-        clone.querySelectorAll('button, script, style, .badge').forEach(el => el.remove());
-        const extracted = clone.innerText.replace(/https?:\/\/\S+/gi, '').replace(/^\d+[\.\)]\s*/, '').trim();
+        // 버튼, 링크, 배지 등 불필요한 태그 제거
+        clone.querySelectorAll('button, a, script, style, .badge, .btn').forEach(el => el.remove());
+
+        // 텍스트 정제
+        let extracted = clone.innerText
+          .replace(/https?:\/\/\S+/gi, '') // URL 제거
+          .replace(/유튜브|youtube|영상|링크|재생|듣기/gi, '') // 💥 부가 키워드 제거
+          .replace(/^\d+[\.\)]\s*/, '') // 앞쪽 번호(1. 2.) 제거
+          .trim();
+
         if (extracted) {
-          finalTitle = extracted.split('\n')[0].trim();
+          // 줄바꿈이 있다면 첫 번째 유효한 줄 선택
+          const lines = extracted.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !isInvalidTitle(l));
+          if (lines.length > 0) {
+            finalTitle = lines[0];
+          }
         }
       }
     }
   }
 
-  if (!finalTitle || finalTitle.startsWith('찬양 곡') || finalTitle === '추천 찬양') {
-    finalTitle = '은혜로운 찬양';
+  // 그래도 못 찾았다면 기본 대체명
+  if (isInvalidTitle(finalTitle)) {
+    finalTitle = '찬양 곡';
   }
 
   handleHeartClick(event, btnEl, vid, finalTitle);
