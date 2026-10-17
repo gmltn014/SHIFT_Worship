@@ -6035,20 +6035,41 @@ function stopTimerGame() {
         const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
 
         // 하트 버튼 렌더링 헬퍼 함수
-        const createHeartBtn = (rawSongText) => {
+        const createHeartBtn = (rawSongText, fallbackIndex = 1) => {
           if (!rawSongText || typeof extractYoutubeId !== 'function') return '';
           const vid = extractYoutubeId(rawSongText);
           if (!vid) return '';
           
-          const isFav = favorites.some(f => f.id === vid);
-          // 곡 제목 정제: URL이나 특수문자 제거 후 기본 텍스트 추출
-          let cleanTitle = rawSongText.replace(/https?:\/\/\S+/gi, '').trim();
-          if (!cleanTitle || cleanTitle.length === 11) cleanTitle = '추천 찬양';
-          cleanTitle = cleanTitle.replace(/'/g, "\\'");
+          const isFav = favorites.some(f => String(f.id).trim() === String(vid).trim());
 
-          return ` <button type="button" onclick="handleHeartClick(event, this, '${vid}', '${cleanTitle}')" style="background:none; border:none; cursor:pointer; font-size:0.95rem; padding:0 4px; vertical-align:middle;" title="${isFav ? '보관함 제거' : '보관함 담기'}">${isFav ? '❤️' : '🤍'}</button>`;
+          // 1) URL 및 유튜브 관련 텍스트 제거
+          let cleanTitle = rawSongText
+            .replace(/https?:\/\/\S+/gi, '')
+            .replace(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)?([a-zA-Z0-9_-]{11})/g, '')
+            .replace(/^\d+[\.\)]\s*/, '') // 앞쪽 번호(1. 2.) 제거
+            .replace(/[-_~]/g, ' ')
+            .trim();
+
+          // 2) 💥 [수정] 11글자 길이 검사 제거 -> 진짜 텍스트가 없을 때만 대체값 부여
+          if (!cleanTitle) {
+            cleanTitle = `찬양 곡 ${fallbackIndex}`;
+          }
+
+          // HTML 속성 및 JS 인자 안전 escape 처리
+          const safeTitle = cleanTitle.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+          return `
+            <button type="button" 
+                    class="btn-archive-heart" 
+                    data-song-id="${vid}" 
+                    onclick="toggleFavoriteSong('${vid}', '${safeTitle}', event)" 
+                    style="background:none; border:none; cursor:pointer; font-size:1.05rem; padding:0 4px; line-height:1;" 
+                    title="보관함 담기">
+              ${isFav ? '❤️' : '🤍'}
+            </button>
+          `;
         };
-
+        
         listEl.innerHTML = data.map(item => {
           const dateStr = item.created_at ? item.created_at.split('T')[0] : '';
           const authorBadge = item.is_anonymous ? '🎭 익명' : '👤 실명';
@@ -8776,47 +8797,44 @@ function renderMyFavListModal() {
 
 // 하트(❤️) 눌러 보관함에서 삭제할 때
 function removeSongFromFavList(vid) {
+  const storageKey = 'shift_my_favorite_songs';
   let favs = [];
-
-  if (typeof getMyFavoriteSongs === 'function') {
-    favs = getMyFavoriteSongs();
-  } else {
-    try {
-      const raw = localStorage.getItem('shift_my_favorite_songs');
-      favs = raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      favs = [];
-    }
+  try {
+    const raw = localStorage.getItem(storageKey);
+    favs = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(favs)) favs = [];
+  } catch (e) {
+    favs = [];
   }
 
-  favs = favs.filter(f => f.id !== vid);
+  const targetId = String(vid).trim();
+  // 💥 확실한 문자열 비교로 일치하는 곡 제거
+  favs = favs.filter(item => String(item.id).trim() !== targetId);
 
-  // 로컬스토리지에 저장 (일관된 키 사용)
-  localStorage.setItem('shift_my_favorite_songs', JSON.stringify(favs));
-  localStorage.setItem('my_favorite_songs', JSON.stringify(favs));
+  // 로컬스토리지 즉시 업데이트
+  localStorage.setItem(storageKey, JSON.stringify(favs));
 
-  // 현재 활성 플레이리스트 반영
+  // 1) 모달 목록 즉시 갱신
+  renderMyFavListModal();
+
+  // 2) 아카이브 메인 화면의 하트 아이콘도 🤍로 변경
+  updateHeartIcons(targetId, false);
+
+  // 3) 만약 현재 플레이어가 '내 보관함' 모드로 재생 중이라면 재생 큐도 갱신
   const currentMode = localStorage.getItem('shift_bgm_mode');
   if (currentMode === 'my_playlist') {
     window.bgmPlaylist = favs;
     if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favs;
 
     if (favs.length === 0) {
-      setBgmPlayerDisplayTitle('내 보관함이 비어있습니다');
+      if (typeof setBgmPlayerDisplayTitle === 'function') {
+        setBgmPlayerDisplayTitle('내 보관함이 비어있습니다');
+      }
       const yt = window.ytPlayer || window.bgmPlayer || window.player;
       if (yt && typeof yt.stopVideo === 'function') yt.stopVideo();
     }
   }
-
-  // 모달 갱신
-  renderMyFavListModal();
-
-  // 아카이브 하트 아이콘 동기화
-  document.querySelectorAll(`.btn-archive-heart[onclick*="${vid}"]`).forEach(btn => {
-    btn.innerText = '🤍';
-  });
 }
-
 // 목록에서 곡 클릭 시 재생
 function playFavSongDirectly(idx) {
   if (localStorage.getItem('shift_bgm_mode') !== 'my_playlist') {
