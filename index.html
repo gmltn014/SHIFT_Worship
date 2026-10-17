@@ -8299,20 +8299,17 @@ function loadMyPlaylistBgm() {
 }
 
     function handleHeartClick(event, btnEl, vid, title) {
-  if (event) {
-    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  if (event && typeof event.stopPropagation === 'function') {
+    event.stopPropagation();
   }
 
-  // 버튼 엘리먼트 자동 확보
-  if (!btnEl && event) {
-    btnEl = event.currentTarget || event.target;
-  }
-  if (!btnEl && vid) {
-    btnEl = document.querySelector(`[data-song-id="${vid}"]`);
-  }
+  // 버튼 엘리먼트 확보
+  if (!btnEl && event) btnEl = event.currentTarget || event.target;
+  if (!btnEl && vid) btnEl = document.querySelector(`[data-song-id="${vid}"]`);
 
-  if (!vid) {
-    console.warn('[Heart] 유효하지 않은 영상 ID');
+  const targetId = String(vid || '').trim();
+  if (!targetId) {
+    console.warn('[Heart] 비어있는 유튜브 ID입니다.');
     return;
   }
 
@@ -8326,40 +8323,31 @@ function loadMyPlaylistBgm() {
     favorites = [];
   }
 
-  const targetId = String(vid).trim();
-  const existingIdx = favorites.findIndex(f => String(f.id).trim() === targetId);
+  const existingIdx = favorites.findIndex(f => {
+    const fId = String(f.id || f.vid || f.youtubeId || '').trim();
+    return fId === targetId;
+  });
 
-  // 💥 핵심: 실제 곡 제목 추출 (DOM 탐색 최우선)
+  // 💥 [핵심 1] 넘어온 4번째 인자(title)를 최우선으로 온전히 보존
   let cleanTitle = String(title || '').trim();
 
-  // title 인자가 없거나 기본값 형태('찬양 곡', '추천 찬양')일 때 화면 텍스트 역추적
-  if (!cleanTitle || cleanTitle.includes('찬양 곡') || cleanTitle === '추천 찬양' || cleanTitle.length === 11) {
+  // title이 완전히 비어있거나 'undefined'일 때만 DOM 역추적
+  if (!cleanTitle || cleanTitle === 'undefined' || cleanTitle === 'null') {
     if (btnEl) {
-      // 1) 같은 행이나 부모 컨테이너(li, div, tr 등) 탐색
       const parentRow = btnEl.closest('.song-row, li, .track-item, .card, tr, div');
       if (parentRow) {
-        // 복사본을 만들어 버튼 텍스트(❤️/🤍)나 링크 URL은 제외하고 순수 곡명만 추출
-        const clone = parentRow.cloneNode(true);
-        clone.querySelectorAll('button, script, style, a').forEach(el => el.remove());
-        const extracted = clone.innerText.trim();
-        if (extracted) {
-          cleanTitle = extracted.split('\n')[0].trim();
+        const textNode = parentRow.querySelector('.song-title, .track-title, strong, b, span');
+        if (textNode && textNode !== btnEl) {
+          cleanTitle = textNode.innerText.trim();
         }
       }
     }
   }
 
-  // URL 및 맨 앞 번호(1., 2.) 제거
-  cleanTitle = cleanTitle
-    .replace(/https?:\/\/\S+/gi, '')
-    .replace(/^\d+[\.\)]\s*/, '')
-    .trim();
+  cleanTitle = cleanTitle.replace(/https?:\/\/\S+/gi, '').trim();
+  if (!cleanTitle) cleanTitle = '찬양 곡';
 
-  if (!cleanTitle || cleanTitle === '추천 찬양' || cleanTitle.includes('찬양 곡')) {
-    cleanTitle = '찬양 곡';
-  }
-
-  // 토글 처리
+  // 1) 보관함에 이미 있는 경우: 제거
   if (existingIdx > -1) {
     favorites.splice(existingIdx, 1);
     if (btnEl) {
@@ -8367,9 +8355,14 @@ function loadMyPlaylistBgm() {
       btnEl.title = '보관함 담기';
     }
     if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, false);
-  } else {
+  } 
+  // 2) 보관함에 없는 경우: 추가 (플레이어가 찾는 모든 규격 동시 제공)
+  else {
     favorites.push({
       id: targetId,
+      vid: targetId,
+      youtubeId: targetId,
+      url: `https://www.youtube.com/watch?v=${targetId}`,
       title: cleanTitle,
       addedAt: new Date().toISOString()
     });
@@ -8380,15 +8373,15 @@ function loadMyPlaylistBgm() {
     if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, true);
   }
 
-  // 로컬스토리지 저장
+  // 로컬스토리지에 저장
   localStorage.setItem(storageKey, JSON.stringify(favorites));
 
-  // 모달 목록 갱신
+  // 3) 모달 목록 UI 실시간 갱신
   if (typeof renderMyFavListModal === 'function') {
     renderMyFavListModal();
   }
 
-  // 현재 내 보관함 재생 중인 경우 큐 동기화
+  // 4) 현재 '내 보관함' 모드로 재생 중이라면 플레이어 큐 동기화
   const currentMode = localStorage.getItem('shift_bgm_mode');
   if (currentMode === 'my_playlist') {
     window.bgmPlaylist = favorites;
@@ -8402,15 +8395,12 @@ function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
   let vid = '';
   let title = '';
 
-  // Case A: toggleFavoriteSong(event, btnEl, vid, title)
   if (arg1 && typeof arg1 === 'object' && (arg1.type || arg1.target)) {
     event = arg1;
     btnEl = arg2;
     vid = arg3;
     title = arg4;
-  } 
-  // Case B: toggleFavoriteSong(vid, title, event)
-  else {
+  } else {
     vid = arg1;
     title = arg2;
     event = arg3;
