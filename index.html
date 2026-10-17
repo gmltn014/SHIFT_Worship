@@ -8299,50 +8299,85 @@ function loadMyPlaylistBgm() {
 }
 
     function handleHeartClick(event, btnEl, vid, title) {
-  // 1. 아코디언이 접히거나 다른 클릭 이벤트가 실행되지 않도록 차단
+  // 1. 이벤트 전파 차단
   if (event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
   }
 
   if (!vid) return;
 
-  // 2. 보관함 불러오기 (localStorage 기준)
+  const storageKey = 'shift_my_favorite_songs'; // 💥 키 통일
+
+  // 2. 보관함 불러오기
   let favorites = [];
   try {
-    favorites = JSON.parse(localStorage.getItem('shift_favorite_songs') || '[]');
+    const raw = localStorage.getItem(storageKey);
+    favorites = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(favorites)) favorites = [];
   } catch (e) {
     favorites = [];
   }
 
-  const existingIdx = favorites.findIndex(f => f.id === vid);
+  const targetId = String(vid).trim();
+  const existingIdx = favorites.findIndex(f => String(f.id).trim() === targetId);
 
+  // 3. 곡 제목 정제 ('추천 찬양'으로 잘못 넘어오는 경우 방지)
+  let cleanTitle = String(title || '').trim();
+  if (!cleanTitle || cleanTitle === '추천 찬양' || cleanTitle.length === 11) {
+    // 버튼 주변 텍스트에서 곡명 자동 추출 시도
+    if (btnEl) {
+      const parentRow = btnEl.closest('.song-row, li, .track-item, .card, div');
+      if (parentRow) {
+        const textNode = parentRow.querySelector('.song-title, .track-title, strong, b, span');
+        if (textNode && textNode !== btnEl) {
+          cleanTitle = textNode.innerText.trim();
+        }
+      }
+    }
+  }
+  cleanTitle = cleanTitle.replace(/https?:\/\/\S+/gi, '').replace(/^\d+[\.\)]\s*/, '').trim();
+  if (!cleanTitle || cleanTitle === '추천 찬양') cleanTitle = '찬양 곡';
+
+  // 4. 토글 처리
   if (existingIdx > -1) {
-    // 이미 있으면 제거
+    // 이미 있으면 보관함에서 제거
     favorites.splice(existingIdx, 1);
     if (btnEl) {
       btnEl.innerText = '🤍';
       btnEl.title = '보관함 담기';
     }
+    if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, false);
   } else {
     // 없으면 추가
     favorites.push({
-      id: vid,
-      title: title || '찬양 곡',
+      id: targetId,
+      title: cleanTitle,
       addedAt: new Date().toISOString()
     });
     if (btnEl) {
       btnEl.innerText = '❤️';
       btnEl.title = '보관함 제거';
     }
+    if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, true);
   }
 
-  // 3. 로컬스토리지 저장
-  localStorage.setItem('shift_favorite_songs', JSON.stringify(favorites));
+  // 5. 로컬스토리지 저장
+  localStorage.setItem(storageKey, JSON.stringify(favorites));
 
-  // 4. BGM 플레이어 보관함 UI가 열려있다면 즉시 동기화
+  // 6. 보관함 모달 UI 실시간 갱신
+  if (typeof renderMyFavListModal === 'function') {
+    renderMyFavListModal();
+  }
   if (typeof renderFavoritesPlaylist === 'function') {
     renderFavoritesPlaylist();
+  }
+
+  // 7. 현재 '내 보관함' 재생 중이라면 재생 큐도 즉시 동기화
+  const currentMode = localStorage.getItem('shift_bgm_mode');
+  if (currentMode === 'my_playlist') {
+    window.bgmPlaylist = favorites;
+    if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favorites;
   }
 }
 
@@ -8824,33 +8859,73 @@ function removeSongFromFavList(vid) {
   }
 
   const targetId = String(vid).trim();
-  favs = favs.filter(item => String(item.id).trim() !== targetId);
+  const deleteIndex = favs.findIndex(item => String(item.id).trim() === targetId);
 
-  // 로컬스토리지 즉시 반영
+  // 대상 곡 제거
+  favs = favs.filter(item => String(item.id).trim() !== targetId);
   localStorage.setItem(storageKey, JSON.stringify(favs));
 
-  // 1) 모달 목록 즉시 갱신
+  // 1) 보관함 팝업 모달 UI 즉시 갱신
   if (typeof renderMyFavListModal === 'function') {
     renderMyFavListModal();
   }
 
-  // 2) 아카이브 및 피드 화면의 하트 아이콘 동기화 (존재할 때만 호출)
+  // 2) 아카이브 및 피드 화면의 하트 아이콘 동기화 (🤍)
   if (typeof updateHeartIcons === 'function') {
     updateHeartIcons(targetId, false);
   }
 
-  // 3) '내 보관함' 재생 중이었다면 재생 목록도 갱신
+  // 3) '내 보관함' 모드로 재생 중일 때의 큐 갱신 및 스마트 곡 전환
   const currentMode = localStorage.getItem('shift_bgm_mode');
   if (currentMode === 'my_playlist') {
+    let curIdx = (typeof window.currentTrackIndex !== 'undefined') 
+      ? window.currentTrackIndex 
+      : ((typeof currentTrackIndex !== 'undefined') ? currentTrackIndex : 0);
+
+    // 새 목록을 재생 큐에 동기화
     window.bgmPlaylist = favs;
     if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favs;
 
+    // A. 보관함이 완전히 비어버린 경우 -> 재생 정지 및 안내 문구
     if (favs.length === 0) {
+      window.currentTrackIndex = 0;
+      if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = 0;
+
       if (typeof setBgmPlayerDisplayTitle === 'function') {
-        setBgmPlayerDisplayTitle('내 보관함이 비어있습니다');
+        setBgmPlayerDisplayTitle('내 보관함이 비어있습니다 (🤍를 눌러 곡을 담아보세요)');
       }
+      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(false);
+
       const yt = window.ytPlayer || window.bgmPlayer || window.player;
-      if (yt && typeof yt.stopVideo === 'function') yt.stopVideo();
+      if (yt && typeof yt.stopVideo === 'function') {
+        try { yt.stopVideo(); } catch (e) {}
+      }
+      return;
+    }
+
+    // B. 지금 삭제한 곡이 현재 재생 중이던 곡인 경우 -> 다음 곡으로 즉시 전환
+    if (deleteIndex === curIdx) {
+      // 마지막 곡을 삭제했다면 첫 곡(0번)으로 순환, 아니면 같은 인덱스(뒤에 있던 곡이 당겨져 옴)
+      if (curIdx >= favs.length) {
+        curIdx = 0;
+      }
+      window.currentTrackIndex = curIdx;
+      if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = curIdx;
+
+      console.log(`[BGM] 재생 중인 곡 삭제 감지 -> 다음 트랙 자동 재생 (${curIdx + 1}/${favs.length})`);
+      playCurrentTrackDirectly();
+
+    // C. 현재 재생 중인 곡보다 '앞 순번'의 곡을 삭제한 경우 -> 재생 인덱스만 1칸 앞으로 보정
+    } else if (deleteIndex < curIdx) {
+      curIdx = Math.max(0, curIdx - 1);
+      window.currentTrackIndex = curIdx;
+      if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = curIdx;
+
+      // 상단 플레이어 UI 번호 카운트만 갱신 (예: 2/3 -> 1/2)
+      const currentTrack = favs[curIdx];
+      if (currentTrack && typeof setBgmPlayerDisplayTitle === 'function') {
+        setBgmPlayerDisplayTitle(`🎵 ${currentTrack.title} (${curIdx + 1}/${favs.length})`);
+      }
     }
   }
 }
