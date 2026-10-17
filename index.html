@@ -8258,7 +8258,7 @@ function loadMyPlaylistBgm() {
   initHiddenYoutubePlayer();
 }
 
-    function handleHeartClick(event, btnEl, vid, title) {
+    async function handleHeartClick(event, btnEl, vid, title) {
   if (event && typeof event.stopPropagation === 'function') {
     event.stopPropagation();
   }
@@ -8283,55 +8283,91 @@ function loadMyPlaylistBgm() {
     return fId === targetId;
   });
 
-  // 💥 1순위: 버튼에 동적으로 심겨진 진짜 제목 (dataset)
-  // 2순위: onclick 파라미터로 넘어온 title
-  let cleanTitle = btnEl?.dataset?.songTitle || String(title || '').trim();
-
-  // 여전히 기본값이거나 비어있다면 버튼 부모 요소에서 탐색
-  const isJunk = (t) => !t || t.startsWith('찬양 곡') || t === '추천 찬양' || t === '유튜브' || t === '찬양 영상';
-  if (isJunk(cleanTitle) && btnEl) {
-    const siblingText = btnEl.parentElement?.querySelector('a, span, p, strong')?.innerText?.trim();
-    if (siblingText && !isJunk(siblingText)) {
-      cleanTitle = siblingText;
-    }
-  }
-
-  cleanTitle = cleanTitle.replace(/https?:\/\/\S+/gi, '').trim();
-  if (isJunk(cleanTitle)) cleanTitle = '은혜로운 찬양';
-
-  // 토글 처리
+  // 1. 이미 보관함에 있는 경우 -> 삭제 처리
   if (existingIdx > -1) {
     favorites.splice(existingIdx, 1);
+    localStorage.setItem(storageKey, JSON.stringify(favorites));
+
     if (btnEl) {
       btnEl.innerText = '🤍';
       btnEl.title = '보관함 담기';
     }
     if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, false);
-  } else {
-    favorites.push({
-      id: targetId,
-      vid: targetId,
-      youtubeId: targetId,
-      url: `https://www.youtube.com/watch?v=${targetId}`,
-      title: cleanTitle,
-      addedAt: new Date().toISOString()
-    });
-    if (btnEl) {
-      btnEl.innerText = '❤️';
-      btnEl.title = '보관함 제거';
+    if (typeof renderMyFavListModal === 'function') renderMyFavListModal();
+
+    const currentMode = localStorage.getItem('shift_bgm_mode');
+    if (currentMode === 'my_playlist') {
+      window.bgmPlaylist = favorites;
+      if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favorites;
     }
-    if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, true);
+    return;
   }
+
+  // 2. 신규 추가: 유효하지 않은 제목 키워드 필터링
+  const isJunkTitle = (t) => {
+    if (!t) return true;
+    const s = String(t).trim().toLowerCase();
+    return (
+      s === '' ||
+      s.includes('유튜브') ||
+      s.includes('youtube') ||
+      s.includes('찬양 곡') ||
+      s.includes('추천 찬양') ||
+      s.includes('찬양 영상') ||
+      s === targetId.toLowerCase()
+    );
+  };
+
+  let cleanTitle = btnEl?.dataset?.songTitle || String(title || '').trim();
+
+  // 💥 핵심: 제목이 '찬양 곡 1'이거나 '유튜브'이면 noembed API로 실시간 공식 제목 가져오기
+  if (isJunkTitle(cleanTitle)) {
+    try {
+      const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${targetId}`);
+      const data = await res.json();
+      if (data && data.title && !isJunkTitle(data.title)) {
+        cleanTitle = data.title;
+      }
+    } catch (e) {
+      console.warn('[Heart] 유튜브 제목 조회 실패:', e);
+    }
+  }
+
+  if (isJunkTitle(cleanTitle)) {
+    cleanTitle = '은혜로운 찬양';
+  }
+
+  // 버튼 데이터 및 UI 즉시 갱신
+  if (btnEl) {
+    btnEl.dataset.songTitle = cleanTitle;
+    btnEl.innerText = '❤️';
+    btnEl.title = `보관함 제거: ${cleanTitle}`;
+  }
+
+  // 3. 보관함 및 재생 큐 저장 (BGM 플레이어 완벽 호환 규격)
+  favorites.push({
+    id: targetId,
+    vid: targetId,
+    youtubeId: targetId,
+    url: `https://www.youtube.com/watch?v=${targetId}`,
+    title: cleanTitle.trim(),
+    addedAt: new Date().toISOString()
+  });
 
   localStorage.setItem(storageKey, JSON.stringify(favorites));
 
+  if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, true);
   if (typeof renderMyFavListModal === 'function') renderMyFavListModal();
-  if (localStorage.getItem('shift_bgm_mode') === 'my_playlist') {
+
+  const currentMode = localStorage.getItem('shift_bgm_mode');
+  if (currentMode === 'my_playlist') {
     window.bgmPlaylist = favorites;
+    if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favorites;
   }
 }
-    
-function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
+
+// 호환용 wrapper
+async function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
   let event = null;
   let btnEl = null;
   let vid = '';
@@ -8349,62 +8385,7 @@ function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
     btnEl = event ? (event.currentTarget || event.target) : null;
   }
 
-  if (!btnEl && vid) {
-    btnEl = document.querySelector(`[data-song-id="${vid}"]`);
-  }
-
-  // 1) 제목 유효성 검사 (기본값, '유튜브', 빈값 등인지 판별)
-  const isInvalidTitle = (t) => {
-    if (!t) return true;
-    const clean = String(t).trim();
-    return (
-      clean === '' ||
-      clean === '유튜브' ||
-      clean.toLowerCase() === 'youtube' ||
-      clean === '추천 찬양' ||
-      clean === '찬양 곡' ||
-      clean.startsWith('찬양 곡') ||
-      clean === '링크' ||
-      clean === '영상' ||
-      clean.length === 11 // 유튜브 ID 11자리
-    );
-  };
-
-  let finalTitle = String(title || '').trim();
-
-  // 2) 유효하지 않은 제목이면 DOM에서 '유튜브' 단어와 버튼들을 빼고 진짜 찬양명만 추출
-  if (isInvalidTitle(finalTitle)) {
-    if (btnEl) {
-      const container = btnEl.closest('.sns-song-item, .song-row, li, .track-item, div');
-      if (container) {
-        const clone = container.cloneNode(true);
-        // 버튼, 링크, 배지 등 불필요한 태그 제거
-        clone.querySelectorAll('button, a, script, style, .badge, .btn').forEach(el => el.remove());
-
-        // 텍스트 정제
-        let extracted = clone.innerText
-          .replace(/https?:\/\/\S+/gi, '') // URL 제거
-          .replace(/유튜브|youtube|영상|링크|재생|듣기/gi, '') // 💥 부가 키워드 제거
-          .replace(/^\d+[\.\)]\s*/, '') // 앞쪽 번호(1. 2.) 제거
-          .trim();
-
-        if (extracted) {
-          // 줄바꿈이 있다면 첫 번째 유효한 줄 선택
-          const lines = extracted.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !isInvalidTitle(l));
-          if (lines.length > 0) {
-            finalTitle = lines[0];
-          }
-        }
-      }
-    }
-  }
-
-  // 그래도 못 찾았다면 기본 대체명
-  if (isInvalidTitle(finalTitle)) {
-    finalTitle = '찬양 곡';
-  }
-
-  handleHeartClick(event, btnEl, vid, finalTitle);
+  await handleHeartClick(event, btnEl, vid, title);
 }
     
 // 즐겨찾기 목록 가져오는 헬퍼 함수
