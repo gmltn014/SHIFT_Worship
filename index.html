@@ -8299,17 +8299,20 @@ function loadMyPlaylistBgm() {
 }
 
     function handleHeartClick(event, btnEl, vid, title) {
-  // 1. 이벤트 전파 차단
+  // 1. 이벤트 버블링 차단 (부모 카드가 접히거나 이동하는 것만 방지)
   if (event) {
     if (typeof event.stopPropagation === 'function') event.stopPropagation();
-    if (typeof event.preventDefault === 'function') event.preventDefault();
+    // 💥 주의: event.preventDefault()는 버튼 클릭 동작 자체를 먹통으로 만들 수 있으므로 제거
   }
 
-  if (!vid) return;
+  if (!vid) {
+    console.warn('[Heart] 유효하지 않은 유튜브 ID입니다:', vid);
+    return;
+  }
 
-  const storageKey = 'shift_my_favorite_songs'; // 💥 키 통일
+  const storageKey = 'shift_my_favorite_songs';
 
-  // 2. 보관함 불러오기
+  // 2. 보관함 데이터 불러오기
   let favorites = [];
   try {
     const raw = localStorage.getItem(storageKey);
@@ -8322,10 +8325,9 @@ function loadMyPlaylistBgm() {
   const targetId = String(vid).trim();
   const existingIdx = favorites.findIndex(f => String(f.id).trim() === targetId);
 
-  // 3. 곡 제목 정제 ('추천 찬양'으로 잘못 넘어오는 경우 방지)
+  // 3. 곡 제목 추출 및 정제
   let cleanTitle = String(title || '').trim();
   if (!cleanTitle || cleanTitle === '추천 찬양' || cleanTitle.length === 11) {
-    // 버튼 주변 텍스트에서 곡명 자동 추출 시도
     if (btnEl) {
       const parentRow = btnEl.closest('.song-row, li, .track-item, .card, div');
       if (parentRow) {
@@ -8339,9 +8341,9 @@ function loadMyPlaylistBgm() {
   cleanTitle = cleanTitle.replace(/https?:\/\/\S+/gi, '').replace(/^\d+[\.\)]\s*/, '').trim();
   if (!cleanTitle || cleanTitle === '추천 찬양') cleanTitle = '찬양 곡';
 
-  // 4. 토글 처리
+  // 4. 하트 토글 처리
   if (existingIdx > -1) {
-    // 이미 있으면 보관함에서 제거
+    // 보관함에서 제거
     favorites.splice(existingIdx, 1);
     if (btnEl) {
       btnEl.innerText = '🤍';
@@ -8349,7 +8351,7 @@ function loadMyPlaylistBgm() {
     }
     if (typeof updateHeartIcons === 'function') updateHeartIcons(targetId, false);
   } else {
-    // 없으면 추가
+    // 보관함에 추가
     favorites.push({
       id: targetId,
       title: cleanTitle,
@@ -8365,22 +8367,18 @@ function loadMyPlaylistBgm() {
   // 5. 로컬스토리지 저장
   localStorage.setItem(storageKey, JSON.stringify(favorites));
 
-  // 6. 보관함 모달 UI 실시간 갱신
+  // 6. 모달 및 BGM 큐 즉시 동기화
   if (typeof renderMyFavListModal === 'function') {
     renderMyFavListModal();
   }
-  if (typeof renderFavoritesPlaylist === 'function') {
-    renderFavoritesPlaylist();
-  }
 
-  // 7. 현재 '내 보관함' 재생 중이라면 재생 큐도 즉시 동기화
   const currentMode = localStorage.getItem('shift_bgm_mode');
   if (currentMode === 'my_playlist') {
     window.bgmPlaylist = favorites;
     if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favorites;
   }
 }
-
+    
 // 즐겨찾기 목록 가져오는 헬퍼 함수
 function getMyFavoriteSongs() {
   try {
