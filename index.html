@@ -8378,6 +8378,12 @@ function loadMyPlaylistBgm() {
     if (typeof bgmPlaylist !== 'undefined') bgmPlaylist = favorites;
   }
 }
+
+function toggleFavoriteSong(vid, title, event) {
+  // 인자 순서 맞춤: handleHeartClick(event, btnEl, vid, title)
+  const btnEl = event ? (event.currentTarget || event.target) : document.querySelector(`[data-song-id="${vid}"]`);
+  handleHeartClick(event, btnEl, vid, title);
+}
     
 // 즐겨찾기 목록 가져오는 헬퍼 함수
 function getMyFavoriteSongs() {
