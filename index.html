@@ -8064,45 +8064,66 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 
 // 3. 실제 유튜브 플레이어로 영상 로드 및 재생 헬퍼
 function playCurrentTrackDirectly() {
-  const playlist = window.bgmPlaylist || [];
-  const idx = window.currentTrackIndex || 0;
-  const currentTrack = playlist[idx];
+  const currentMode = localStorage.getItem('shift_bgm_mode');
 
-  if (!currentTrack) {
-    console.warn('[BGM] 재생할 트랙이 없습니다.');
+  // 내 보관함 모드인 경우 로컬스토리지에서 최신 곡 목록 복원
+  if (currentMode === 'my_playlist') {
+    let favs = [];
+    try {
+      favs = JSON.parse(localStorage.getItem('shift_my_favorite_songs') || '[]');
+      if (!Array.isArray(favs)) favs = [];
+    } catch (e) {
+      favs = [];
+    }
+    window.bgmPlaylist = favs;
+  }
+
+  const playlist = window.bgmPlaylist || [];
+  let idx = (typeof window.currentTrackIndex !== 'undefined') ? window.currentTrackIndex : 0;
+
+  if (!playlist || playlist.length === 0) {
+    console.warn('[BGM] 재생 목록이 비어 있습니다.');
     if (typeof setBgmPlayerDisplayTitle === 'function') {
-      setBgmPlayerDisplayTitle('재생할 찬양이 없습니다');
+      setBgmPlayerDisplayTitle('재생할 찬양이 없습니다 (🤍를 눌러 곡을 담아보세요)');
     }
     return;
   }
 
-  // 객체든 문자열이든 유튜브 ID 11자리 추출
-  let rawVid = '';
-  let trackTitle = '';
-
-  if (typeof currentTrack === 'string') {
-    rawVid = currentTrack;
-    trackTitle = '찬양';
-  } else if (typeof currentTrack === 'object') {
-    rawVid = currentTrack.id || currentTrack.vid || currentTrack.youtubeId || currentTrack.url || '';
-    trackTitle = currentTrack.title || '찬양';
+  // 인덱스 범위 초과 방지
+  if (idx < 0 || idx >= playlist.length) {
+    idx = 0;
+    window.currentTrackIndex = 0;
   }
 
-  // 11자리 유튜브 ID 정규식 추출
-  const match = String(rawVid).match(/([a-zA-Z0-9_-]{11})/);
+  const track = playlist[idx];
+
+  // 💥 핵심: track이 객체({id, vid, title...})이든 문자열("vQcznSWiVmY")이든 11자리 유튜브 ID 추출
+  let rawId = '';
+  let trackTitle = '찬양';
+
+  if (typeof track === 'string') {
+    rawId = track;
+    trackTitle = '찬양 곡';
+  } else if (typeof track === 'object' && track !== null) {
+    rawId = track.vid || track.id || track.youtubeId || track.url || '';
+    trackTitle = track.title || '찬양 곡';
+  }
+
+  const match = String(rawId).match(/([a-zA-Z0-9_-]{11})/);
   const targetVid = match ? match[1] : '';
 
   if (!targetVid) {
-    alert('유효한 찬양 음원 링크를 찾을 수 없습니다.');
+    console.error('[BGM] 유효하지 않은 유튜브 ID입니다:', rawId);
+    alert('선택한 찬양의 음원 링크를 찾을 수 없습니다.');
     return;
   }
 
-  // 상단 제목 UI 표시
+  // 상단 타이틀 UI 갱신
   if (typeof setBgmPlayerDisplayTitle === 'function') {
     setBgmPlayerDisplayTitle(`🎵 ${trackTitle} (${idx + 1}/${playlist.length})`);
   }
 
-  // 유튜브 플레이어 로드 및 재생
+  // 유튜브 API 또는 iframe으로 영상 재생
   const player = window.ytPlayer || window.bgmPlayer || window.player;
   if (player && typeof player.loadVideoById === 'function') {
     player.loadVideoById(targetVid);
@@ -8112,7 +8133,7 @@ function playCurrentTrackDirectly() {
     player.playVideo();
     if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
   } else {
-    // 플레이어가 아직 준비되지 않은 경우 iframe 직접 교체 또는 플레이어 재초기화
+    // 플레이어가 iframe 직접 제어 방식인 경우
     const iframe = document.getElementById('bgmYoutubePlayer') || document.getElementById('ytPlayer');
     if (iframe) {
       iframe.src = `https://www.youtube.com/embed/${targetVid}?enablejsapi=1&autoplay=1`;
@@ -8948,13 +8969,36 @@ function removeSongFromFavList(vid) {
     
 // 목록에서 곡 클릭 시 재생
 function playFavSongDirectly(idx) {
-  if (localStorage.getItem('shift_bgm_mode') !== 'my_playlist') {
-    setBgmPlaylistMode('my_playlist', true);
+  let favs = [];
+  try {
+    favs = JSON.parse(localStorage.getItem('shift_my_favorite_songs') || '[]');
+  } catch (e) {
+    favs = [];
   }
+
+  if (!favs || favs.length === 0 || !favs[idx]) {
+    alert('재생할 찬양 정보가 없습니다.');
+    return;
+  }
+
+  // 모드 변경 및 재생 큐 주입
+  localStorage.setItem('shift_bgm_mode', 'my_playlist');
+  window.bgmPlaylist = favs;
   window.currentTrackIndex = idx;
-  if (typeof currentTrackIndex !== 'undefined') currentTrackIndex = idx;
+
+  // 상단 탭 버튼 활성화 스타일 동기화
+  const btnMy = document.getElementById('btnBgmModeMy');
+  if (btnMy) {
+    document.querySelectorAll('.btn-bgm-mode, #btnBgmModeThisWeek, #btnBgmModeLastWeek').forEach(b => {
+      b.classList.remove('btn-primary');
+      b.classList.add('btn-secondary');
+    });
+    btnMy.classList.remove('btn-secondary');
+    btnMy.classList.add('btn-primary');
+  }
+
+  // 재생 실행
   playCurrentTrackDirectly();
-  renderMyFavListModal();
 }
     
     // 1) 내 보관함 플리 공유하기
