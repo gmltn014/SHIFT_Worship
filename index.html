@@ -8333,7 +8333,33 @@ function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
     btnEl = event ? (event.currentTarget || event.target) : null;
   }
 
-  handleHeartClick(event, btnEl, vid, title);
+  if (!btnEl && vid) {
+    btnEl = document.querySelector(`[data-song-id="${vid}"]`);
+  }
+
+  // 💥 핵심: 인자로 넘어온 title이 '찬양 곡 1'이거나 기본값이면, 화면의 실제 텍스트로 교체
+  let finalTitle = String(title || '').trim();
+  if (!finalTitle || finalTitle.startsWith('찬양 곡') || finalTitle === '추천 찬양') {
+    if (btnEl) {
+      // 하트 버튼이 속한 부모 요소(카드, 리스트 아이템) 탐색
+      const container = btnEl.closest('.sns-song-item, .song-row, li, .track-item, div');
+      if (container) {
+        // 복제 후 버튼, 스크립트 등을 제거하고 순수 텍스트만 추출
+        const clone = container.cloneNode(true);
+        clone.querySelectorAll('button, script, style, .badge').forEach(el => el.remove());
+        const extracted = clone.innerText.replace(/https?:\/\/\S+/gi, '').replace(/^\d+[\.\)]\s*/, '').trim();
+        if (extracted) {
+          finalTitle = extracted.split('\n')[0].trim();
+        }
+      }
+    }
+  }
+
+  if (!finalTitle || finalTitle.startsWith('찬양 곡') || finalTitle === '추천 찬양') {
+    finalTitle = '은혜로운 찬양';
+  }
+
+  handleHeartClick(event, btnEl, vid, finalTitle);
 }
     
 // 즐겨찾기 목록 가져오는 헬퍼 함수
