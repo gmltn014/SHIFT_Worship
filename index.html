@@ -8064,13 +8064,14 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 
 // 3. 실제 유튜브 플레이어로 영상 로드 및 재생 헬퍼
 function playCurrentTrackDirectly() {
-  const currentMode = localStorage.getItem('shift_bgm_mode');
+  const currentMode = localStorage.getItem('shift_bgm_mode') || 'this_week';
 
-  // 내 보관함 모드인 경우 로컬스토리지에서 최신 곡 목록 복원
+  // 1. 모드가 내 보관함일 경우 최신 스토리지 데이터로 큐 강제 보정
   if (currentMode === 'my_playlist') {
     let favs = [];
     try {
-      favs = JSON.parse(localStorage.getItem('shift_my_favorite_songs') || '[]');
+      const raw = localStorage.getItem('shift_my_favorite_songs');
+      favs = raw ? JSON.parse(raw) : [];
       if (!Array.isArray(favs)) favs = [];
     } catch (e) {
       favs = [];
@@ -8079,17 +8080,21 @@ function playCurrentTrackDirectly() {
   }
 
   const playlist = window.bgmPlaylist || [];
-  let idx = (typeof window.currentTrackIndex !== 'undefined') ? window.currentTrackIndex : 0;
+  let idx = (typeof window.currentTrackIndex === 'number') ? window.currentTrackIndex : 0;
 
+  // 2. 음원이 없는 경우 방어
   if (!playlist || playlist.length === 0) {
     console.warn('[BGM] 재생 목록이 비어 있습니다.');
     if (typeof setBgmPlayerDisplayTitle === 'function') {
       setBgmPlayerDisplayTitle('재생할 찬양이 없습니다 (🤍를 눌러 곡을 담아보세요)');
+    } else {
+      const titleEl = document.getElementById('bgmTitle') || document.querySelector('.bgm-title');
+      if (titleEl) titleEl.innerText = '재생할 찬양이 없습니다';
     }
     return;
   }
 
-  // 인덱스 범위 초과 방지
+  // 인덱스 범위 안전장치
   if (idx < 0 || idx >= playlist.length) {
     idx = 0;
     window.currentTrackIndex = 0;
@@ -8097,47 +8102,52 @@ function playCurrentTrackDirectly() {
 
   const track = playlist[idx];
 
-  // 💥 핵심: track이 객체({id, vid, title...})이든 문자열("vQcznSWiVmY")이든 11자리 유튜브 ID 추출
-  let rawId = '';
-  let trackTitle = '찬양';
+  // 💥 핵심: track이 객체({id, vid...})든 문자열 ID든 11자리 유튜브 ID 무조건 추출
+  let rawVid = '';
+  let trackTitle = '찬양 곡';
 
   if (typeof track === 'string') {
-    rawId = track;
-    trackTitle = '찬양 곡';
+    rawVid = track;
   } else if (typeof track === 'object' && track !== null) {
-    rawId = track.vid || track.id || track.youtubeId || track.url || '';
+    rawVid = track.vid || track.id || track.youtubeId || track.url || '';
     trackTitle = track.title || '찬양 곡';
   }
 
-  const match = String(rawId).match(/([a-zA-Z0-9_-]{11})/);
+  const match = String(rawVid).match(/([a-zA-Z0-9_-]{11})/);
   const targetVid = match ? match[1] : '';
 
   if (!targetVid) {
-    console.error('[BGM] 유효하지 않은 유튜브 ID입니다:', rawId);
-    alert('선택한 찬양의 음원 링크를 찾을 수 없습니다.');
+    console.error('[BGM] 유효한 11자리 유튜브 ID를 찾을 수 없습니다:', track);
+    alert('찬양 음원 링크 정보를 읽을 수 없습니다.');
     return;
   }
 
-  // 상단 타이틀 UI 갱신
+  // 3. 상단 플레이어 UI 곡 제목 갱신
+  const displayTitleText = `🎵 ${trackTitle} (${idx + 1}/${playlist.length})`;
   if (typeof setBgmPlayerDisplayTitle === 'function') {
-    setBgmPlayerDisplayTitle(`🎵 ${trackTitle} (${idx + 1}/${playlist.length})`);
+    setBgmPlayerDisplayTitle(displayTitleText);
+  } else {
+    const titleEl = document.getElementById('bgmTitle') || document.querySelector('.bgm-title, #currentTrackTitle');
+    if (titleEl) titleEl.innerText = displayTitleText;
   }
 
-  // 유튜브 API 또는 iframe으로 영상 재생
-  const player = window.ytPlayer || window.bgmPlayer || window.player;
-  if (player && typeof player.loadVideoById === 'function') {
-    player.loadVideoById(targetVid);
-    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
-  } else if (player && typeof player.cueVideoById === 'function') {
-    player.cueVideoById(targetVid);
-    player.playVideo();
-    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
-  } else {
-    // 플레이어가 iframe 직접 제어 방식인 경우
-    const iframe = document.getElementById('bgmYoutubePlayer') || document.getElementById('ytPlayer');
-    if (iframe) {
-      iframe.src = `https://www.youtube.com/embed/${targetVid}?enablejsapi=1&autoplay=1`;
+  // 4. 유튜브 플레이어 API로 실제 음원 재생
+  const yt = window.ytPlayer || window.bgmPlayer || window.player;
+  if (yt && typeof yt.loadVideoById === 'function') {
+    try {
+      yt.loadVideoById(targetVid);
+      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+      return;
+    } catch (err) {
+      console.warn('[BGM] loadVideoById 실패, cue 시도:', err);
     }
+  }
+
+  // IFrame 직접 접근 방식일 경우
+  const iframe = document.getElementById('bgmYoutubePlayer') || document.getElementById('ytPlayer') || document.querySelector('iframe[src*="youtube.com"]');
+  if (iframe) {
+    iframe.src = `https://www.youtube.com/embed/${targetVid}?autoplay=1&enablejsapi=1`;
+    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
   }
 }
 
