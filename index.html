@@ -960,6 +960,50 @@
       .btn-maintenance-close:hover {
         background: #1d4ed8;
       }
+
+    <style>
+  .maint-switch-label {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+  }
+  .maint-switch-label input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .maint-slider {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    border-radius: 34px;
+    transition: background-color 0.25s ease;
+  }
+  .maint-slider::before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  }
+  /* 체크 시 주황색 배경 전환 및 원형 손잡이 오른쪽 이동 */
+  .maint-switch-label input:checked + .maint-slider {
+    background-color: #f59e0b;
+  }
+  .maint-switch-label input:checked + .maint-slider::before {
+    transform: translateX(24px);
+  }
   </style>
 </head>
 <body>
@@ -1735,53 +1779,51 @@
             </div>
 
             <!-- [추가] 점검 팝업 설정 카드 -->
-            <div class="card" style="border-color: #f59e0b; grid-column: 1 / -1; cursor: default; background: #fffcf5;">
-              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
-                <div>
-                  <h4 style="font-size: 1rem; color: #d97706; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                    🛠️ 시스템 점검 팝업 공지
-                    <span id="badgeMaintStatus" style="font-size: 0.72rem; padding: 2px 7px; border-radius: 999px; background: #e2e8f0; color: #475569;">비활성</span>
-                  </h4>
-                  <p style="font-size: 0.82rem; color: var(--sub-text); margin: 0;">활성화 시 모든 사용자가 메인 접속 시 점검 팝업을 보게 됩니다.</p>
-                </div>
-                <!-- 커스텀 토글 스위치 -->
-                <label style="position: relative; display: inline-block; width: 50px; height: 26px; flex-shrink: 0; cursor: pointer;">
-                  <input type="checkbox" id="chkMaintenanceEnabled" onchange="toggleMaintenanceSwitch(this.checked)" style="opacity: 0; width: 0; height: 0;">
-                  <span id="sliderMaintSwitch" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; border-radius: 34px; transition: .3s;">
-                    <span id="sliderMaintKnob" style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></span>
-                  </span>
-                </label>
-              </div>
+<div class="card" style="border-color: #f59e0b; grid-column: 1 / -1; cursor: default; background: #fffcf5;">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+    <div>
+      <h4 style="font-size: 1rem; color: #d97706; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        🛠️ 시스템 점검 팝업 공지
+        <span id="badgeMaintStatus" style="font-size: 0.72rem; padding: 2px 7px; border-radius: 999px; background: #e2e8f0; color: #475569;">비활성</span>
+      </h4>
+      <p style="font-size: 0.82rem; color: var(--sub-text); margin: 0;">활성화 시 모든 사용자가 메인 접속 시 점검 팝업을 보게 됩니다.</p>
+    </div>
+    
+    <!-- 💥 확실하게 작동하는 표준 CSS 기반 토글 스위치 -->
+    <label class="maint-switch-label">
+      <input type="checkbox" id="chkMaintenanceEnabled" onchange="toggleMaintenanceSwitch(this.checked)">
+      <span class="maint-slider"></span>
+    </label>
+  </div>
 
-              <!-- 상세 설정 입력 폼 (토글 활성화 또는 설정 열기 시 노출) -->
-              <div id="maintenanceDetailInputs" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #fde68a;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 10px;">
-                  <div>
-                    <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">팝업 제목</label>
-                    <input type="text" id="inputMaintTitle" class="form-control" value="시스템 점검 안내" style="width: 100%; padding: 7px 10px; font-size: 0.86rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-                  </div>
-                  <div>
-                    <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">점검 일시 (선택)</label>
-                    <input type="text" id="inputMaintPeriod" class="form-control" placeholder="예: 2026.10.20 02:00 ~ 05:00" style="width: 100%; padding: 7px 10px; font-size: 0.86rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-                  </div>
-                </div>
-                <div style="margin-bottom: 10px;">
-                  <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">안내 상세 내용</label>
-                  <textarea id="inputMaintMessage" class="form-control" rows="3" style="width: 100%; padding: 7px 10px; font-size: 0.86rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: vertical;">더 안정적인 서비스를 위해 시스템 점검을 진행 중입니다.
+  <!-- 상세 설정 입력 폼 (토글 활성화 또는 설정 열기 시 노출) -->
+  <div id="maintenanceDetailInputs" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #fde68a;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 10px;">
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">팝업 제목</label>
+        <input type="text" id="inputMaintTitle" class="form-control" value="시스템 점검 안내" style="width: 100%; padding: 7px 10px; font-size: 0.86rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">점검 일시 (선택)</label>
+        <input type="text" id="inputMaintPeriod" class="form-control" placeholder="예: 2026.10.20 02:00 ~ 05:00" style="width: 100%; padding: 7px 10px; font-size: 0.86rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+      </div>
+    </div>
+    <div style="margin-bottom: 10px;">
+      <label style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">안내 상세 내용</label>
+      <textarea id="inputMaintMessage" class="form-control" rows="3" style="width: 100%; padding: 7px 10px; font-size: 0.86rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: vertical;">더 안정적인 서비스를 위해 시스템 점검을 진행 중입니다.
 점검 중에는 일부 기능이 원활하지 않을 수 있습니다.</textarea>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                  <label style="font-size: 0.82rem; color: #475569; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="chkMaintAllowClose" checked>
-                    사용자가 닫기 버튼으로 화면을 둘러볼 수 있게 허용
-                  </label>
-                  <button type="button" onclick="saveMaintenanceSettings()" style="padding: 7px 16px; font-size: 0.85rem; font-weight: 600; background: #d97706; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: background 0.15s;">
-                    💾 점검 설정 저장 및 즉시 배포
-                  </button>
-                </div>
-              </div>
-            </div>
-
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <label style="font-size: 0.82rem; color: #475569; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+        <input type="checkbox" id="chkMaintAllowClose" checked>
+        사용자가 닫기 버튼으로 화면을 둘러볼 수 있게 허용
+      </label>
+      <button type="button" onclick="saveMaintenanceSettings()" style="padding: 7px 16px; font-size: 0.85rem; font-weight: 600; background: #d97706; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: background 0.15s;">
+        💾 점검 설정 저장 및 즉시 배포
+      </button>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </div>
@@ -3542,80 +3584,80 @@ Video Editor ${currentScheduleData?.video || currentScheduleData?.Video || getTe
     }
 
     function renderMonthLineupTable() {
-      const tbody = document.getElementById('monthLineupTableBody');
-      if (!tbody) return;
+  const tbody = document.getElementById('monthLineupTableBody');
+  if (!tbody) return;
 
-      tbody.innerHTML = currentMonthSundays.map(dateStr => {
-        const item = currentMonthSchedulesMap[dateStr] || {};
-        const isCanceled = /^x_/i.test((item.worship_title || '').trim());
-        const rawVocals = (item.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
+  tbody.innerHTML = currentMonthSundays.map(dateStr => {
+    const item = currentMonthSchedulesMap[dateStr] || {};
+    const isCanceled = /^x_/i.test((item.worship_title || '').trim());
+    const rawVocals = (item.vocal || '').split(/[,/]+/).map(v => v.trim()).filter(Boolean);
 
-        let vocalHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">';
-        for (let i = 1; i <= 4; i++) {
-          vocalHtml += `
-            <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-              ${generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false)}
-            </select>
-          `;
-        }
-        vocalHtml += '</div>';
-
-        const prompterVal = item.prompter || item.Prompter || item.subtitle || '';
-        const videoVal = item.video || item.Video || '';
-
-        return `
-          <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
-            <td style="padding: 10px 8px; font-weight: 700; vertical-align: top; text-align: center;">
-              <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
-              ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <select id="m_leader_${dateStr}" style="width: 100%; min-width: 85px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-                ${generatePartOptionsHtml('leader', item.leader || '', false)}
-              </select>
-            </td>
-            <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
-            <td style="padding: 6px; vertical-align: top;">
-              <select id="m_kb1_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('keyboard', item.keyboard1 || 'X', true)}
-              </select>
-              <select id="m_kb2_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('keyboard', item.keyboard2 || 'X', true)}
-              </select>
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <select id="m_drum_${dateStr}" style="width: 100%; min-width: 80px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
-                ${generatePartOptionsHtml('drum', item.drum || 'X', true)}
-              </select>
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <select id="m_guitar_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('guitar', item.guitar || 'X', true)}
-              </select>
-              <select id="m_bass_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
-                ${generatePartOptionsHtml('bass', item.bass || 'X', true)}
-              </select>
-            </td>
-            <td style="padding: 6px; vertical-align: top;">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                <select id="m_sound_${dateStr}" title="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('sound', item.sound || '', false)}
-                </select>
-                <select id="m_broadcast_${dateStr}" title="방송/중계" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('broadcast', item.broadcast || '', false)}
-                </select>
-                <select id="m_prompter_${dateStr}" title="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('prompter', prompterVal, false)}
-                </select>
-                <select id="m_video_${dateStr}" title="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                  ${generatePartOptionsHtml('video', videoVal, false)}
-                </select>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+    let vocalHtml = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">';
+    for (let i = 1; i <= 4; i++) {
+      vocalHtml += `
+        <select id="m_vocal_${dateStr}_${i}" style="width: 100%; padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+          ${generatePartOptionsHtml('vocal', rawVocals[i - 1] || '', false)}
+        </select>
+      `;
     }
+    vocalHtml += '</div>';
+
+    const prompterVal = item.prompter || item.Prompter || item.subtitle || '';
+    const videoVal = item.video || item.Video || '';
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color); ${isCanceled ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
+        <td style="padding: 10px 8px; font-weight: 700; vertical-align: top; text-align: center;">
+          <span class="worship-date-badge" style="font-size: 0.75rem; margin-bottom: 2px;">${dateStr}</span>
+          ${isCanceled ? '<div style="color: #ef4444; font-size: 0.7rem; font-weight: 700; margin-top: 2px;">🚫 예배 없음</div>' : ''}
+        </td>
+        <td style="padding: 6px; vertical-align: top;">
+          <select id="m_leader_${dateStr}" style="width: 100%; min-width: 85px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+            ${generatePartOptionsHtml('leader', item.leader || '', false)}
+          </select>
+        </td>
+        <td style="padding: 6px; vertical-align: top;">${vocalHtml}</td>
+        <td style="padding: 6px; vertical-align: top;">
+          <select id="m_kb1_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            ${generatePartOptionsHtml('keyboard', item.keyboard1 || 'X', true)}
+          </select>
+          <select id="m_kb2_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            ${generatePartOptionsHtml('keyboard', item.keyboard2 || 'X', true)}
+          </select>
+        </td>
+        <td style="padding: 6px; vertical-align: top;">
+          <select id="m_drum_${dateStr}" style="width: 100%; min-width: 80px; padding: 6px 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.8rem;">
+            ${generatePartOptionsHtml('drum', item.drum || 'X', true)}
+          </select>
+        </td>
+        <td style="padding: 6px; vertical-align: top;">
+          <select id="m_guitar_${dateStr}" style="width: 100%; padding: 5px; margin-bottom: 4px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            ${generatePartOptionsHtml('guitar', item.guitar || 'X', true)}
+          </select>
+          <select id="m_bass_${dateStr}" style="width: 100%; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.78rem;">
+            ${generatePartOptionsHtml('bass', item.bass || 'X', true)}
+          </select>
+        </td>
+        <td style="padding: 6px; vertical-align: top;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            <select id="m_sound_${dateStr}" title="음향" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+              ${generatePartOptionsHtml('sound', item.sound || '', false)}
+            </select>
+            <select id="m_broadcast_${dateStr}" title="방송/중계" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+              ${generatePartOptionsHtml('broadcast', item.broadcast || '', false)}
+            </select>
+            <select id="m_prompter_${dateStr}" title="자막" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+              ${generatePartOptionsHtml('prompter', prompterVal, false)}
+            </select>
+            <select id="m_video_${dateStr}" title="영상" style="padding: 4px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+              ${generatePartOptionsHtml('video', videoVal, false)}
+            </select>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
 
     async function saveAllMonthLineup() {
       const saveBtn = document.getElementById('btnSaveMonthLineup');
@@ -9631,16 +9673,27 @@ function closeMaintenancePopup() {
 // 2. 슈퍼 관리자: 스위치 On/Off UI 토글
 function toggleMaintenanceSwitch(isEnabled) {
   const detailBox = document.getElementById('maintenanceDetailInputs');
-  if (detailBox) {
-    detailBox.style.display = isEnabled ? 'block' : 'none';
-  }
-  if (!isEnabled) {
-    // 즉시 비활성화 저장
-    saveMaintenanceSettings(false);
+  const badge = document.getElementById('badgeMaintStatus');
+
+  if (badge) {
+    if (isEnabled) {
+      badge.innerText = '점검 중 (ON)';
+      badge.style.background = '#fef3c7';
+      badge.style.color = '#b45309';
+      if (detailBox) detailBox.style.display = 'block';
+    } else {
+      badge.innerText = '비활성 (OFF)';
+      badge.style.background = '#e2e8f0';
+      badge.style.color = '#475569';
+      if (detailBox) detailBox.style.display = 'none';
+      
+      // 스위치를 끄면 '즉시 비활성화'를 DB와 로컬에 반영
+      saveMaintenanceSettings(false);
+    }
   }
 }
 
-// 3. 슈퍼 관리자: 설정 저장 함수
+// 2. 점검 설정 저장 및 해제 함수
 async function saveMaintenanceSettings(forceEnabledState = null) {
   const chk = document.getElementById('chkMaintenanceEnabled');
   const isEnabled = forceEnabledState !== null ? forceEnabledState : (chk ? chk.checked : false);
@@ -9654,10 +9707,10 @@ async function saveMaintenanceSettings(forceEnabledState = null) {
     updatedAt: new Date().toISOString()
   };
 
-  // 1) 로컬 저장
-  localStorage.setItem(MAINT_CONFIG_KEY, JSON.stringify(config));
+  // 1) 로컬 스토리지 즉시 반영
+  localStorage.setItem('shift_maintenance_config', JSON.stringify(config));
 
-  // 2) Supabase DB 반영 (다른 모든 사용자들에게 전파)
+  // 2) Supabase DB 반영
   if (typeof supabaseClient !== 'undefined') {
     try {
       await supabaseClient
@@ -9667,20 +9720,72 @@ async function saveMaintenanceSettings(forceEnabledState = null) {
           value: config,
           updated_at: new Date().toISOString()
         }, { onConflict: 'key' });
-      alert(isEnabled ? '점검 팝업이 활성화되었습니다.' : '점검 팝업이 비활성화되었습니다.');
     } catch (e) {
-      console.error('점검 설정 DB 저장 오류:', e);
-      alert('로컬에 반영되었습니다. (DB 반영 여부 확인 필요)');
+      console.warn('DB 저장 실패(로컬 적용):', e);
     }
-  } else {
-    alert(isEnabled ? '점검 팝업이 활성화되었습니다 (로컬 반영).' : '점검 팝업이 해제되었습니다.');
   }
+
+  // 3) 현재 띄워져 있는 모달 UI 즉시 반영 (내가 관리자 화면에서 껐을 때 즉시 닫히도록)
+  const modal = document.getElementById('maintenanceModal');
+  if (modal && !isEnabled) {
+    modal.style.display = 'none';
+  }
+
+  alert(isEnabled ? '✅ 점검 공지가 켜졌습니다.' : '✅ 점검 공지가 해제되었습니다.');
 }
 
-// 4. 페이지 로드 시 상태 초기 체크
-document.addEventListener('DOMContentLoaded', () => {
-  checkMaintenanceStatus();
-});
+// 3. 관리자 화면 열릴 때 최신 점검 상태 불러오기 (스위치 복원)
+async function loadMaintenanceAdminState() {
+  let config = null;
+
+  // DB 확인
+  if (typeof supabaseClient !== 'undefined') {
+    try {
+      const { data } = await supabaseClient
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'maintenance_mode')
+        .single();
+      if (data && data.value) {
+        config = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+      }
+    } catch (e) {}
+  }
+
+  // 로컬 확인
+  if (!config) {
+    try {
+      config = JSON.parse(localStorage.getItem('shift_maintenance_config') || 'null');
+    } catch (e) {}
+  }
+
+  if (config) {
+    const isEnabled = Boolean(config.enabled);
+    const chk = document.getElementById('chkMaintenanceEnabled');
+    if (chk) chk.checked = isEnabled;
+
+    const titleInput = document.getElementById('inputMaintTitle');
+    const periodInput = document.getElementById('inputMaintPeriod');
+    const msgInput = document.getElementById('inputMaintMessage');
+    const allowCloseChk = document.getElementById('chkMaintAllowClose');
+    const detailBox = document.getElementById('maintenanceDetailInputs');
+    const badge = document.getElementById('badgeMaintStatus');
+
+    if (titleInput && config.title) titleInput.value = config.title;
+    if (periodInput && config.period) periodInput.value = config.period;
+    if (msgInput && config.message) msgInput.value = config.message;
+    if (allowCloseChk && typeof config.allowClose === 'boolean') allowCloseChk.checked = config.allowClose;
+
+    if (badge) {
+      badge.innerText = isEnabled ? '점검 중 (ON)' : '비활성 (OFF)';
+      badge.style.background = isEnabled ? '#fef3c7' : '#e2e8f0';
+      badge.style.color = isEnabled ? '#b45309' : '#475569';
+    }
+    if (detailBox) {
+      detailBox.style.display = isEnabled ? 'block' : 'none';
+    }
+  }
+}
     
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
