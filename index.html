@@ -8982,24 +8982,21 @@ function playFavSongDirectly(idx) {
   let favs = [];
   try {
     favs = JSON.parse(localStorage.getItem('shift_my_favorite_songs') || '[]');
-  } catch (e) {
-    favs = [];
-  }
+  } catch (e) { favs = []; }
 
   if (!favs || favs.length === 0 || !favs[idx]) {
     alert('재생할 찬양 정보가 없습니다.');
     return;
   }
 
-  // 모드 변경 및 재생 큐 주입
   localStorage.setItem('shift_bgm_mode', 'my_playlist');
   window.bgmPlaylist = favs;
   window.currentTrackIndex = idx;
 
-  // 상단 탭 버튼 활성화 스타일 동기화
+  // 상단 탭 버튼 활성화 스타일
   const btnMy = document.getElementById('btnBgmModeMy');
   if (btnMy) {
-    document.querySelectorAll('.btn-bgm-mode, #btnBgmModeThisWeek, #btnBgmModeLastWeek').forEach(b => {
+    document.querySelectorAll('#btnBgmModeThisWeek, #btnBgmModeLastWeek').forEach(b => {
       b.classList.remove('btn-primary');
       b.classList.add('btn-secondary');
     });
@@ -9007,7 +9004,6 @@ function playFavSongDirectly(idx) {
     btnMy.classList.add('btn-primary');
   }
 
-  // 재생 실행
   playCurrentTrackDirectly();
 }
     
