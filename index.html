@@ -5533,45 +5533,98 @@ async function handleSessionScoreUpload() {
 
     /* 13. 최고관리자 모달 기능 */
 function openUpdateNoteCreatorModal() {
-  if (!isSuperAdmin()) {
+  if (typeof isSuperAdmin === 'function' && !isSuperAdmin()) {
     alert('서버 최고관리자만 접근할 수 있습니다.');
     return;
   }
-  document.getElementById('updateNoteModal').style.display = 'flex';
+
+  const modal = document.getElementById('updateNoteModal');
+  if (!modal) {
+    console.error('updateNoteModal 요소를 찾을 수 없습니다.');
+    return;
+  }
+
+  // 모달이 다른 태그 내부에 갇혀 레이아웃이 깨지는 현상 방지
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
+  // 입력 필드 초기화
+  const verInput = document.getElementById('newVersionTag');
+  const summaryInput = document.getElementById('newVersionSummary');
+  const detailsInput = document.getElementById('newVersionContent');
+  const catSelect = document.getElementById('newVersionCategory');
+
+  if (verInput) verInput.value = '';
+  if (summaryInput) summaryInput.value = '';
+  if (detailsInput) detailsInput.value = '';
+  if (catSelect) catSelect.selectedIndex = 0;
+
+  modal.style.display = 'flex';
 }
 
 function closeUpdateNoteModal() {
-  document.getElementById('updateNoteModal').style.display = 'none';
+  const modal = document.getElementById('updateNoteModal');
+  if (modal) modal.style.display = 'none';
 }
 
 async function handleCreateUpdateNote(e) {
-  e.preventDefault();
-  const version = document.getElementById('newVersionTag').value.trim();
-  const category = document.getElementById('newVersionCategory').value;
-  const summary = document.getElementById('newVersionSummary').value.trim();
-  const details = document.getElementById('newVersionContent').value.trim();
+  if (e) e.preventDefault();
+
+  const version = document.getElementById('newVersionTag')?.value.trim() || '';
+  const category = document.getElementById('newVersionCategory')?.value || '[업데이트]';
+  const summary = document.getElementById('newVersionSummary')?.value.trim() || '';
+  const details = document.getElementById('newVersionContent')?.value.trim() || '';
   const btn = document.getElementById('btnPublishNote');
 
+  if (!version) {
+    alert('버전명을 입력해주세요.');
+    return;
+  }
+  if (!summary) {
+    alert('업데이트 요약을 입력해주세요.');
+    return;
+  }
+  if (!details) {
+    alert('세부 변경 내역을 입력해주세요.');
+    return;
+  }
+
+  // 공지 태그 파싱 규칙 및 기존 포맷에 맞춘 제목/본문 조합
   const title = `${category} ${version} - ${summary}`;
   const formattedContent = `[배포 버전]: ${version}\n[업데이트 개요]: ${summary}\n\n───────────────\n📌 주요 변경 내역\n───────────────\n${details}`;
 
-  btn.disabled = true;
-  btn.innerText = '발행 중...';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '발행 중...';
+  }
 
   try {
     const { error } = await supabaseClient
       .from('notice')
-      .insert([{ title, content: formattedContent, author: '서버 관리자', is_pinned: false }]);
+      .insert([{
+        title,
+        content: formattedContent,
+        author: '서버 관리자',
+        is_pinned: false
+      }]);
 
     if (error) throw error;
+
     alert(`🎉 ${version} 업데이트 노트가 성공적으로 배포되었습니다!`);
     closeUpdateNoteModal();
-    await loadNoticeData();
+
+    if (typeof loadNoticeData === 'function') {
+      await loadNoticeData();
+    }
   } catch (err) {
+    console.error('발행 실패:', err);
     alert('발행 실패: ' + err.message);
   } finally {
-    btn.disabled = false;
-    btn.innerText = '등록 및 배포';
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = '등록 및 배포';
+    }
   }
 }
 
