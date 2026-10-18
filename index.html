@@ -8066,35 +8066,24 @@ async function setBgmPlaylistMode(mode, isSilentInit = false) {
 function playCurrentTrackDirectly() {
   const currentMode = localStorage.getItem('shift_bgm_mode') || 'this_week';
 
-  // 1. 모드가 내 보관함일 경우 최신 스토리지 데이터로 큐 강제 보정
   if (currentMode === 'my_playlist') {
     let favs = [];
     try {
-      const raw = localStorage.getItem('shift_my_favorite_songs');
-      favs = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(favs)) favs = [];
-    } catch (e) {
-      favs = [];
-    }
+      favs = JSON.parse(localStorage.getItem('shift_my_favorite_songs') || '[]');
+    } catch (e) { favs = []; }
     window.bgmPlaylist = favs;
   }
 
   const playlist = window.bgmPlaylist || [];
   let idx = (typeof window.currentTrackIndex === 'number') ? window.currentTrackIndex : 0;
 
-  // 2. 음원이 없는 경우 방어
   if (!playlist || playlist.length === 0) {
-    console.warn('[BGM] 재생 목록이 비어 있습니다.');
     if (typeof setBgmPlayerDisplayTitle === 'function') {
       setBgmPlayerDisplayTitle('재생할 찬양이 없습니다 (🤍를 눌러 곡을 담아보세요)');
-    } else {
-      const titleEl = document.getElementById('bgmTitle') || document.querySelector('.bgm-title');
-      if (titleEl) titleEl.innerText = '재생할 찬양이 없습니다';
     }
     return;
   }
 
-  // 인덱스 범위 안전장치
   if (idx < 0 || idx >= playlist.length) {
     idx = 0;
     window.currentTrackIndex = 0;
@@ -8102,7 +8091,7 @@ function playCurrentTrackDirectly() {
 
   const track = playlist[idx];
 
-  // 💥 핵심: track이 객체({id, vid...})든 문자열 ID든 11자리 유튜브 ID 무조건 추출
+  // 11자리 유튜브 ID 추출
   let rawVid = '';
   let trackTitle = '찬양 곡';
 
@@ -8117,12 +8106,11 @@ function playCurrentTrackDirectly() {
   const targetVid = match ? match[1] : '';
 
   if (!targetVid) {
-    console.error('[BGM] 유효한 11자리 유튜브 ID를 찾을 수 없습니다:', track);
-    alert('찬양 음원 링크 정보를 읽을 수 없습니다.');
+    console.error('[BGM] 유효한 유튜브 ID가 없습니다:', track);
     return;
   }
 
-  // 3. 상단 플레이어 UI 곡 제목 갱신
+  // 1. 플레이어 타이틀 UI 갱신
   const displayTitleText = `🎵 ${trackTitle} (${idx + 1}/${playlist.length})`;
   if (typeof setBgmPlayerDisplayTitle === 'function') {
     setBgmPlayerDisplayTitle(displayTitleText);
@@ -8131,26 +8119,38 @@ function playCurrentTrackDirectly() {
     if (titleEl) titleEl.innerText = displayTitleText;
   }
 
-  // 4. 유튜브 플레이어 API로 실제 음원 재생
+  // 2. 기존 유튜브 API 플레이어 인스턴스가 존재하는 경우
   const yt = window.ytPlayer || window.bgmPlayer || window.player;
   if (yt && typeof yt.loadVideoById === 'function') {
-    try {
-      yt.loadVideoById(targetVid);
-      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
-      return;
-    } catch (err) {
-      console.warn('[BGM] loadVideoById 실패, cue 시도:', err);
-    }
+    yt.loadVideoById(targetVid);
+    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+    return;
   }
 
-  // IFrame 직접 접근 방식일 경우
-  const iframe = document.getElementById('bgmYoutubePlayer') || document.getElementById('ytPlayer') || document.querySelector('iframe[src*="youtube.com"]');
-  if (iframe) {
-    iframe.src = `https://www.youtube.com/embed/${targetVid}?autoplay=1&enablejsapi=1`;
-    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+  // 3. 💥 플레이어 IFrame이 아예 없는 경우: 동적으로 숨김 IFrame 자동 생성
+  let iframe = document.querySelector('iframe#bgmDynamicPlayer');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'bgmDynamicPlayer';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.position = 'fixed';
+    iframe.style.bottom = '0';
+    iframe.style.left = '0';
+    iframe.style.opacity = '0.01';
+    iframe.style.pointerEvents = 'none';
+    iframe.setAttribute('allow', 'autoplay; encrypted-media');
+    document.body.appendChild(iframe);
+  }
+
+  // 유튜브 자동재생 URL 주입
+  iframe.src = `https://www.youtube.com/embed/${targetVid}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+
+  if (typeof updatePlayButtonIcon === 'function') {
+    updatePlayButtonIcon(true);
   }
 }
-
+    
 // ⏭️ 다음 곡 이동 전용 함수
 function playNextBgmTrack() {
   const playlist = window.bgmPlaylist || (typeof bgmPlaylist !== 'undefined' ? bgmPlaylist : []);
