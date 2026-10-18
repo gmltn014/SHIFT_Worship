@@ -7730,7 +7730,7 @@ function toggleBgmPlay() {
                   || (typeof window.ytPlayer !== 'undefined' && window.ytPlayer);
 
   // 1. 현재 모드로 세팅된 bgmPlaylist가 비어있는 경우
-  if (!bgmPlaylist || bgmPlaylist.length === 0) {
+  if (!window.bgmPlaylist || window.bgmPlaylist.length === 0) {
     const mode = localStorage.getItem('shift_bgm_mode') || 'this_week';
     if (typeof setBgmPlaylistMode === 'function') {
       setBgmPlaylistMode(mode, false);
@@ -7740,50 +7740,59 @@ function toggleBgmPlay() {
     return;
   }
 
-  // 2. 플레이어 상태 확인 및 일시정지/재생 분기 (1: PLAYING, 2: PAUSED)
+  // 2. 플레이어 상태 확인 및 일시정지/재생 분기
   if (ytInstance && typeof ytInstance.getPlayerState === 'function') {
     const state = ytInstance.getPlayerState();
-    if (state === 1) {
+    if (state === 1) { // 재생 중 -> 일시정지
       ytInstance.pauseVideo();
-      updatePlayButtonIcon(false);
+      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(false);
       return;
-    } else if (state === 2) {
+    } else if (state === 2) { // 일시정지 -> 재생
       ytInstance.playVideo();
-      updatePlayButtonIcon(true);
+      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
       return;
     }
   }
 
   // 3. 현재 트랙 유효성 검사
-  const track = bgmPlaylist[currentTrackIndex || 0];
-  if (!track || !track.id) {
+  const trackIdx = (typeof currentTrackIndex !== 'undefined' && currentTrackIndex !== null) ? currentTrackIndex : 0;
+  const track = window.bgmPlaylist[trackIdx];
+  const vid = track ? (track.id || track.vid || track.youtubeId) : null;
+
+  if (!track || !vid) {
     setBgmPlayerDisplayTitle('재생 가능한 트랙이 없습니다.');
     return;
   }
 
   // 4. 제목 및 재생 아이콘 갱신
-  setBgmPlayerDisplayTitle(`🎵 ${track.title} (${(currentTrackIndex || 0) + 1}/${bgmPlaylist.length})`);
-  updatePlayButtonIcon(true);
+  setBgmPlayerDisplayTitle(`🎵 ${track.title || '찬양'} (${trackIdx + 1}/${window.bgmPlaylist.length})`);
+  if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
 
   // 5. 음원 재생 명령
-  if (ytInstance) {
-    if (typeof ytInstance.loadVideoById === 'function') {
-      ytInstance.loadVideoById(track.id);
-    } else if (typeof ytInstance.playVideo === 'function') {
-      ytInstance.playVideo();
-    }
+  if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
+    ytInstance.loadVideoById(vid);
   } else {
-    // 💥 핵심 보완: ytInstance가 false일 때 조용히 끝나지 않고 화면 내 iframe 또는 직접 재생 로직 호출
-    if (typeof playCurrentTrackDirectly === 'function') {
-      playCurrentTrackDirectly();
-    } else {
-      const iframeEl = document.getElementById('bgmYoutubeIframe')
-                    || document.getElementById('youtubePlayer')
-                    || document.querySelector('iframe[src*="youtube.com"]');
-      if (iframeEl) {
-        iframeEl.src = `https://www.youtube.com/embed/${track.id}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
-      }
+    // 💥 핵심: 화면에 iframe이 없으면 보이지 않는 오디오 재생용 IFrame을 즉시 생성하여 소리 출력!
+    let iframeEl = document.getElementById('bgmYoutubeIframe')
+                || document.getElementById('youtubePlayer')
+                || document.querySelector('iframe[src*="youtube.com"]');
+
+    if (!iframeEl) {
+      iframeEl = document.createElement('iframe');
+      iframeEl.id = 'bgmYoutubeIframe';
+      iframeEl.style.position = 'fixed';
+      iframeEl.style.bottom = '0';
+      iframeEl.style.left = '0';
+      iframeEl.style.width = '1px';
+      iframeEl.style.height = '1px';
+      iframeEl.style.opacity = '0.01';
+      iframeEl.style.pointerEvents = 'none';
+      iframeEl.setAttribute('allow', 'autoplay; encrypted-media');
+      document.body.appendChild(iframeEl);
     }
+
+    // 영상 자동 재생 주입
+    iframeEl.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
   }
 }
     
@@ -8421,9 +8430,23 @@ async function toggleFavoriteSong(arg1, arg2, arg3, arg4) {
     
 // 즐겨찾기 목록 가져오는 헬퍼 함수
 function getMyFavoriteSongs() {
+  const storageKey = 'shift_my_favorite_songs';
   try {
-    return JSON.parse(localStorage.getItem('shift_favorite_songs') || '[]');
+    const raw = localStorage.getItem(storageKey);
+    const favs = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(favs)) return [];
+
+    // id와 title이 보장된 객체 배열 반환
+    return favs.map((f, idx) => {
+      const vid = f.id || f.vid || f.youtubeId;
+      return {
+        id: vid,
+        vid: vid,
+        title: f.title || `찬양 곡 ${idx + 1}`
+      };
+    }).filter(f => Boolean(f.id));
   } catch (e) {
+    console.warn('[BGM] 보관함 파싱 에러:', e);
     return [];
   }
 }
