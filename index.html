@@ -2225,10 +2225,10 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <label for="settingFontSelect" style="font-size: 0.85rem; font-weight: 600;">기본 글꼴</label>
           <select id="settingFontSelect" onchange="applyFont(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-            <option value="pretendard">프리텐다드 (깔끔한 고딕)</option>
-            <option value="score">에스코어 드림 (반듯한 사각 고딕)</option>
-            <option value="serif">나눔명조 (단정한 명조)</option>
-            <option value="hand">교보 손글씨 (따뜻한 손글씨)</option>
+            <option value="Pretendard">프리텐다드 (깔끔한 고딕)</option>
+            <option value="S-Core">에스코어 드림 (반듯한 사각 고딕)</option>
+            <option value="GangwonEdu">강원교육모두 (어른손글씨)</option>
+            <option value="NanumSquareRound">나눔스퀘어라운드 (고딕)</option>
           </select>
         </div>
       </div>
@@ -5285,8 +5285,8 @@ function applyFont(fontKey) {
     case 'NanumSquareRound':
       selectedFont = "'NanumSquareRound'";
       break;
-    case 'GangwonEducationModuche':
-      selectedFont = "'GangwonEducationModuche'";
+    case 'GangwonEdu':
+      selectedFont = "'GangwonEdu'";
       break;
     case 'Escoredream':
       selectedFont = "'Escoredream'";
