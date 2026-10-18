@@ -6,10 +6,11 @@
   <title>SHIFT 찬양팀</title>
 
   <!-- 웹폰트: Pretendard, S-Core Dream, Noto Serif, KyoboHandwriting -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.0/KyoboHandwriting2019.css">
+  
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- 카드 캡처 및 이미지 다운로드를 위한 html2canvas 라이브러리 -->
@@ -4263,33 +4264,45 @@ function syncAppVersionFromNotices() {
 
     function parseNoticeMetadata(title) {
   const raw = (title || '').trim();
-  let tag = '일반';
-  let tagClass = 'tag-general';
-  let borderClass = '';
+  let tag = '공지';
+  let tagClass = 'tag-notice';
+  let borderClass = 'border-notice';
 
-  // 1순위: 버전 번호(v2.7.0 등)나 [업데이트] 키워드가 있으면 무조건 업데이트 탭으로 직행
-  if (/v\d+\.\d+(\.\d+)?/i.test(raw) || /\[업데이트\]|업데이트/i.test(raw)) {
+  // 1단계: 제목 맨 앞의 [대괄호] 태그를 엄격하게 최우선 판별
+  if (/^\[업데이트\]/i.test(raw)) {
     tag = '업데이트';
     tagClass = 'tag-update';
     borderClass = 'border-update';
-  } else if (/\[UI\s*개선\]|UI\s*개선/i.test(raw)) {
+  } else if (/^\[UI\s*개선\]/i.test(raw)) {
     tag = 'UI 개선';
     tagClass = 'tag-ui';
     borderClass = 'border-ui';
-  } else if (/\[공지\]|공지/i.test(raw)) {
-    tag = '공지';
-    tagClass = 'tag-notice';
-    borderClass = 'border-notice';
-  } else if (/\[일정\]|일정/i.test(raw)) {
+  } else if (/^\[일정\]/i.test(raw)) {
     tag = '일정';
     tagClass = 'tag-schedule';
     borderClass = 'border-schedule';
+  } else if (/^\[공지\]/i.test(raw)) {
+    tag = '공지';
+    tagClass = 'tag-notice';
+    borderClass = 'border-notice';
+  } 
+  // 2단계: 대괄호가 없는 경우에만 보조 판별
+  else if (/^v\d+\.\d+/i.test(raw)) {
+    tag = '업데이트';
+    tagClass = 'tag-update';
+    borderClass = 'border-update';
+  } else if (/업데이트\s*노트/i.test(raw)) {
+    tag = '업데이트';
+    tagClass = 'tag-update';
+    borderClass = 'border-update';
   }
 
+  // 화면 표시용 제목 (앞의 [공지], [업데이트] 제거)
   const cleanTitle = raw.replace(/^\[[^\]]+\]\s*/, '').trim();
+
   return { tag, tagClass, borderClass, cleanTitle };
 }
-
+    
 function formatNoticeDate(isoString) {
   return isoString ? isoString.split('T')[0] : '';
 }
@@ -4478,6 +4491,55 @@ function getFilteredMembers() {
   });
 }
 
+    // 팀원별 파트 색상 매핑 헬퍼 함수 (신규 추가)
+function getMemberPartBadgeStyle(item) {
+  const fullText = [
+    item.main_part,
+    item.part,
+    item.main_category,
+    item.category,
+    item.part_b,
+    item.role
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  // 1) 세션 파트 (파랑)
+  if (/건반|피아노|드럼|베이스|기타|일렉|어쿠스틱|신디|session/i.test(fullText)) {
+    return {
+      bg: 'rgba(59, 130, 246, 0.12)',
+      color: '#2563eb',
+      border: '#3b82f6',
+      badgeClass: 'badge-session'
+    };
+  }
+  // 2) 라이브옵스 / 엔지니어 / 방송 파트 (초록)
+  else if (/음향|방송|중계|자막|엔지니어|카메라|라이브|live/i.test(fullText)) {
+    return {
+      bg: 'rgba(16, 185, 129, 0.12)',
+      color: '#059669',
+      border: '#10b981',
+      badgeClass: 'badge-liveops'
+    };
+  }
+  // 3) 미디어 / 포스트 프로덕션 (주황)
+  else if (/영상|디자인|미디어|편집|사진|media|post/i.test(fullText)) {
+    return {
+      bg: 'rgba(249, 115, 22, 0.12)',
+      color: '#ea580c',
+      border: '#f97316',
+      badgeClass: 'badge-media'
+    };
+  }
+  // 4) 워십 리더 / 싱어 / 보컬 (보라)
+  else {
+    return {
+      bg: 'rgba(139, 92, 246, 0.12)',
+      color: '#7c3aed',
+      border: '#8b5cf6',
+      badgeClass: 'badge-worship'
+    };
+  }
+}
+
 function renderMembers() {
   const grid = document.getElementById('membersGrid');
   const countBadge = document.getElementById('memberCountBadge');
@@ -4492,33 +4554,57 @@ function renderMembers() {
   }
 
   grid.innerHTML = filtered.map(item => {
-    const rawCat = (item.main_category || '').trim().toLowerCase();
-const rawPart = (item.main_part || '').trim().toLowerCase();
+    // 1. 모든 파트/카테고리 관련 필드를 소문자로 결합하여 포괄 판별
+    const checkText = [
+      item.main_category,
+      item.category,
+      item.main_part,
+      item.part,
+      item.part_b,
+      item.part_tag
+    ].filter(Boolean).join(' ').toLowerCase();
 
-let badgeColorClass = 'badge-worship';
-let borderColorClass = 'border-worship';
+    // 2. 파트별 색상 정의 (배경색, 텍스트색, 카드 테두리색)
+    let badgeBg = 'rgba(139, 92, 246, 0.15)'; // 기본: 워십 (보라)
+    let badgeColor = '#8b5cf6';
+    let borderColor = 'rgba(139, 92, 246, 0.3)';
+    let badgeClass = 'badge-worship';
+    let borderClass = 'border-worship';
 
-// 세션 (건반, 드럼, 기타, 베이스 등)
-if (rawCat.includes('session') || /세션|건반|드럼|기타|베이스/i.test(rawPart)) {
-  badgeColorClass = 'badge-session';
-  borderColorClass = 'border-session';
-} 
-// 라이브옵스 / 엔지니어 (음향, 중계, 방송, 자막 등)
-else if (rawCat.includes('live') || /음향|방송|중계|자막|엔지니어/i.test(rawPart)) {
-  badgeColorClass = 'badge-liveops';
-  borderColorClass = 'border-liveops';
-} 
-// 미디어 / 포스트 프로덕션 (영상, 디자인 등)
-else if (rawCat.includes('post') || rawCat.includes('media') || /영상|디자인|미디어/i.test(rawPart)) {
-  badgeColorClass = 'badge-postprod';
-  borderColorClass = 'border-postprod';
-} 
-// 워십 / 싱어 (인도자, 보컬)
-else {
-  badgeColorClass = 'badge-worship';
-  borderColorClass = 'border-worship';
-}
+    // (1) 세션 파트 -> 파란색
+    if (/session|세션|건반|피아노|신디|드럼|베이스|기타|일렉|어쿠스틱/i.test(checkText)) {
+      badgeBg = 'rgba(59, 130, 246, 0.15)';
+      badgeColor = '#3b82f6';
+      borderColor = 'rgba(59, 130, 246, 0.35)';
+      badgeClass = 'badge-session';
+      borderClass = 'border-session';
+    }
+    // (2) 라이브옵스 / 엔지니어 -> 초록색
+    else if (/live|라이브|옵스|음향|방송|중계|자막|엔지니어|카메라/i.test(checkText)) {
+      badgeBg = 'rgba(16, 185, 129, 0.15)';
+      badgeColor = '#10b981';
+      borderColor = 'rgba(16, 185, 129, 0.35)';
+      badgeClass = 'badge-liveops';
+      borderClass = 'border-liveops';
+    }
+    // (3) 미디어 / 포스트 프로덕션 -> 주황/핑크색
+    else if (/post|media|미디어|포스트|영상|디자인|사진|편집/i.test(checkText)) {
+      badgeBg = 'rgba(249, 115, 22, 0.15)';
+      badgeColor = '#f97316';
+      borderColor = 'rgba(249, 115, 22, 0.35)';
+      badgeClass = 'badge-postprod';
+      borderClass = 'border-postprod';
+    }
+    // (4) 워십 / 싱어 / 보컬 -> 보라색
+    else {
+      badgeBg = 'rgba(139, 92, 246, 0.15)';
+      badgeColor = '#8b5cf6';
+      borderColor = 'rgba(139, 92, 246, 0.35)';
+      badgeClass = 'badge-worship';
+      borderClass = 'border-worship';
+    }
 
+    // 태그 리스트 생성
     let tagsHtml = '';
     if (item.part_tag && item.part_tag.trim() !== '') {
       tagsHtml = item.part_tag.split(/[,\s]+/).map(t => {
@@ -4535,14 +4621,16 @@ else {
       : '';
 
     return `
-      <div class="member-card ${borderColorClass}">
+      <div class="member-card ${borderClass}" style="border-left: 4px solid ${borderColor};">
         <div>
           <div class="member-card-header">
             <span class="member-name">
               ${item.name}
               ${birthdayBadgeHtml}
             </span>
-            <span class="member-category-pill ${badgeColorClass}">${item.main_category || 'TEAM'}</span>
+            <span class="member-category-pill ${badgeClass}" style="background: ${badgeBg} !important; color: ${badgeColor} !important; border: 1px solid ${borderColor} !important; font-weight: 700;">
+              ${item.main_category || (item.main_part ? item.main_part : 'TEAM')}
+            </span>
           </div>
           <div style="font-size: 0.85rem; color: var(--sub-text); margin-top: 4px;">
             주파트: <strong style="color: var(--text-color);">${item.main_part || '-'}</strong>
@@ -5170,19 +5258,47 @@ function triggerPWAInstall() {
 }
 
 function applyFont(fontKey) {
-  let fontValue = '-apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif';
+  let fontStack = '';
 
-  if (fontKey === 'score') {
-    fontValue = '"S-CoreDream", "Pretendard", sans-serif';
-  } else if (fontKey === 'serif') {
-    fontValue = '"Noto Serif KR", Georgia, serif';
-  } else if (fontKey === 'hand') {
-    fontValue = '"KyoboHandwriting2019", -apple-system, sans-serif';
+  switch (fontKey) {
+    case 'score':
+      // 눈누 S-CoreDream의 표준 패밀리명 다중 지정
+      fontStack = "'S-CoreDream', 'S-Core Dream', 'Pretendard', sans-serif";
+      break;
+    case 'serif':
+      fontStack = "'Noto Serif KR', 'Nanum Myeongjo', Georgia, serif";
+      break;
+    case 'hand':
+      fontStack = "'KyoboHandwriting2019', 'KyoboHand', cursive, sans-serif";
+      break;
+    case 'pretendard':
+    default:
+      fontKey = 'pretendard';
+      fontStack = "'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif";
+      break;
   }
 
-  document.documentElement.style.setProperty('--app-font', fontValue);
-  document.body.style.setProperty('font-family', fontValue, 'important');
+  // 1. 전역 최우선순위 강제 스타일 태그 주입/교체 (모든 하위 요소 * 강제 덮어쓰기)
+  let fontTag = document.getElementById('shift-font-enforcer');
+  if (!fontTag) {
+    fontTag = document.createElement('style');
+    fontTag.id = 'shift-font-enforcer';
+    document.head.appendChild(fontTag);
+  }
+  fontTag.innerHTML = `
+    * {
+      font-family: ${fontStack} !important;
+    }
+  `;
+
+  // 2. CSS 변수 및 로컬 스토리지 동기화
+  document.documentElement.style.setProperty('--app-font', fontStack);
   localStorage.setItem('shift_font', fontKey);
+
+  const sel = document.getElementById('settingFontSelect');
+  if (sel && sel.value !== fontKey) {
+    sel.value = fontKey;
+  }
 }
 
 /* 화면 켜짐 유지 (Wake Lock API) */
