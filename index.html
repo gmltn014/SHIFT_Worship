@@ -978,30 +978,35 @@
     height: 0;
     position: absolute;
   }
-  .maint-slider {
+  .maint-slider-fixed {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    width: 50px;
+    height: 26px;
     background-color: #cbd5e1;
     border-radius: 34px;
     transition: background-color 0.25s ease;
+    display: block;
+    box-sizing: border-box;
   }
-  .maint-slider::before {
+  .maint-slider-fixed::before {
     position: absolute;
     content: "";
-    height: 22px;
-    width: 22px;
+    height: 20px;
+    width: 20px;
     left: 3px;
     bottom: 3px;
     background-color: #ffffff;
     border-radius: 50%;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
-  /* 체크 시 주황색 배경 전환 및 원형 손잡이 오른쪽 이동 */
-  .maint-switch-label input:checked + .maint-slider {
+  /* 체크 시 주황색 변경 및 오른쪽 24px 이동 */
+  input[type="checkbox"]:checked + .maint-slider-fixed {
     background-color: #f59e0b;
   }
-  .maint-switch-label input:checked + .maint-slider::before {
+  input[type="checkbox"]:checked + .maint-slider-fixed::before {
     transform: translateX(24px);
   }
   </style>
@@ -1790,10 +1795,10 @@
     </div>
     
     <!-- 💥 확실하게 작동하는 표준 CSS 기반 토글 스위치 -->
-    <label class="maint-switch-label">
-      <input type="checkbox" id="chkMaintenanceEnabled" onchange="toggleMaintenanceSwitch(this.checked)">
-      <span class="maint-slider"></span>
-    </label>
+    <label style="position: relative; display: inline-block; width: 50px; height: 26px; flex-shrink: 0; cursor: pointer; margin: 0; padding: 0;">
+  <input type="checkbox" id="chkMaintenanceEnabled" onchange="toggleMaintenanceSwitch(this.checked)" style="opacity: 0; width: 0; height: 0; position: absolute;">
+  <span class="maint-slider-fixed"></span>
+</label>
   </div>
 
   <!-- 상세 설정 입력 폼 (토글 활성화 또는 설정 열기 시 노출) -->
