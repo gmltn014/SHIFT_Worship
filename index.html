@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SHIFT 찬양팀</title>
 
-  <!-- 웹폰트: Pretendard, S-Core Dream, GangwonEdu, NanumSquareRound -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.css">
-  
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- 카드 캡처 및 이미지 다운로드를 위한 html2canvas 라이브러리 -->
@@ -21,34 +15,33 @@
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <style>
-    /* 에스코어드림 굵기 커스텀 */
-    @font-face {
-    font-family: 'Escoredream';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
-    font-weight: normal;
-    font-display: swap;
-    }
-
     @font-face {
     font-family: 'Pretendard';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');
     font-weight: 400;
     font-display: swap;
-    }
+  }
 
-    @font-face {
-    font-family: 'GangwonEducationModuche';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
-    font-weight: 300;
+  @font-face {
+    font-family: 'Escoredream';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
+    font-weight: normal;
     font-display: swap;
-    }
+  }
 
-    @font-face {
+  @font-face {
+    font-family: 'GangwonEdu';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+  }
+
+  @font-face {
     font-family: 'NanumSquareRound';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff') format('woff');
     font-weight: normal;
     font-display: swap;
-    }
+  }
     
     :root {
       --app-font: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
@@ -2223,16 +2216,15 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label for="settingFontSelect" style="font-size: 0.85rem; font-weight: 600;">기본 글꼴</label>
-          <select id="settingFontSelect" onchange="applyFont(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-            <option value="Pretendard">프리텐다드 (깔끔한 고딕)</option>
-            <option value="S-Core">에스코어 드림 (반듯한 사각 고딕)</option>
-            <option value="GangwonEdu">강원교육모두 (어른손글씨)</option>
-            <option value="NanumSquareRound">나눔스퀘어라운드 (고딕)</option>
-          </select>
-        </div>
-      </div>
-
+  <label for="settingFontSelect" style="font-size: 0.85rem; font-weight: 600;">기본 글꼴</label>
+  <select id="settingFontSelect" onchange="applyFont(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
+    <option value="Pretendard">프리텐다드 (깔끔한 고딕)</option>
+    <option value="Escoredream">에스코어 드림 (반듯한 사각 고딕)</option>
+    <option value="GangwonEdu">강원교육모두 (어른손글씨)</option>
+    <option value="NanumSquareRound">나눔스퀘어라운드 (고딕)</option>
+  </select>
+</div>
+        
       <!-- 2. 연습 & 사역 편의 (화면 꺼짐 방지) -->
       <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -5283,13 +5275,13 @@ function applyFont(fontKey) {
 
   switch (fontKey) {
     case 'NanumSquareRound':
-      selectedFont = "'NanumSquareRound'";
+      selectedFont = "'NanumSquareRound', sans-serif";
       break;
     case 'GangwonEdu':
-      selectedFont = "'GangwonEdu'";
+      selectedFont = "'GangwonEdu', cursive, sans-serif";
       break;
     case 'Escoredream':
-      selectedFont = "'Escoredream'";
+      selectedFont = "'Escoredream', sans-serif";
       break;
     case 'Pretendard':
     default:
@@ -5306,7 +5298,7 @@ function applyFont(fontKey) {
     document.head.appendChild(fontTag);
   }
 
-  // 모든 요소(*), 인풋, 버튼, 바디에 강제 주입
+  // 모든 요소에 강제 주입
   fontTag.innerHTML = `
     html, body, button, input, select, textarea, span, p, div, strong, a, h1, h2, h3, h4, h5, h6 {
       font-family: ${selectedFont} !important;
