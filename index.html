@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SHIFT 찬양팀</title>
 
-  <!-- 웹폰트: Pretendard, S-Core Dream, Noto Serif, KyoboHandwriting -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.0/KyoboHandwriting2019.css">
+  <!-- 웹폰트: Pretendard, S-Core Dream, GangwonEdu, NanumSquareRound -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.css">
   
   <!-- Supabase JS 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,10 +23,31 @@
   <style>
     /* 에스코어드림 굵기 커스텀 */
     @font-face {
-      font-family: 'Escoredream';
-      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-5Medium.woff') format('woff');
-      font-weight: 500;
-      font-display: swap;
+    font-family: 'Escoredream';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+    }
+
+    @font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+    }
+
+    @font-face {
+    font-family: 'GangwonEducationModuche';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+    }
+
+    @font-face {
+    font-family: 'NanumSquareRound';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
     }
     
     :root {
@@ -5258,49 +5279,48 @@ function triggerPWAInstall() {
 }
 
 function applyFont(fontKey) {
-  let fontStack = '';
+  let selectedFont = '';
 
   switch (fontKey) {
-    case 'score':
-      // 눈누 S-CoreDream의 표준 패밀리명 다중 지정
-      fontStack = "'S-CoreDream', 'S-Core Dream', 'Pretendard', sans-serif";
+    case 'NanumSquareRound':
+      selectedFont = "'NanumSquareRound'";
       break;
-    case 'serif':
-      fontStack = "'Noto Serif KR', 'Nanum Myeongjo', Georgia, serif";
+    case 'GangwonEducationModuche':
+      selectedFont = "'GangwonEducationModuche'";
       break;
-    case 'hand':
-      fontStack = "'KyoboHandwriting2019', 'KyoboHand', cursive, sans-serif";
+    case 'Escoredream':
+      selectedFont = "'Escoredream'";
       break;
-    case 'pretendard':
+    case 'Pretendard':
     default:
-      fontKey = 'pretendard';
-      fontStack = "'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif";
+      fontKey = 'Pretendard';
+      selectedFont = "'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif";
       break;
   }
 
-  // 1. 전역 최우선순위 강제 스타일 태그 주입/교체 (모든 하위 요소 * 강제 덮어쓰기)
+  // 최상위 강제 오버라이드 스타일 태그 업데이트
   let fontTag = document.getElementById('shift-font-enforcer');
   if (!fontTag) {
     fontTag = document.createElement('style');
     fontTag.id = 'shift-font-enforcer';
     document.head.appendChild(fontTag);
   }
+
+  // 모든 요소(*), 인풋, 버튼, 바디에 강제 주입
   fontTag.innerHTML = `
-    * {
-      font-family: ${fontStack} !important;
+    html, body, button, input, select, textarea, span, p, div, strong, a, h1, h2, h3, h4, h5, h6 {
+      font-family: ${selectedFont} !important;
     }
   `;
 
-  // 2. CSS 변수 및 로컬 스토리지 동기화
-  document.documentElement.style.setProperty('--app-font', fontStack);
+  // 로컬 스토리지 및 설정창 셀렉트 박스 동기화
   localStorage.setItem('shift_font', fontKey);
-
   const sel = document.getElementById('settingFontSelect');
   if (sel && sel.value !== fontKey) {
     sel.value = fontKey;
   }
 }
-
+    
 /* 화면 켜짐 유지 (Wake Lock API) */
 let wakeLockSentinel = null;
 async function toggleWakeLock(enable) {
