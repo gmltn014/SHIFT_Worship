@@ -7723,62 +7723,89 @@ function handleBgmPlayerStateChange(event) {
 }
 
 // 4. 재생 / 일시정지 토글
-function toggleBgmPlay() {
-  const ytInstance = (typeof ytPlayer !== 'undefined' && ytPlayer)
-                  || (typeof bgmPlayer !== 'undefined' && bgmPlayer)
-                  || (typeof window.player !== 'undefined' && window.player)
-                  || (typeof window.ytPlayer !== 'undefined' && window.ytPlayer);
+function startBgmProgressTracker() {
+  if (window.bgmProgressTimer) clearInterval(window.bgmProgressTimer);
 
+  window.bgmProgressTimer = setInterval(() => {
+    const yt = window.ytPlayer || window.bgmPlayer || window.player;
+    if (!yt || typeof yt.getCurrentTime !== 'function' || typeof yt.getDuration !== 'function') return;
+
+    try {
+      const current = yt.getCurrentTime() || 0;
+      const duration = yt.getDuration() || 0;
+
+      const formatTime = (sec) => {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+      };
+
+      // 시간 텍스트 갱신
+      const timeCurrentEl = document.getElementById('bgmCurrentTime') || document.querySelector('.bgm-current-time');
+      const timeTotalEl = document.getElementById('bgmTotalTime') || document.querySelector('.bgm-total-time');
+      if (timeCurrentEl) timeCurrentEl.innerText = formatTime(current);
+      if (timeTotalEl && duration > 0) timeTotalEl.innerText = formatTime(duration);
+
+      // 프로그레스 바 갱신 (progress 태그, input range, fill div 모두 지원)
+      const progressBar = document.getElementById('bgmProgressBar') 
+                       || document.getElementById('bgmProgressFill') 
+                       || document.querySelector('.bgm-progress-bar, .bgm-progress-fill, progress');
+      
+      if (progressBar && duration > 0) {
+        const percent = (current / duration) * 100;
+        if (progressBar.tagName === 'PROGRESS' || progressBar.type === 'range') {
+          progressBar.value = percent;
+        } else {
+          progressBar.style.width = `${percent}%`;
+        }
+      }
+    } catch (e) {}
+  }, 500);
+}
+
+// 2. 통합 toggleBgmPlay (API 플레이어 자동 래핑으로 재생바 완전 구동)
+function toggleBgmPlay() {
   const btn = document.getElementById('btnTogglePlay');
   const isCurrentlyPlaying = btn ? btn.innerText.includes('⏸') : Boolean(window.isBgmPlaying);
 
-  const iframeEl = document.getElementById('bgmYoutubeIframe')
-                || document.getElementById('youtubePlayer')
-                || document.querySelector('iframe[src*="youtube.com"]');
+  let yt = window.ytPlayer || window.bgmPlayer || window.player;
 
-  // 1. 이미 재생 중인 상태에서 버튼을 누른 경우 -> 일시정지(Pause)
+  // 1) 재생 중일 때 -> 일시정지
   if (isCurrentlyPlaying) {
-    if (ytInstance && typeof ytInstance.pauseVideo === 'function') {
-      ytInstance.pauseVideo();
-    } else if (iframeEl && iframeEl.contentWindow) {
-      // postMessage로 유튜브 영상 일시정지 명령 전송
-      iframeEl.contentWindow.postMessage(JSON.stringify({
-        event: 'command',
-        func: 'pauseVideo',
-        args: ''
-      }), '*');
+    if (yt && typeof yt.pauseVideo === 'function') {
+      yt.pauseVideo();
+    } else {
+      const iframeEl = document.getElementById('bgmYoutubeIframe') || document.querySelector('iframe[src*="youtube.com"]');
+      if (iframeEl && iframeEl.contentWindow) {
+        iframeEl.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*');
+      }
     }
-
     window.isBgmPlaying = false;
     if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(false);
     return;
   }
 
-  // 2. 일시정지 상태에서 다시 재생(Resume)을 누른 경우
+  // 2) 일시정지 상태에서 재개할 때
   if (!isCurrentlyPlaying && window.isBgmStarted) {
-    if (ytInstance && typeof ytInstance.playVideo === 'function') {
-      ytInstance.playVideo();
-    } else if (iframeEl && iframeEl.contentWindow) {
-      // postMessage로 멈춘 시점부터 그대로 이어 재생
-      iframeEl.contentWindow.postMessage(JSON.stringify({
-        event: 'command',
-        func: 'playVideo',
-        args: ''
-      }), '*');
+    if (yt && typeof yt.playVideo === 'function') {
+      yt.playVideo();
+    } else {
+      const iframeEl = document.getElementById('bgmYoutubeIframe') || document.querySelector('iframe[src*="youtube.com"]');
+      if (iframeEl && iframeEl.contentWindow) {
+        iframeEl.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
+      }
     }
-
     window.isBgmPlaying = true;
     if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+    startBgmProgressTracker();
     return;
   }
 
-  // 3. 최초 재생 시작 (큐 확인 및 곡 로드)
+  // 3) 최초 재생 시작
   if (!window.bgmPlaylist || window.bgmPlaylist.length === 0) {
     const mode = localStorage.getItem('shift_bgm_mode') || 'this_week';
     if (typeof setBgmPlaylistMode === 'function') {
       setBgmPlaylistMode(mode, false);
-    } else {
-      setBgmPlayerDisplayTitle('등록된 유튜브 음원 없음');
     }
     return;
   }
@@ -7792,32 +7819,67 @@ function toggleBgmPlay() {
     return;
   }
 
-  // 타이틀 및 재생 상태 갱신
   setBgmPlayerDisplayTitle(`🎵 ${track.title || '찬양'} (${trackIdx + 1}/${window.bgmPlaylist.length})`);
   window.isBgmPlaying = true;
   window.isBgmStarted = true;
   if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
 
-  // 음원 최초 로드 및 재생
-  if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
-    ytInstance.loadVideoById(vid);
-  } else {
-    let targetIframe = iframeEl;
-    if (!targetIframe) {
-      targetIframe = document.createElement('iframe');
-      targetIframe.id = 'bgmYoutubeIframe';
-      targetIframe.style.position = 'fixed';
-      targetIframe.style.bottom = '0';
-      targetIframe.style.left = '0';
-      targetIframe.style.width = '1px';
-      targetIframe.style.height = '1px';
-      targetIframe.style.opacity = '0.01';
-      targetIframe.style.pointerEvents = 'none';
-      targetIframe.setAttribute('allow', 'autoplay; encrypted-media');
-      document.body.appendChild(targetIframe);
+  // 💥 핵심: YouTube API 인스턴스(YT.Player)로 생성하여 실시간 시간/재생바 연동
+  if (window.YT && window.YT.Player) {
+    let container = document.getElementById('bgmPlayerContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'bgmPlayerContainer';
+      container.style.position = 'fixed';
+      container.style.bottom = '0';
+      container.style.left = '0';
+      container.style.width = '1px';
+      container.style.height = '1px';
+      container.style.opacity = '0.01';
+      container.style.pointerEvents = 'none';
+      document.body.appendChild(container);
     }
 
-    targetIframe.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
+    if (!window.ytPlayer) {
+      window.ytPlayer = new YT.Player('bgmPlayerContainer', {
+        height: '1',
+        width: '1',
+        videoId: vid,
+        playerVars: { autoplay: 1, controls: 0 },
+        events: {
+          onReady: (e) => {
+            e.target.playVideo();
+            startBgmProgressTracker();
+          },
+          onStateChange: (e) => {
+            // 0: ENDED (곡 종료 시 다음 곡 자동 재생)
+            if (e.data === 0 && typeof playNextBgm === 'function') {
+              playNextBgm();
+            }
+          }
+        }
+      });
+    } else {
+      window.ytPlayer.loadVideoById(vid);
+      startBgmProgressTracker();
+    }
+  } else {
+    // YT 스크립트가 아직 로드 중일 때의 iframe fallback
+    let iframe = document.getElementById('bgmYoutubeIframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'bgmYoutubeIframe';
+      iframe.style.position = 'fixed';
+      iframe.style.bottom = '0';
+      iframe.style.left = '0';
+      iframe.style.width = '1px';
+      iframe.style.height = '1px';
+      iframe.style.opacity = '0.01';
+      iframe.style.pointerEvents = 'none';
+      iframe.setAttribute('allow', 'autoplay; encrypted-media');
+      document.body.appendChild(iframe);
+    }
+    iframe.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
   }
 }
     
