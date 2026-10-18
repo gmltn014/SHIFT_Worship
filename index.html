@@ -7729,7 +7729,50 @@ function toggleBgmPlay() {
                   || (typeof window.player !== 'undefined' && window.player)
                   || (typeof window.ytPlayer !== 'undefined' && window.ytPlayer);
 
-  // 1. 현재 모드로 세팅된 bgmPlaylist가 비어있는 경우
+  const btn = document.getElementById('btnTogglePlay');
+  const isCurrentlyPlaying = btn ? btn.innerText.includes('⏸') : Boolean(window.isBgmPlaying);
+
+  const iframeEl = document.getElementById('bgmYoutubeIframe')
+                || document.getElementById('youtubePlayer')
+                || document.querySelector('iframe[src*="youtube.com"]');
+
+  // 1. 이미 재생 중인 상태에서 버튼을 누른 경우 -> 일시정지(Pause)
+  if (isCurrentlyPlaying) {
+    if (ytInstance && typeof ytInstance.pauseVideo === 'function') {
+      ytInstance.pauseVideo();
+    } else if (iframeEl && iframeEl.contentWindow) {
+      // postMessage로 유튜브 영상 일시정지 명령 전송
+      iframeEl.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: 'pauseVideo',
+        args: ''
+      }), '*');
+    }
+
+    window.isBgmPlaying = false;
+    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(false);
+    return;
+  }
+
+  // 2. 일시정지 상태에서 다시 재생(Resume)을 누른 경우
+  if (!isCurrentlyPlaying && window.isBgmStarted) {
+    if (ytInstance && typeof ytInstance.playVideo === 'function') {
+      ytInstance.playVideo();
+    } else if (iframeEl && iframeEl.contentWindow) {
+      // postMessage로 멈춘 시점부터 그대로 이어 재생
+      iframeEl.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: 'playVideo',
+        args: ''
+      }), '*');
+    }
+
+    window.isBgmPlaying = true;
+    if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
+    return;
+  }
+
+  // 3. 최초 재생 시작 (큐 확인 및 곡 로드)
   if (!window.bgmPlaylist || window.bgmPlaylist.length === 0) {
     const mode = localStorage.getItem('shift_bgm_mode') || 'this_week';
     if (typeof setBgmPlaylistMode === 'function') {
@@ -7740,21 +7783,6 @@ function toggleBgmPlay() {
     return;
   }
 
-  // 2. 플레이어 상태 확인 및 일시정지/재생 분기
-  if (ytInstance && typeof ytInstance.getPlayerState === 'function') {
-    const state = ytInstance.getPlayerState();
-    if (state === 1) { // 재생 중 -> 일시정지
-      ytInstance.pauseVideo();
-      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(false);
-      return;
-    } else if (state === 2) { // 일시정지 -> 재생
-      ytInstance.playVideo();
-      if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
-      return;
-    }
-  }
-
-  // 3. 현재 트랙 유효성 검사
   const trackIdx = (typeof currentTrackIndex !== 'undefined' && currentTrackIndex !== null) ? currentTrackIndex : 0;
   const track = window.bgmPlaylist[trackIdx];
   const vid = track ? (track.id || track.vid || track.youtubeId) : null;
@@ -7764,35 +7792,32 @@ function toggleBgmPlay() {
     return;
   }
 
-  // 4. 제목 및 재생 아이콘 갱신
+  // 타이틀 및 재생 상태 갱신
   setBgmPlayerDisplayTitle(`🎵 ${track.title || '찬양'} (${trackIdx + 1}/${window.bgmPlaylist.length})`);
+  window.isBgmPlaying = true;
+  window.isBgmStarted = true;
   if (typeof updatePlayButtonIcon === 'function') updatePlayButtonIcon(true);
 
-  // 5. 음원 재생 명령
+  // 음원 최초 로드 및 재생
   if (ytInstance && typeof ytInstance.loadVideoById === 'function') {
     ytInstance.loadVideoById(vid);
   } else {
-    // 💥 핵심: 화면에 iframe이 없으면 보이지 않는 오디오 재생용 IFrame을 즉시 생성하여 소리 출력!
-    let iframeEl = document.getElementById('bgmYoutubeIframe')
-                || document.getElementById('youtubePlayer')
-                || document.querySelector('iframe[src*="youtube.com"]');
-
-    if (!iframeEl) {
-      iframeEl = document.createElement('iframe');
-      iframeEl.id = 'bgmYoutubeIframe';
-      iframeEl.style.position = 'fixed';
-      iframeEl.style.bottom = '0';
-      iframeEl.style.left = '0';
-      iframeEl.style.width = '1px';
-      iframeEl.style.height = '1px';
-      iframeEl.style.opacity = '0.01';
-      iframeEl.style.pointerEvents = 'none';
-      iframeEl.setAttribute('allow', 'autoplay; encrypted-media');
-      document.body.appendChild(iframeEl);
+    let targetIframe = iframeEl;
+    if (!targetIframe) {
+      targetIframe = document.createElement('iframe');
+      targetIframe.id = 'bgmYoutubeIframe';
+      targetIframe.style.position = 'fixed';
+      targetIframe.style.bottom = '0';
+      targetIframe.style.left = '0';
+      targetIframe.style.width = '1px';
+      targetIframe.style.height = '1px';
+      targetIframe.style.opacity = '0.01';
+      targetIframe.style.pointerEvents = 'none';
+      targetIframe.setAttribute('allow', 'autoplay; encrypted-media');
+      document.body.appendChild(targetIframe);
     }
 
-    // 영상 자동 재생 주입
-    iframeEl.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
+    targetIframe.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
   }
 }
     
