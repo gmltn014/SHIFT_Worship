@@ -2178,160 +2178,158 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
   </div>
 
   <!-- 5. 환경설정 모달 -->
-  <div id="settingsModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 500px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
-        <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-          <span>⚙️</span> 환경설정 및 기기 동기화
-        </h3>
-        <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--sub-text); line-height: 1;">&times;</button>
-      </div>
+<div id="settingsModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 500px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <span>⚙️</span> 환경설정 및 기기 동기화
+      </h3>
+      <button type="button" onclick="closeSettingsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--sub-text); line-height: 1;">&times;</button>
+    </div>
 
-      <div style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+    <div style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+      
+      <!-- 1. 테마 & 글꼴 설정 -->
+      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+        <h4 style="font-size: 0.88rem; font-weight: 700;">🎨 화면 스타일</h4>
         
-        <!-- 1. 테마 & 글꼴 설정 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-          <h4 style="font-size: 0.88rem; font-weight: 700;">🎨 화면 스타일</h4>
-          
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label for="settingThemeSelect" style="font-size: 0.85rem; font-weight: 600;">테마 모드</label>
-            <select id="settingThemeSelect" onchange="applyTheme(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-              <option value="light">라이트 모드</option>
-              <option value="dark">다크 모드</option>
-            </select>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label for="settingFontSelect" style="font-size: 0.85rem; font-weight: 600;">기본 글꼴</label>
-            <select id="settingFontSelect" onchange="applyFont(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
-              <option value="pretendard">프리텐다드 (깔끔한 고딕)</option>
-              <option value="score">에스코어 드림 (반듯한 사각 고딕)</option>
-              <option value="serif">나눔명조 (단정한 명조)</option>
-              <option value="hand">교보 손글씨 (따뜻한 손글씨)</option>
-            </select>
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label for="settingThemeSelect" style="font-size: 0.85rem; font-weight: 600;">테마 모드</label>
+          <select id="settingThemeSelect" onchange="applyTheme(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
+            <option value="light">라이트 모드</option>
+            <option value="dark">다크 모드</option>
+          </select>
         </div>
 
-        <!-- 2. 연습 & 사역 편의 (화면 꺼짐 방지) -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <label for="settingWakeLockToggle" style="font-size: 0.85rem; font-weight: 700; display: block; cursor: pointer;">📱 화면 켜짐 유지 (Wake Lock)</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면 절전 꺼짐을 방지합니다.</span>
-            </div>
-            <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label for="settingFontSelect" style="font-size: 0.85rem; font-weight: 600;">기본 글꼴</label>
+          <select id="settingFontSelect" onchange="applyFont(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem;">
+            <option value="pretendard">프리텐다드 (깔끔한 고딕)</option>
+            <option value="score">에스코어 드림 (반듯한 사각 고딕)</option>
+            <option value="serif">나눔명조 (단정한 명조)</option>
+            <option value="hand">교보 손글씨 (따뜻한 손글씨)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 2. 연습 & 사역 편의 (화면 꺼짐 방지) -->
+      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <label for="settingWakeLockToggle" style="font-size: 0.85rem; font-weight: 700; display: block; cursor: pointer;">📱 화면 켜짐 유지 (Wake Lock)</label>
+            <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면 절전 꺼짐을 방지합니다.</span>
           </div>
+          <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- 3. 실시간 웹 알림 설정 -->
+      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <label for="settingNotificationToggle" style="font-size: 0.85rem; font-weight: 700; display: block; cursor: pointer;">🔔 새 공지 & 콘티 알림</label>
+            <span style="font-size: 0.72rem; color: var(--sub-text);">새 콘티나 소식 등록 시 브라우저 푸시 알림을 수신합니다.</span>
+          </div>
+          <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- 4. 내 기기 기억 & 클라우드 동기화 -->
+      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h4 style="font-size: 0.88rem; font-weight: 700;">🔄 내 기기 기억 & 동기화</h4>
+          <span style="font-size: 0.72rem; color: var(--accent-color); font-weight: 600;">100% 익명 유지</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--sub-text); line-height: 1.5; margin-bottom: 10px;">
+          휴대폰, PC를 번갈아 접속해도 <strong>작성한 익명의견 처리현황</strong>과 <strong>개인 설정</strong>을 복원합니다.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; background: rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid var(--border-color);">
+          <span id="mySyncCodeDisplay" style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #38bdf8;">-</span>
+          <button type="button" class="btn-action btn-secondary" onclick="copySyncCode(event)" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer; white-space: nowrap;">
+            📋 코드 복사
+          </button>
+        </div>
+        <div style="display: flex; gap: 8px; width: 100%; margin-top: 8px;">
+          <input type="text" id="syncCodeInput" placeholder="동기화 코드 8자리 입력" style="flex: 1; min-width: 0; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+          <button type="button" id="btnRestoreSync" onclick="handleApplySyncCode(event)" class="btn-action btn-primary" style="padding: 9px 14px; font-size: 0.85rem; font-weight: 700; white-space: nowrap;">
+            불러오기
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. 앱 설치 및 캐시 초기화 -->
+      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 2px;">📲 홈 화면에 앱 설치</h4>
+            <span style="font-size: 0.72rem; color: var(--sub-text);">스마트폰 바탕화면에 아이콘을 추가합니다.</span>
+          </div>
+          <button type="button" class="btn-action btn-secondary" onclick="triggerPWAInstall()" style="padding: 5px 10px; font-size: 0.78rem; border-color: var(--accent-color); color: var(--accent-color);">
+            ➕ 앱 추가
+          </button>
         </div>
 
-        <!-- 3. 실시간 웹 알림 설정 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <label for="settingNotificationToggle" style="font-size: 0.85rem; font-weight: 700; display: block; cursor: pointer;">🔔 새 공지 & 콘티 알림</label>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">새 콘티나 소식 등록 시 브라우저 푸시 알림을 수신합니다.</span>
-            </div>
-            <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+          <div>
+            <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 2px;">⚡ 캐시 새로고침</h4>
+            <span style="font-size: 0.72rem; color: var(--sub-text);">포털 업데이트가 반영되지 않을 때 초기화합니다.</span>
           </div>
+          <button type="button" class="btn-action btn-secondary" onclick="forceAppRefresh()" style="padding: 5px 10px; font-size: 0.78rem;">
+            🔄 초기화
+          </button>
+        </div>
+      </div>
+
+      <!-- 6. 🧪 SHIFT 실험실 (Beta) -->
+      <div style="background: rgba(147, 51, 234, 0.05); padding: 14px; border-radius: 10px; border: 1px dashed rgba(147, 51, 234, 0.4); display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <h4 style="font-size: 0.88rem; font-weight: 700; margin: 0; color: var(--text-color);">🧪 SHIFT 실험실</h4>
+            <span style="font-size: 0.65rem; background: #9333ea; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Beta</span>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--sub-text);">미출시 기능 체험</span>
+        </div>
+        <p style="font-size: 0.74rem; color: var(--sub-text); line-height: 1.4; margin: 0;">
+          정식 도입 전 기능들을 미리 켜볼 수 있습니다. 기기 환경에 따라 동작이 불안정할 수 있습니다.
+        </p>
+
+        <!-- 실험실 1번 기능: 백그라운드 BGM 플레이어 토글 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 4px;">
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-color);">🎵 백그라운드 찬양 플레이어</div>
+            <div style="font-size: 0.72rem; color: var(--sub-text);">탭을 옮겨도 음악이 끊기지 않는 미니홈피 BGM 모드</div>
+          </div>
+          <label class="lab-switch">
+            <input type="checkbox" id="labToggleBgmPlayer" onchange="toggleLabBgmFeature(this.checked)">
+            <span class="lab-slider"></span>
+          </label>
         </div>
 
-        <!-- 4. 내 기기 기억 & 클라우드 동기화 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <h4 style="font-size: 0.88rem; font-weight: 700;">🔄 내 기기 기억 & 동기화</h4>
-            <span style="font-size: 0.72rem; color: var(--accent-color); font-weight: 600;">100% 익명 유지</span>
-          </div>
-          <p style="font-size: 0.75rem; color: var(--sub-text); line-height: 1.5; margin-bottom: 10px;">
-            휴대폰, PC를 번갈아 접속해도 <strong>작성한 익명의견 처리현황</strong>과 <strong>개인 설정</strong>을 복원합니다.
-          </p>
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; background: rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid var(--border-color);">
-            <span id="mySyncCodeDisplay" style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #38bdf8;">-</span>
-            <button type="button" class="btn-action btn-secondary" onclick="copySyncCode(event)" style="font-size: 0.8rem; padding: 6px 12px; cursor: pointer; white-space: nowrap;">
-              📋 코드 복사
+        <!-- 플레이리스트 모드 선택 버튼 -->
+        <div id="labBgmModeSelector" style="display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 10px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+          <span style="font-size: 0.72rem; font-weight: 700; color: var(--sub-text);">재생할 플레이리스트 선택</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btnBgmModeThisWeek" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('this_week')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
+              🎼 이번 주
             </button>
-          </div>
-          <div style="display: flex; gap: 8px; width: 100%; margin-top: 8px;">
-            <input type="text" id="syncCodeInput" placeholder="동기화 코드 8자리 입력" style="flex: 1; min-width: 0; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
-            <button type="button" id="btnRestoreSync" onclick="handleApplySyncCode(event)" class="btn-action btn-primary" style="padding: 9px 14px; font-size: 0.85rem; font-weight: 700; white-space: nowrap;">
-              불러오기
+            <button type="button" id="btnBgmModeLastWeek" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('last_week')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
+              ⏮ 저번 주
             </button>
-          </div>
-        </div>
-
-        <!-- 5. 앱 설치 및 캐시 초기화 -->
-        <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 2px;">📲 홈 화면에 앱 설치</h4>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">스마트폰 바탕화면에 아이콘을 추가합니다.</span>
-            </div>
-            <button type="button" class="btn-action btn-secondary" onclick="triggerPWAInstall()" style="padding: 5px 10px; font-size: 0.78rem; border-color: var(--accent-color); color: var(--accent-color);">
-              ➕ 앱 추가
-            </button>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 8px;">
-            <div>
-              <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 2px;">⚡ 캐시 새로고침</h4>
-              <span style="font-size: 0.72rem; color: var(--sub-text);">포털 업데이트가 반영되지 않을 때 초기화합니다.</span>
-            </div>
-            <button type="button" class="btn-action btn-secondary" onclick="forceAppRefresh()" style="padding: 5px 10px; font-size: 0.78rem;">
-              🔄 초기화
+            <button type="button" id="btnBgmModeMy" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('my_playlist')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
+              ❤️ 내 보관함
             </button>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <button type="button" class="btn-action btn-primary" onclick="closeSettingsModal()" style="font-size: 0.85rem; padding: 7px 18px;">확인</button>
+      </div>
+
+    </div> <!-- 세로 flex 컨테이너 닫기 -->
+  </div> <!-- modal-card 닫기 -->
+</div> <!-- settingsModal 닫기 -->
   
-        <!-- 6. 🧪 SHIFT 실험실 (Beta) -->
-        <div style="background: rgba(147, 51, 234, 0.05); padding: 14px; border-radius: 10px; border: 1px dashed rgba(147, 51, 234, 0.4); display: flex; flex-direction: column; gap: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <h4 style="font-size: 0.88rem; font-weight: 700; margin: 0; color: var(--text-color);">🧪 SHIFT 실험실</h4>
-              <span style="font-size: 0.65rem; background: #9333ea; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Beta</span>
-            </div>
-            <span style="font-size: 0.72rem; color: var(--sub-text);">미출시 기능 체험</span>
-          </div>
-          <p style="font-size: 0.74rem; color: var(--sub-text); line-height: 1.4; margin: 0;">
-            정식 도입 전 기능들을 미리 켜볼 수 있습니다. 기기 환경에 따라 동작이 불안정할 수 있습니다.
-          </p>
-
-          <!-- 실험실 1번 기능: 백그라운드 BGM 플레이어 토글 -->
-          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 4px;">
-            <div>
-              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-color);">🎵 백그라운드 찬양 플레이어</div>
-              <div style="font-size: 0.72rem; color: var(--sub-text);">탭을 옮겨도 음악이 끊기지 않는 미니홈피 BGM 모드</div>
-            </div>
-            <label class="lab-switch">
-              <input type="checkbox" id="labToggleBgmPlayer" onchange="toggleLabBgmFeature(this.checked)">
-              <span class="lab-slider"></span>
-            </label>
-          </div>
-
-          <!-- 플레이리스트 모드 선택 버튼 -->
-          <div id="labBgmModeSelector" style="display: none; flex-direction: column; gap: 6px; margin-top: 8px; padding: 10px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.72rem; font-weight: 700; color: var(--sub-text);">재생할 플레이리스트 선택</span>
-            <div style="display: flex; gap: 6px;">
-              <button type="button" id="btnBgmModeThisWeek" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('this_week')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
-                🎼 이번 주
-              </button>
-              <button type="button" id="btnBgmModeLastWeek" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('last_week')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
-                ⏮ 저번 주
-              </button>
-              <button type="button" id="btnBgmModeMy" class="btn-action btn-secondary" onclick="setBgmPlaylistMode('my_playlist')" style="flex: 1; padding: 6px 4px; font-size: 0.73rem; white-space: nowrap;">
-                ❤️ 내 보관함
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-          <button type="button" class="btn-action btn-primary" onclick="closeSettingsModal()" style="font-size: 0.85rem; padding: 7px 18px;">확인</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- 6. 세션 악보 모달 -->
   <div id="sessionScoreModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 640px; width: 95%;">
@@ -2775,7 +2773,10 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
       if (tabId === 'notice' && (!window.allNotices || allNotices.length === 0)) loadNoticeData();
       if (tabId === 'members' && (!window.allMembersList || allMembersList.length === 0)) loadMembersData();
       if (tabId === 'feedback') loadSuggestionBoxData();
-      if (tabId === 'admin') syncAdminUI();
+      if (tabId === 'admin') {
+        syncAdminUI();
+      if (typeof loadMaintenanceAdminState === 'function') loadMaintenanceAdminState();
+      }
       if (tabId === 'playground') initGameModule();
       if (tabId === 'wiki') loadWikiGuideFromGitHub();
     }
@@ -4267,22 +4268,23 @@ function syncAppVersionFromNotices() {
   let tagClass = 'tag-general';
   let borderClass = '';
 
-  if (/[공지]|공지/i.test(raw)) {
-    tag = '공지';
-    tagClass = 'tag-notice';
-    borderClass = 'border-notice';
-  } else if (/[일정]|일정/i.test(raw)) {
-    tag = '일정';
-    tagClass = 'tag-schedule';
-    borderClass = 'border-schedule';
-  } else if (/\[UI\s*개선\]|UI\s*개선|UI/i.test(raw)) {
-    tag = 'UI 개선';
-    tagClass = 'tag-ui';
-    borderClass = 'border-ui';
-  } else if (/[업데이트]|업데이트|v\d+\.\d+/i.test(raw)) {
+  // 1순위: 버전 번호(v2.7.0 등)나 [업데이트] 키워드가 있으면 무조건 업데이트 탭으로 직행
+  if (/v\d+\.\d+(\.\d+)?/i.test(raw) || /\[업데이트\]|업데이트/i.test(raw)) {
     tag = '업데이트';
     tagClass = 'tag-update';
     borderClass = 'border-update';
+  } else if (/\[UI\s*개선\]|UI\s*개선/i.test(raw)) {
+    tag = 'UI 개선';
+    tagClass = 'tag-ui';
+    borderClass = 'border-ui';
+  } else if (/\[공지\]|공지/i.test(raw)) {
+    tag = '공지';
+    tagClass = 'tag-notice';
+    borderClass = 'border-notice';
+  } else if (/\[일정\]|일정/i.test(raw)) {
+    tag = '일정';
+    tagClass = 'tag-schedule';
+    borderClass = 'border-schedule';
   }
 
   const cleanTitle = raw.replace(/^\[[^\]]+\]\s*/, '').trim();
@@ -4492,19 +4494,31 @@ function renderMembers() {
 
   grid.innerHTML = filtered.map(item => {
     const rawCat = (item.main_category || '').trim().toLowerCase();
-    let badgeColorClass = 'badge-worship';
-    let borderColorClass = 'border-worship';
+const rawPart = (item.main_part || '').trim().toLowerCase();
 
-    if (rawCat.includes('session')) {
-      badgeColorClass = 'badge-session';
-      borderColorClass = 'border-session';
-    } else if (rawCat.includes('live')) {
-      badgeColorClass = 'badge-liveops';
-      borderColorClass = 'border-liveops';
-    } else if (rawCat.includes('post') || rawCat.includes('prod')) {
-      badgeColorClass = 'badge-postprod';
-      borderColorClass = 'border-postprod';
-    }
+let badgeColorClass = 'badge-worship';
+let borderColorClass = 'border-worship';
+
+// 세션 (건반, 드럼, 기타, 베이스 등)
+if (rawCat.includes('session') || /세션|건반|드럼|기타|베이스/i.test(rawPart)) {
+  badgeColorClass = 'badge-session';
+  borderColorClass = 'border-session';
+} 
+// 라이브옵스 / 엔지니어 (음향, 중계, 방송, 자막 등)
+else if (rawCat.includes('live') || /음향|방송|중계|자막|엔지니어/i.test(rawPart)) {
+  badgeColorClass = 'badge-liveops';
+  borderColorClass = 'border-liveops';
+} 
+// 미디어 / 포스트 프로덕션 (영상, 디자인 등)
+else if (rawCat.includes('post') || rawCat.includes('media') || /영상|디자인|미디어/i.test(rawPart)) {
+  badgeColorClass = 'badge-postprod';
+  borderColorClass = 'border-postprod';
+} 
+// 워십 / 싱어 (인도자, 보컬)
+else {
+  badgeColorClass = 'badge-worship';
+  borderColorClass = 'border-worship';
+}
 
     let tagsHtml = '';
     if (item.part_tag && item.part_tag.trim() !== '') {
@@ -6535,6 +6549,13 @@ async function renderNotificationList() {
     else if (noti.category === '콘티') badgeColor = '#10b981';
     else if (noti.category === '결단찬양') badgeColor = '#8b5cf6';
 
+    // 각 줄의 불필요한 앞뒤 여백을 정리하고 첫머리 공백을 없앱니다.
+    const cleanMessage = (noti.message || '')
+      .split('\n')
+      .map(line => line.trim())
+      .join('\n')
+      .trim();
+
     return `
       <div class="noti-item-card ${isLatest ? 'latest-noti' : ''}">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -6546,9 +6567,7 @@ async function renderNotificationList() {
           </div>
           <span style="font-size: 0.72rem; color: var(--sub-text);">${dateStr}</span>
         </div>
-        <div style="font-size: 0.85rem; color: var(--text-color); line-height: 1.5; white-space: pre-wrap;">
-          ${noti.message}
-        </div>
+        <div style="font-size: 0.85rem; color: var(--text-color); line-height: 1.5; white-space: pre-wrap;">${cleanMessage}</div>
         <div style="font-size: 0.72rem; color: var(--sub-text); text-align: right; margin-top: 4px;">
           작성: ${noti.sender_name || '관리자'}
         </div>
