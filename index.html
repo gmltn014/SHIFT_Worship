@@ -4037,18 +4037,25 @@ function handleArchiveSearch() {
 }
 
 // 2. 통합 필터링 함수 (주일 콘티, 섬김이 내역, 특별 예배 분기)
-const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
+function getFilteredArchiveData() {
+  if (!window.allScheduleArchive || !Array.isArray(window.allScheduleArchive)) {
+    return [];
+  }
+
+  const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
   const selectedLeader = (document.getElementById('archiveLeaderFilter')?.value || '').trim();
   const includeClosing = document.getElementById('archiveIncludeClosingSong')?.checked ?? true;
   const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
 
   return allScheduleArchive.filter(item => {
+    if (!item) return false;
+
     const sType = item.service_type || 'sunday';
     const isSpecial = sType !== 'sunday';
 
     // 💡 1. 검색어가 없을 때: 각 서브탭별 데이터 및 월별 필터 엄격 적용
     if (!keyword) {
-      if (currentArchiveSubTab === 'special') {
+      if (typeof currentArchiveSubTab !== 'undefined' && currentArchiveSubTab === 'special') {
         if (!isSpecial) return false;
         if (typeof currentSpecialFilter !== 'undefined' && currentSpecialFilter !== 'all') {
           if (!sType.includes(currentSpecialFilter)) return false;
@@ -4057,7 +4064,7 @@ const keyword = (document.getElementById('archiveSearchInput')?.value || '').tri
         if (isSpecial) return false;
       }
 
-      if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
+      if (typeof isArchiveViewAll !== 'undefined' && !isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
         return false;
       }
     }
