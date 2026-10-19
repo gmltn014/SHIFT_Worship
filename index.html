@@ -1074,6 +1074,30 @@ input[type="checkbox"]:checked + .maint-slider-fixed {
 input[type="checkbox"]:checked + .maint-slider-fixed::before {
   transform: translateX(24px);
 }
+
+.special-filter-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg, #fff);
+  color: var(--sub-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.special-filter-chip:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.special-filter-chip.active {
+  background: #8b5cf6 !important;
+  color: #fff !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+}
 </style>
 </head>
 <body>
@@ -1275,6 +1299,9 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
           <button type="button" id="subtab-btn-members" class="btn-action btn-secondary" onclick="switchArchiveSubTab('members')" style="font-size: 0.85rem; padding: 7px 14px;">
             👥 섬김이(라인업) 내역
           </button>
+          <button type="button" id="subtab-btn-special" class="btn-action btn-secondary" onclick="switchArchiveSubTab('special')" style="font-size: 0.85rem; padding: 7px 14px;">
+        ✨ 특별 예배 아카이브
+      </button>
         </div>
         <button id="btnLineupChangeRequest" type="button" class="btn-action btn-secondary" onclick="openLineupChangeModal()" style="display: none; font-size: 0.8rem; padding: 6px 12px; border-color: #ef4444; color: #ef4444; white-space: nowrap;">
           🚨 라인업 변경 요청
@@ -1319,8 +1346,31 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
       <div id="archiveLoading" class="loading-spinner">아카이브 데이터를 불러오는 중입니다...</div>
       <div id="archiveContiList" style="display: flex; flex-direction: column; gap: 12px;"></div>
       <div id="archiveMembersList" style="display: none; flex-direction: column; gap: 12px;"></div>
-    </section>
 
+      <!-- [신규 3: 특별 예배 아카이브 컨테이너] -->
+      <div id="archiveSpecialList" style="display: none; flex-direction: column; gap: 14px;">
+        <!-- 상단 필터 칩 & 건수 뱃지 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="special-filter-chip active" onclick="filterSpecialArchive('all', this)">전체</button>
+            <button type="button" class="special-filter-chip" onclick="filterSpecialArchive('심야예배', this)">심야예배</button>
+            <button type="button" class="special-filter-chip" onclick="filterSpecialArchive('수련회', this)">수련회</button>
+            <button type="button" class="special-filter-chip" onclick="filterSpecialArchive('새벽예배', this)">새벽예배</button>
+          </div>
+          <div id="specialArchiveCountBadge" style="font-size: 0.78rem; color: var(--sub-text);">
+            기록 0건
+          </div>
+        </div>
+
+        <!-- 특별 예배 올인원 카드들이 렌더링될 내부 컨테이너 -->
+        <div id="specialArchiveCardsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="text-align: center; padding: 40px; color: var(--sub-text);">
+            등록된 특별 예배 기록이 없습니다.
+          </div>
+        </div>
+      </div>
+    </section>
+    
     <!-- 3. 공지사항 탭 -->
     <section id="tab-notice" class="tab-content">
       <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
@@ -1823,6 +1873,10 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
         <h4 style="font-size: 1.05rem; margin-bottom: 6px;">📮 익명의견함 관리</h4>
         <p style="font-size: 0.82rem; color: var(--sub-text);">건의 상태 변경 및 답변 작성</p>
       </div>
+      <div class="card" style="border-color: #8b5cf6; cursor: pointer;" onclick="openSpecialScheduleModal()">
+        <h4 style="font-size: 1rem; color: #8b5cf6; margin-bottom: 6px;">✨ 특별 예배 아카이브 등록</h4>
+        <p style="font-size: 0.82rem; color: var(--sub-text);">심야예배, 수련회 등 특별 예배의 콘티와 라인업을 기록합니다.</p>
+      </div>
     </div>
 
     <!-- 최고관리자 (SUPER ADMIN) 전용 구역 -->
@@ -2233,17 +2287,6 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
             <span style="font-size: 0.72rem; color: var(--sub-text);">콘티 확인 중 화면 절전 꺼짐을 방지합니다.</span>
           </div>
           <input type="checkbox" id="settingWakeLockToggle" onchange="toggleWakeLock(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
-        </div>
-      </div>
-
-      <!-- 3. 실시간 웹 알림 설정 -->
-      <div style="background: var(--card-sub-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <label for="settingNotificationToggle" style="font-size: 0.85rem; font-weight: 700; display: block; cursor: pointer;">🔔 새 공지 & 콘티 알림</label>
-            <span style="font-size: 0.72rem; color: var(--sub-text);">새 콘티나 소식 등록 시 브라우저 푸시 알림을 수신합니다.</span>
-          </div>
-          <input type="checkbox" id="settingNotificationToggle" onchange="toggleAppNotification(this.checked)" style="width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer;">
         </div>
       </div>
 
@@ -2724,6 +2767,102 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
   </div>
 </div>
   </div>
+
+  <!-- 특별 예배 아카이브 등록 모달 (일반 관리자용) -->
+<div id="modalSpecialSchedule" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 99999; justify-content: center; align-items: center;">
+  <div class="modal-card" style="background: var(--card-bg, #fff); width: 94%; max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 14px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: var(--text-color);">
+    
+    <!-- 모달 헤더 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+      <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+        <span>✨</span> 특별 예배 콘티 및 라인업 등록
+      </h3>
+      <button type="button" onclick="closeSpecialScheduleModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--sub-text); line-height: 1;">&times;</button>
+    </div>
+
+    <form onsubmit="handleSaveSpecialSchedule(event)">
+      <!-- 1. 기본 정보 -->
+      <div style="margin-bottom: 14px;">
+        <h5 style="margin: 0 0 8px 0; font-size: 0.85rem; color: #8b5cf6;">1. 기본 예배 정보</h5>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배 구분 *</label>
+            <select id="spcServiceType" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem;">
+              <option value="심야예배">심야예배</option>
+              <option value="수련회">수련회</option>
+              <option value="새벽예배">새벽예배</option>
+              <option value="특별예배">기타 특별예배</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">날짜 *</label>
+            <input type="date" id="spcDate" required style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); display: block; margin-bottom: 4px;">예배/행사 타이틀 *</label>
+          <input type="text" id="spcWorshipTitle" required placeholder="예: 청년부 연합 금요심야기도회" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.85rem; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <!-- 2. 섬김이 라인업 -->
+      <div style="margin-bottom: 14px;">
+        <h5 style="margin: 0 0 8px 0; font-size: 0.85rem; color: #8b5cf6;">2. 섬김이 라인업 (해당되는 파트만 입력)</h5>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <div>
+            <input type="text" id="spcLeader" placeholder="인도자 *" required style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcVocal" placeholder="싱어/보컬 (쉼표 구분)" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcKeyboard1" placeholder="메인 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcKeyboard2" placeholder="세컨 건반" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcDrum" placeholder="드럼" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcGuitar" placeholder="기타" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcBass" placeholder="베이스" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcSound" placeholder="음향" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 콘티 곡 목록 및 링크 -->
+      <div style="margin-bottom: 14px;">
+        <h5 style="margin: 0 0 8px 0; font-size: 0.85rem; color: #8b5cf6;">3. 찬양 콘티 곡 순서 및 영상</h5>
+        <div style="margin-bottom: 6px;">
+          <textarea id="spcSongList" rows="5" required placeholder="곡 순서대로 한 줄에 한 곡씩 입력해주세요" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; line-height: 1.5; box-sizing: border-box;"></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px;">
+          <div>
+            <input type="text" id="spcYoutubeUrl" placeholder="콘티 유튜브 링크/재생목록 URL" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+          <div>
+            <input type="text" id="spcClosingSong" placeholder="결단 찬양 (곡명)" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+          </div>
+        </div>
+        <div>
+          <input type="text" id="spcMemo" placeholder="💡 인도자 송폼/진행 메모 (선택)" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <!-- 하단 버튼 -->
+      <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+        <button type="button" class="btn-action btn-secondary" onclick="closeSpecialScheduleModal()" style="font-size: 0.85rem; padding: 7px 16px;">취소</button>
+        <button type="submit" id="btnSaveSpecialSchedule" class="btn-action btn-primary" style="font-size: 0.85rem; padding: 7px 18px; font-weight: 700; background: #8b5cf6; border-color: #8b5cf6;">저장 및 아카이빙</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- 메인 푸터 -->
 <footer id="mainFooter" style="width: 100%; text-align: center; padding: 30px 16px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--sub-text); font-size: 0.8rem;">
@@ -3787,28 +3926,52 @@ async function loadAllArchiveData() {
 
 function switchArchiveSubTab(subTab) {
   currentArchiveSubTab = subTab;
+
+  // 1. 서브탭 버튼 요소 가져오기
   const btnConti = document.getElementById('subtab-btn-conti');
   const btnMembers = document.getElementById('subtab-btn-members');
+  const btnSpecial = document.getElementById('subtab-btn-special');
+
+  // 2. 각 탭의 목록 컨테이너 가져오기
   const listConti = document.getElementById('archiveContiList');
   const listMembers = document.getElementById('archiveMembersList');
+  const listSpecial = document.getElementById('archiveSpecialList');
   const btnReq = document.getElementById('btnLineupChangeRequest');
 
+  // 3. 모든 버튼 스타일 초기화 (기본 회색 비활성)
+  if (btnConti) btnConti.className = 'btn-action btn-secondary';
+  if (btnMembers) btnMembers.className = 'btn-action btn-secondary';
+  if (btnSpecial) btnSpecial.className = 'btn-action btn-secondary';
+
+  // 4. 모든 컨테이너 숨김 및 라인업 변경요청 버튼 숨김
+  if (listConti) listConti.style.display = 'none';
+  if (listMembers) listMembers.style.display = 'none';
+  if (listSpecial) listSpecial.style.display = 'none';
+  if (btnReq) btnReq.style.display = 'none';
+
+  // 5. 선택된 탭 활성화 처리
   if (subTab === 'conti') {
     if (btnConti) btnConti.className = 'btn-action btn-primary';
-    if (btnMembers) btnMembers.className = 'btn-action btn-secondary';
     if (listConti) listConti.style.display = 'flex';
-    if (listMembers) listMembers.style.display = 'none';
-    if (btnReq) btnReq.style.display = 'none';
-  } else {
-    if (btnConti) btnConti.className = 'btn-action btn-secondary';
+  } else if (subTab === 'members') {
     if (btnMembers) btnMembers.className = 'btn-action btn-primary';
-    if (listConti) listConti.style.display = 'none';
     if (listMembers) listMembers.style.display = 'flex';
     if (btnReq) btnReq.style.display = 'inline-flex';
+  } else if (subTab === 'special') {
+    if (btnSpecial) btnSpecial.className = 'btn-action btn-primary';
+    if (listSpecial) listSpecial.style.display = 'flex';
+    
+    // 특별 예배 데이터를 아직 불러오지 않았거나 렌더링이 필요한 경우 실행
+    if (typeof renderSpecialArchiveList === 'function') {
+      renderSpecialArchiveList();
+    }
   }
-  renderArchive();
-}
 
+  // 기존 주일 아카이브 렌더링 유지
+  if (typeof renderArchive === 'function') {
+    renderArchive();
+  }
+}
 function navigateArchiveMonth(delta) {
   isArchiveViewAll = false;
   archiveCurrentMonth += delta;
@@ -3862,10 +4025,16 @@ function updateMonthDisplay() {
   }
 }
 
+/* ========================================================
+   🔍 아카이브 통합 검색, 필터링 및 렌더링 (v2.9.0)
+======================================================== */
+
+// 1. 검색 인풋 이벤트 핸들러
 function handleArchiveSearch() {
   renderArchive();
 }
 
+// 2. 통합 필터링 함수 (주일 콘티, 섬김이 내역, 특별 예배 분기)
 function getFilteredArchiveData() {
   const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
   const selectedLeader = (document.getElementById('archiveLeaderFilter')?.value || '').trim();
@@ -3873,26 +4042,61 @@ function getFilteredArchiveData() {
   const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
 
   return allScheduleArchive.filter(item => {
-    if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) return false;
-    if (selectedLeader && (item.leader || '').trim() !== selectedLeader) return false;
+    const sType = item.service_type || 'sunday';
+    const isSpecial = sType !== 'sunday';
 
+    // 1) 서브탭별 1차 격리
+    if (currentArchiveSubTab === 'special') {
+      // 특별 예배 탭: 주일 데이터 제외
+      if (!isSpecial) return false;
+      // 특별 예배 내부 필터 칩(전체, 심야예배, 수련회, 새벽예배) 적용
+      if (typeof currentSpecialFilter !== 'undefined' && currentSpecialFilter !== 'all') {
+        if (!sType.includes(currentSpecialFilter)) return false;
+      }
+    } else {
+      // 주일 콘티(conti) 및 섬김이(members) 탭: 특별 예배 데이터 제외
+      if (isSpecial) return false;
+    }
+
+    // 2) 월별 필터 (전체보기 체크가 아닐 때)
+    if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
+      return false;
+    }
+
+    // 3) 인도자 필터
+    if (selectedLeader && (item.leader || '').trim() !== selectedLeader) {
+      return false;
+    }
+
+    // 4) 검색어 매칭
     if (keyword) {
-      const targets = [item.date, item.worship_title, item.song_list, item.leader];
-      if (includeClosing && item.closing_song) targets.push(item.closing_song);
-      if (currentArchiveSubTab === 'members') {
+      const rawTitle = item.worship_title || item.worship_ti || '';
+      const closingSong = item.closing_song || item.closing_so || '';
+      
+      const targets = [item.date, rawTitle, item.song_list, item.leader, sType];
+      if (includeClosing && closingSong) targets.push(closingSong);
+
+      // 섬김이 탭 또는 특별 예배 탭일 때는 모든 라인업 세션 파트도 검색 대상에 포함
+      if (currentArchiveSubTab === 'members' || currentArchiveSubTab === 'special') {
         targets.push(
           item.vocal, item.keyboard1, item.keyboard2,
           item.drum, item.guitar, item.bass,
           item.sound, item.broadcast, item.prompter, item.video
         );
       }
+
+      // 인도자 메모 내용도 검색 가능
+      if (item.memo) targets.push(item.memo);
+
       const matchText = targets.filter(Boolean).join(' ').toLowerCase();
       if (!matchText.includes(keyword)) return false;
     }
+
     return true;
   });
 }
 
+// 3. 서브탭별 렌더링 분기 함수
 function renderArchive() {
   const loadingEl = document.getElementById('archiveLoading');
   if (loadingEl) {
@@ -3905,18 +4109,40 @@ function renderArchive() {
 
   const contiContainer = document.getElementById('archiveContiList');
   const membersContainer = document.getElementById('archiveMembersList');
+  const specialContainer = document.getElementById('archiveSpecialList');
+
+  // 모든 컨테이너 우선 숨김
+  if (contiContainer) contiContainer.style.display = 'none';
+  if (membersContainer) membersContainer.style.display = 'none';
+  if (specialContainer) specialContainer.style.display = 'none';
 
   if (currentArchiveSubTab === 'conti') {
     if (contiContainer) contiContainer.style.display = 'flex';
-    if (membersContainer) membersContainer.style.display = 'none';
     renderContiArchive(filtered);
-  } else {
-    if (contiContainer) contiContainer.style.display = 'none';
+  } else if (currentArchiveSubTab === 'members') {
     if (membersContainer) membersContainer.style.display = 'flex';
     if (typeof renderMembersArchive === 'function') {
       renderMembersArchive(filtered);
     }
+  } else if (currentArchiveSubTab === 'special') {
+    if (specialContainer) specialContainer.style.display = 'flex';
+    if (typeof renderSpecialArchiveList === 'function') {
+      renderSpecialArchiveList(filtered);
+    }
   }
+}
+
+// 4. 특별 예배 필터 칩 클릭 함수 (renderArchive 호출로 즉각 연동)
+function filterSpecialArchive(category, btnElement) {
+  currentSpecialFilter = category;
+
+  const chips = document.querySelectorAll('.special-filter-chip');
+  chips.forEach(chip => chip.classList.remove('active'));
+  if (btnElement) {
+    btnElement.classList.add('active');
+  }
+
+  renderArchive();
 }
 
 function renderContiArchive(list) {
@@ -4228,6 +4454,189 @@ async function saveArchiveEditData() {
     if (saveBtn) {
       saveBtn.innerText = '저장하기';
       saveBtn.disabled = false;
+    }
+  }
+}
+
+    /* ========================================================
+   ✨ schedules 실제 컬럼 매핑 기반 특별 예배 렌더링
+======================================================== */
+
+let specialArchiveData = [];
+let currentSpecialFilter = 'all';
+
+function filterSpecialArchive(category, btnElement) {
+  // 1. 선택된 카테고리 필터 상태 저장 ('all' | '심야예배' | '수련회' | '새벽예배')
+  currentSpecialFilter = category;
+
+  // 2. 모든 필터 칩에서 active 제거 후 클릭된 칩에만 추가
+  const chips = document.querySelectorAll('.special-filter-chip');
+  chips.forEach(chip => chip.classList.remove('active'));
+
+  if (btnElement) {
+    btnElement.classList.add('active');
+  }
+
+  // 3. 통합 필터링 및 렌더링 파이프라인 트리거
+  if (typeof renderArchive === 'function') {
+    renderArchive();
+  }
+}
+
+function renderSpecialArchiveList() {
+  const container = document.getElementById('specialArchiveCardsContainer');
+  const countBadge = document.getElementById('specialArchiveCountBadge');
+  if (!container) return;
+
+  // 필터링
+  const filtered = specialArchiveData.filter(item => {
+    if (currentSpecialFilter === 'all') return true;
+    const cat = (item.service_type || '').trim();
+    return cat.includes(currentSpecialFilter);
+  });
+
+  if (countBadge) {
+    countBadge.innerText = `기록 ${filtered.length}건`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 48px 16px; color: var(--sub-text); background: var(--card-bg, #fff); border-radius: 12px; border: 1px dashed var(--border-color);">
+        <div style="font-size: 1.8rem; margin-bottom: 8px;">🕊️</div>
+        <div style="font-size: 0.9rem; font-weight: 600;">등록된 특별 예배 기록이 없습니다.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const category = item.service_type || '특별예배';
+    const date = item.date || '날짜 미정';
+    const worshipTitle = item.worship_ti || `${date} ${category}`;
+    const leader = item.leader || '미정';
+
+    // 1) 라인업 칩 추출 (비어있지 않은 파트만 뱃지로 생성)
+    const lineupRoles = [
+      { label: '인도', val: item.leader },
+      { label: '보컬', val: item.vocal },
+      { label: '메인건반', val: item.keyboard1 },
+      { label: '세컨건반', val: item.keyboard2 },
+      { label: '드럼', val: item.drum },
+      { label: '기타', val: item.guitar },
+      { label: '베이스', val: item.bass },
+      { label: '음향', val: item.sound },
+      { label: '방송', val: item.broadcast },
+      { label: '프롬프터', val: item.prompter },
+      { label: '영상', val: item.video }
+    ];
+
+    const lineupChipsHtml = lineupRoles
+      .filter(r => r.val && r.val.trim())
+      .map(r => `<span style="display: inline-block; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; color: var(--text-color); font-weight: 500;"><strong>${r.label}</strong> ${r.val}</span>`)
+      .join('');
+
+    // 2) 콘티 곡 목록 파싱 (줄바꿈 텍스트 또는 JSON)
+    let songsHtml = '';
+    if (item.song_list && item.song_list.trim()) {
+      const songLines = item.song_list.split('\n').filter(s => s.trim());
+      songsHtml = songLines.map((songTitle, idx) => `
+        <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
+          <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${idx + 1}.</span>
+          <span style="font-weight: 600; color: var(--text-color);">${songTitle}</span>
+        </li>
+      `).join('');
+    } else {
+      songsHtml = '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
+    }
+
+    // 3) 유튜브 및 결단찬양 링크
+    const mainYtUrl = item.youtube_u || '';
+    const closingSong = item.closing_so || '';
+    const closingYtUrl = item.closing_yo || '';
+
+    return `
+      <div class="card" style="border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg, #fff); padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <!-- 상단 헤더 -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;">
+                ${category}
+              </span>
+              <span style="font-size: 0.82rem; color: var(--sub-text); font-weight: 600;">${date}</span>
+            </div>
+            <h4 style="margin: 6px 0 0 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color);">
+              ${worshipTitle}
+            </h4>
+          </div>
+          <div style="text-align: right; font-size: 0.82rem; color: var(--sub-text);">
+            인도: <strong style="color: var(--text-color);">${leader}</strong>
+          </div>
+        </div>
+
+        <!-- 라인업 칩 그룹 -->
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); margin-bottom: 6px;">👥 섬김이 라인업</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+            ${lineupChipsHtml || '<span style="font-size: 0.75rem; color: var(--sub-text);">라인업 정보 없음</span>'}
+          </div>
+        </div>
+
+        <!-- 찬양 콘티 목록 -->
+        <div style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">🎵 찬양 순서</span>
+            ${mainYtUrl ? `<a href="${mainYtUrl}" target="_blank" style="font-size: 0.75rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶ 콘티 유튜브 영상</a>` : ''}
+          </div>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            ${songsHtml}
+          </ul>
+        </div>
+
+        <!-- 결단 찬양 (있는 경우) -->
+        ${closingSong ? `
+          <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+            <span><strong>결단 찬양:</strong> ${closingSong}</span>${closingYtUrl ? `<a href="${closingYtUrl}" target="_blank" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem;">▶ 결단 영상</a>` : ''}
+          </div>
+        ` : ''}
+
+        <!-- 인도자 메모 (있는 경우) -->
+        ${item.memo ? `
+          <div style="margin-top: 10px; padding: 8px 12px; background: rgba(139, 92, 246, 0.06); border-radius: 8px; border-left: 3px solid #8b5cf6; font-size: 0.78rem; color: var(--text-color); line-height: 1.4;">
+            <strong>💡 송폼/진행 메모:</strong> ${item.memo}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+    async function loadSpecialArchiveData() {
+  const container = document.getElementById('specialArchiveCardsContainer');
+  if (container) {
+    container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--sub-text); font-size: 0.85rem;">특별 예배 데이터를 불러오는 중입니다...</div>';
+  }
+
+  try {
+    if (typeof supabaseClient === 'undefined') {
+      throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+    }
+
+    // service_type이 'sunday'가 아닌 모든 특별예배를 최신순으로 가져옴
+    const { data, error } = await supabaseClient
+      .from('schedules')
+      .select('*')
+      .neq('service_type', 'sunday')
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+
+    specialArchiveData = data || [];
+    renderSpecialArchiveList();
+  } catch (err) {
+    console.error('특별 예배 로드 실패:', err);
+    if (container) {
+      container.innerHTML = `<div style="text-align: center; padding: 30px; color: #ef4444; font-size: 0.85rem;">데이터를 불러오지 못했습니다. (${err.message})</div>`;
     }
   }
 }
@@ -9701,6 +10110,118 @@ async function loadMaintenanceAdminState() {
     }
     if (detailBox) {
       detailBox.style.display = isEnabled ? 'block' : 'none';
+    }
+  }
+}
+
+    /* ========================================================
+   ✨ 일반 관리자: 특별 예배 아카이브 등록 로직
+======================================================== */
+
+// 모달 열기
+function openSpecialScheduleModal() {
+  // 일반 관리자 권한 체크가 있는 경우 (예: isAdmin())
+  if (typeof isAdmin === 'function' && !isAdmin()) {
+    alert('관리자 권한이 필요합니다.');
+    return;
+  }
+
+  const modal = document.getElementById('modalSpecialSchedule');
+  if (!modal) return;
+
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
+  // 기본값 설정 (오늘 날짜)
+  const dateInput = document.getElementById('spcDate');
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  modal.style.display = 'flex';
+}
+
+// 모달 닫기
+function closeSpecialScheduleModal() {
+  const modal = document.getElementById('modalSpecialSchedule');
+  if (modal) modal.style.display = 'none';
+}
+
+// 저장 및 DB Insert
+async function handleSaveSpecialSchedule(e) {
+  if (e) e.preventDefault();
+
+  const serviceType = document.getElementById('spcServiceType')?.value || '심야예배';
+  const date = document.getElementById('spcDate')?.value;
+  const worshipTitle = document.getElementById('spcWorshipTitle')?.value.trim();
+  const leader = document.getElementById('spcLeader')?.value.trim();
+  const vocal = document.getElementById('spcVocal')?.value.trim();
+  const keyboard1 = document.getElementById('spcKeyboard1')?.value.trim();
+  const keyboard2 = document.getElementById('spcKeyboard2')?.value.trim();
+  const drum = document.getElementById('spcDrum')?.value.trim();
+  const guitar = document.getElementById('spcGuitar')?.value.trim();
+  const bass = document.getElementById('spcBass')?.value.trim();
+  const sound = document.getElementById('spcSound')?.value.trim();
+
+  const songList = document.getElementById('spcSongList')?.value.trim();
+  const youtubeUrl = document.getElementById('spcYoutubeUrl')?.value.trim();
+  const closingSong = document.getElementById('spcClosingSong')?.value.trim();
+  const memo = document.getElementById('spcMemo')?.value.trim();
+
+  const btn = document.getElementById('btnSaveSpecialSchedule');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '저장 중...';
+  }
+
+  try {
+    if (typeof supabaseClient === 'undefined') {
+      throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+    }
+
+    // schedules 테이블의 컬럼명과 1:1 매핑하여 INSERT
+    const payload = {
+      service_type: serviceType,
+      date: date,
+      worship_ti: worshipTitle,
+      leader: leader,
+      vocal: vocal || null,
+      keyboard1: keyboard1 || null,
+      keyboard2: keyboard2 || null,
+      drum: drum || null,
+      guitar: guitar || null,
+      bass: bass || null,
+      sound: sound || null,
+      song_list: songList,
+      youtube_u: youtubeUrl || null,
+      closing_so: closingSong || null,
+      memo: memo || null
+    };
+
+    const { error } = await supabaseClient
+      .from('schedules')
+      .insert([payload]);
+
+    if (error) throw error;
+
+    alert(`🎉 [${serviceType}] ${date} 콘티가 성공적으로 아카이브에 등록되었습니다!`);
+    closeSpecialScheduleModal();
+
+    // 폼 초기화
+    e.target.reset();
+
+    // 특별 예배 목록 갱신
+    if (typeof loadSpecialArchiveData === 'function') {
+      await loadSpecialArchiveData();
+    }
+  } catch (err) {
+    console.error('특별 예배 저장 실패:', err);
+    alert('저장 실패: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = '저장 및 아카이빙';
     }
   }
 }
