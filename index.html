@@ -4070,8 +4070,8 @@ function getFilteredArchiveData() {
 
     // 4) 검색어 매칭
     if (keyword) {
-      const rawTitle = item.worship_title || item.worship_ti || '';
-      const closingSong = item.closing_song || item.closing_so || '';
+      const rawTitle = item.worship_title || item.worship_title || '';
+      const closingSong = item.closing_song || item.closing_song || '';
       
       const targets = [item.date, rawTitle, item.song_list, item.leader, sType];
       if (includeClosing && closingSong) targets.push(closingSong);
