@@ -4035,8 +4035,7 @@ function handleArchiveSearch() {
 }
 
 // 2. 통합 필터링 함수 (주일 콘티, 섬김이 내역, 특별 예배 분기)
-function getFilteredArchiveData() {
-  const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
+const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
   const selectedLeader = (document.getElementById('archiveLeaderFilter')?.value || '').trim();
   const includeClosing = document.getElementById('archiveIncludeClosingSong')?.checked ?? true;
   const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
@@ -4045,47 +4044,43 @@ function getFilteredArchiveData() {
     const sType = item.service_type || 'sunday';
     const isSpecial = sType !== 'sunday';
 
-    // 1) 서브탭별 1차 격리
-    if (currentArchiveSubTab === 'special') {
-      // 특별 예배 탭: 주일 데이터 제외
-      if (!isSpecial) return false;
-      // 특별 예배 내부 필터 칩(전체, 심야예배, 수련회, 새벽예배) 적용
-      if (typeof currentSpecialFilter !== 'undefined' && currentSpecialFilter !== 'all') {
-        if (!sType.includes(currentSpecialFilter)) return false;
+    // 💡 1. 검색어가 없을 때: 각 서브탭별 데이터 및 월별 필터 엄격 적용
+    if (!keyword) {
+      if (currentArchiveSubTab === 'special') {
+        if (!isSpecial) return false;
+        if (typeof currentSpecialFilter !== 'undefined' && currentSpecialFilter !== 'all') {
+          if (!sType.includes(currentSpecialFilter)) return false;
+        }
+      } else {
+        if (isSpecial) return false;
       }
-    } else {
-      // 주일 콘티(conti) 및 섬김이(members) 탭: 특별 예배 데이터 제외
-      if (isSpecial) return false;
+
+      if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
+        return false;
+      }
     }
 
-    // 2) 월별 필터 (전체보기 체크가 아닐 때)
-    if (!isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
-      return false;
-    }
-
-    // 3) 인도자 필터
+    // 2. 인도자 필터
     if (selectedLeader && (item.leader || '').trim() !== selectedLeader) {
       return false;
     }
 
-    // 4) 검색어 매칭
+    // 💡 3. 검색어가 있을 때: 주일 + 특별예배 전체 스캔 (콘티, 곡명, 세션 라인업, 메모)
     if (keyword) {
-      const rawTitle = item.worship_title || item.worship_title || '';
-      const closingSong = item.closing_song || item.closing_song || '';
+      const rawTitle = item.worship_title || item.worship_ti || '';
+      const closingSong = item.closing_song || item.closing_so || '';
       
       const targets = [item.date, rawTitle, item.song_list, item.leader, sType];
       if (includeClosing && closingSong) targets.push(closingSong);
 
-      // 섬김이 탭 또는 특별 예배 탭일 때는 모든 라인업 세션 파트도 검색 대상에 포함
-      if (currentArchiveSubTab === 'members' || currentArchiveSubTab === 'special') {
-        targets.push(
-          item.vocal, item.keyboard1, item.keyboard2,
-          item.drum, item.guitar, item.bass,
-          item.sound, item.broadcast, item.prompter, item.video
-        );
-      }
+      // 세션 라인업 전체 포함
+      targets.push(
+        item.vocal, item.keyboard1, item.keyboard2,
+        item.drum, item.guitar, item.bass,
+        item.sound, item.broadcast, item.prompter, item.video
+      );
 
-      // 인도자 메모 내용도 검색 가능
+      // 인도자 메모 포함
       if (item.memo) targets.push(item.memo);
 
       const matchText = targets.filter(Boolean).join(' ').toLowerCase();
@@ -4103,6 +4098,7 @@ function renderArchive() {
     loadingEl.style.display = 'none';
   }
 
+  const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim();
   const filtered = (typeof getFilteredArchiveData === 'function') 
     ? getFilteredArchiveData() 
     : allScheduleArchive;
@@ -4116,6 +4112,16 @@ function renderArchive() {
   if (membersContainer) membersContainer.style.display = 'none';
   if (specialContainer) specialContainer.style.display = 'none';
 
+  // 🔍 1. 검색어가 입력된 경우: 탭 구분 없이 '통합 검색 결과 뷰' 렌더링
+  if (keyword) {
+    if (contiContainer) {
+      contiContainer.style.display = 'flex';
+      renderIntegratedSearchResultsView(filtered, keyword, contiContainer);
+    }
+    return;
+  }
+
+  // 📋 2. 검색어가 없는 경우: 본래 서브탭별 기본 화면 렌더링
   if (currentArchiveSubTab === 'conti') {
     if (contiContainer) contiContainer.style.display = 'flex';
     renderContiArchive(filtered);
@@ -4270,6 +4276,138 @@ function renderContiArchive(list) {
   });
 
   container.innerHTML = htmlArray.join('');
+}
+
+/* ========================================================
+   🔍 주일 + 특별 예배 통합 검색 결과 렌더러
+======================================================== */
+function renderIntegratedSearchResultsView(list, keyword, container) {
+  if (!container) return;
+
+  if (!list || list.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 48px 16px; color: var(--sub-text); background: var(--card-bg, #fff); border-radius: 12px; border: 1px dashed var(--border-color);">
+        <div style="font-size: 1.8rem; margin-bottom: 8px;">🔎</div>
+        <div style="font-size: 0.95rem; font-weight: 700;">'${keyword}'에 대한 검색 결과가 없습니다.</div>
+        <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.8;">주일 콘티 및 특별 예배 전체 기록에서 일치하는 찬양 또는 섬김이를 찾지 못했습니다.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const htmlArray = list.map((item, idx) => {
+    const sType = item.service_type || 'sunday';
+    const isSpecial = sType !== 'sunday';
+    const rawTitle = item.worship_title || item.worship_ti || '';
+    const date = item.date || '날짜 미정';
+    const leader = item.leader || '미정';
+
+    // 1) 출처 뱃지 스타일 분기
+    const badgeLabel = isSpecial ? sType : '주일예배';
+    const badgeStyle = isSpecial 
+      ? 'background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3);'
+      : 'background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.3);';
+
+    // 2) 유튜브 전곡 연속재생 URL 처리
+    const rawYt = (item.youtube_url || item.youtube_u || '').trim();
+    const hasUrlPattern = /https?|\/|\?|=|&|youtu/i.test(rawYt);
+    const rawTokens = rawYt ? rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean) : [];
+    const isPure11CodeFormat = !hasUrlPattern && rawTokens.length > 0 && rawTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
+
+    let playlistUrl = '';
+    if (isPure11CodeFormat) {
+      if (typeof buildYoutubePlaylistUrl === 'function') {
+        playlistUrl = buildYoutubePlaylistUrl(rawTokens.join(','));
+      } else {
+        playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${rawTokens.join(',')}`;
+      }
+    } else if (rawYt) {
+      playlistUrl = (typeof buildYoutubePlaylistUrl === 'function') ? buildYoutubePlaylistUrl(rawYt) : rawYt;
+    }
+
+    // 3) 곡 목록 파싱 (검색어 하이라이팅 효과)
+    const songText = item.song_list || '';
+    const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const songsHtml = songLines.length > 0 
+      ? songLines.map((line, sIdx) => {
+          const isMatched = line.toLowerCase().includes(keyword.toLowerCase());
+          return `
+            <li style="display: flex; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem; ${isMatched ? 'font-weight: 700; color: #8b5cf6;' : ''}">
+              <span style="width: 22px; color: var(--sub-text); font-size: 0.75rem;">${sIdx + 1}.</span>
+              <span>${line}</span>
+              ${isMatched ? '<span style="font-size: 0.7rem; margin-left: 6px; background: rgba(139, 92, 246, 0.12); padding: 1px 5px; border-radius: 4px;">일치</span>' : ''}
+            </li>
+          `;
+        }).join('')
+      : '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
+
+    // 4) 결단 찬양 / 특송 표기 분기
+    const closingSong = item.closing_song || item.closing_so || '';
+    const closingYt = (item.closing_youtube_url || item.closing_yo || '').trim();
+    const closingLabel = isSpecial ? '🎤 특송' : '🕊️ 결단';
+    const isClosingMatched = closingSong.toLowerCase().includes(keyword.toLowerCase());
+
+    return `
+      <div class="card" style="border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg, #fff); padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <!-- 상단 헤더: 출처 뱃지, 날짜, 타이틀 -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="${badgeStyle} font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;">
+                ${badgeLabel}
+              </span>
+              <span style="font-size: 0.82rem; color: var(--sub-text); font-weight: 600;">${date}</span>
+            </div>
+            <h4 style="margin: 6px 0 0 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color);">
+              ${rawTitle || `${date}${badgeLabel}`}
+            </h4>
+          </div>
+          <div style="text-align: right; font-size: 0.82rem; color: var(--sub-text);">
+            인도: <strong style="color: var(--text-color);">${leader}</strong>
+          </div>
+        </div>
+
+        <!-- 곡 목록 및 연속재생 버튼 -->
+        <div style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">🎵 콘티 목록</span>
+            ${playlistUrl ? `
+              <a href="${playlistUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.75rem; color: #ef4444; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.08); padding: 3px 8px; border-radius: 6px;">
+                <span>▶</span> 전곡 연속재생
+              </a>` : ''}
+          </div>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            ${songsHtml}
+          </ul>
+        </div>
+
+        <!-- 결단/특송 영역 -->
+        ${closingSong ? `
+          <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; ${isClosingMatched ? 'border-color: #8b5cf6;' : ''}">
+            <div>
+              <strong>${closingLabel}:</strong> <span style="${isClosingMatched ? 'color: #8b5cf6; font-weight: 700;' : ''}">${closingSong}</span>${isClosingMatched ? '<span style="font-size: 0.7rem; margin-left: 6px; background: rgba(139, 92, 246, 0.12); padding: 1px 5px; border-radius: 4px;">일치</span>' : ''}
+            </div>
+            ${closingYt ? `<a href="${closingYt.includes('http') ? closingYt : 'https://youtu.be/' + closingYt}" target="_blank" rel="noopener noreferrer" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem; padding: 2px 6px; background: rgba(239, 68, 68, 0.08); border-radius: 4px;">▶ 영상</a>` : ''}
+          </div>
+        ` : ''}
+
+        <!-- 송폼/메모 -->
+        ${item.memo ? `
+          <div style="margin-top: 10px; padding: 8px 12px; background: rgba(139, 92, 246, 0.06); border-radius: 8px; border-left: 3px solid #8b5cf6; font-size: 0.78rem; color: var(--text-color); line-height: 1.4;">
+            <strong>💡 메모:</strong> ${item.memo}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="font-size: 0.82rem; color: var(--sub-text); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+      <div>'<strong>${keyword}</strong>' 통합 검색 결과: <strong>${list.length}</strong>건 (주일 + 특별예배)</div>
+      <button type="button" onclick="document.getElementById('archiveSearchInput').value=''; renderArchive();" style="border: none; background: none; color: #8b5cf6; cursor: pointer; font-size: 0.78rem; font-weight: 600;">초기화 ✕</button>
+    </div>
+    ${htmlArray}
+  `;
 }
 
     /* 아카이브 아코디언 열기/닫기 토글 함수 */
