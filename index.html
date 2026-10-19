@@ -4483,23 +4483,18 @@ function filterSpecialArchive(category, btnElement) {
   }
 }
 
-function renderSpecialArchiveList() {
+function renderSpecialArchiveList(dataToRender) {
   const container = document.getElementById('specialArchiveCardsContainer');
   const countBadge = document.getElementById('specialArchiveCountBadge');
   if (!container) return;
 
-  // 필터링
-  const filtered = specialArchiveData.filter(item => {
-    if (currentSpecialFilter === 'all') return true;
-    const cat = (item.service_type || '').trim();
-    return cat.includes(currentSpecialFilter);
-  });
+  const targetData = dataToRender || allScheduleArchive.filter(item => (item.service_type || 'sunday') !== 'sunday');
 
   if (countBadge) {
-    countBadge.innerText = `기록 ${filtered.length}건`;
+    countBadge.innerText = `기록 ${targetData.length}건`;
   }
 
-  if (filtered.length === 0) {
+  if (targetData.length === 0) {
     container.innerHTML = `
       <div style="text-align: center; padding: 48px 16px; color: var(--sub-text); background: var(--card-bg, #fff); border-radius: 12px; border: 1px dashed var(--border-color);">
         <div style="font-size: 1.8rem; margin-bottom: 8px;">🕊️</div>
@@ -4509,13 +4504,13 @@ function renderSpecialArchiveList() {
     return;
   }
 
-  container.innerHTML = filtered.map(item => {
+  container.innerHTML = targetData.map(item => {
     const category = item.service_type || '특별예배';
     const date = item.date || '날짜 미정';
-    const worshipTitle = item.worship_title || `${date} ${category}`;
+    const worshipTitle = item.worship_title || item.worship_ti || `${date} ${category}`;
     const leader = item.leader || '미정';
 
-    // 1) 라인업 칩 추출 (비어있지 않은 파트만 뱃지로 생성)
+    // 1) 라인업 칩 추출
     const lineupRoles = [
       { label: '인도', val: item.leader },
       { label: '보컬', val: item.vocal },
@@ -4535,28 +4530,73 @@ function renderSpecialArchiveList() {
       .map(r => `<span style="display: inline-block; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; color: var(--text-color); font-weight: 500;"><strong>${r.label}</strong> ${r.val}</span>`)
       .join('');
 
-    // 2) 콘티 곡 목록 파싱 (줄바꿈 텍스트 또는 JSON)
+    // 2) 유튜브 URL 및 11자리 ID 파싱
+    const rawYt = (item.youtube_url || item.youtube_u || '').trim();
+    const hasUrlPattern = /https?|\/|\?|=|&|youtu/i.test(rawYt);
+    const rawTokens = rawYt ? rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean) : [];
+    const isPure11CodeFormat = !hasUrlPattern && rawTokens.length > 0 && rawTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
+
+    // 전체 재생목록 URL 계산
+    let playlistUrl = '';
+    if (isPure11CodeFormat) {
+      if (typeof buildYoutubePlaylistUrl === 'function') {
+        playlistUrl = buildYoutubePlaylistUrl(rawTokens.join(','));
+      } else {
+        playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${rawTokens.join(',')}`;
+      }
+    } else if (rawYt) {
+      playlistUrl = (typeof buildYoutubePlaylistUrl === 'function') ? buildYoutubePlaylistUrl(rawYt) : rawYt;
+    }
+
+    // 3) 찬양 곡 목록 파싱 및 개별 음원 버튼 매칭 (하트 제거)
     let songsHtml = '';
-    if (item.song_list && item.song_list.trim()) {
-      const songLines = item.song_list.split('\n').filter(s => s.trim());
-      songsHtml = songLines.map((songTitle, idx) => `
-        <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
-          <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${idx + 1}.</span>
-          <span style="font-weight: 600; color: var(--text-color);">${songTitle}</span>
-        </li>
-      `).join('');
+    const songText = item.song_list || '';
+    const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+    if (songLines.length > 0) {
+      songsHtml = songLines.map((line, sIdx) => {
+        let songPlayBtn = '';
+
+        if (isPure11CodeFormat) {
+          const vid = rawTokens[sIdx];
+          if (vid && /^[a-zA-Z0-9_-]{11}$/.test(vid)) {
+            songPlayBtn = `<a href="https://youtu.be/${vid}" target="_blank" rel="noopener noreferrer" style="font-size:0.75rem; color:#ef4444; text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:2px; font-weight:600; padding:2px 6px; background:rgba(239, 68, 68, 0.08); border-radius:4px;">▶ 음원</a>`;
+          }
+        }
+
+        return `
+          <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
+            <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${sIdx + 1}.</span>
+            <span style="font-weight: 600; color: var(--text-color);">${line}</span>
+            ${songPlayBtn}
+          </li>
+        `;
+      }).join('');
     } else {
       songsHtml = '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
     }
 
-    // 3) 유튜브 및 결단찬양 링크
-    const mainYtUrl = item.youtube_url || '';
-    const closingSong = item.closing_song || '';
-    const closingYtUrl = item.closing_youtube_url || '';
+    // 4) 결단 찬양 (하트 제거)
+    const closingSong = item.closing_song || item.closing_so || '';
+    const rawClosingYt = (item.closing_youtube_url || item.closing_yo || '').trim();
+    let closingPlayUrl = rawClosingYt;
+
+    if (rawClosingYt && !/list=/i.test(rawClosingYt)) {
+      let closingVid = null;
+      if (typeof extractYoutubeId === 'function') {
+        closingVid = extractYoutubeId(rawClosingYt);
+      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawClosingYt)) {
+        closingVid = rawClosingYt;
+      }
+
+      if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
+        closingPlayUrl = `https://youtu.be/${closingVid}`;
+      }
+    }
 
     return `
       <div class="card" style="border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg, #fff); padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-        <!-- 상단 헤더 -->
+        <!-- 카드 상단: 구분 뱃지, 날짜, 타이틀 -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -4582,25 +4622,31 @@ function renderSpecialArchiveList() {
           </div>
         </div>
 
-        <!-- 찬양 콘티 목록 -->
+        <!-- 찬양 순서 및 유튜브 연속재생 링크 -->
         <div style="margin-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">🎵 찬양 순서</span>
-            ${mainYtUrl ? `<a href="${mainYtUrl}" target="_blank" style="font-size: 0.75rem; color: #ef4444; text-decoration: none; font-weight: 600;">▶ 콘티 유튜브 영상</a>` : ''}
+            ${playlistUrl ? `
+              <a href="${playlistUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.75rem; color: #ef4444; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; background: rgba(239, 68, 68, 0.08); padding: 3px 8px; border-radius: 6px;">
+                <span>▶</span> 전곡 연속재생
+              </a>` : ''}
           </div>
           <ul style="list-style: none; padding: 0; margin: 0;">
             ${songsHtml}
           </ul>
         </div>
 
-        <!-- 결단 찬양 (있는 경우) -->
+        <!-- 결단 찬양 -->
         ${closingSong ? `
-          <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
-            <span><strong>결단 찬양:</strong> ${closingSong}</span>${closingYtUrl ? `<a href="${closingYtUrl}" target="_blank" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem;">▶ 결단 영상</a>` : ''}
+          <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+            <div>
+              <strong>🕊️ 결단:</strong> <span>${closingSong}</span>
+            </div>
+            ${closingPlayUrl ? `<a href="${closingPlayUrl}" target="_blank" rel="noopener noreferrer" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem; padding: 2px 6px; background: rgba(239, 68, 68, 0.08); border-radius: 4px;">▶ 음원</a>` : ''}
           </div>
         ` : ''}
 
-        <!-- 인도자 메모 (있는 경우) -->
+        <!-- 인도자 진행 메모 -->
         ${item.memo ? `
           <div style="margin-top: 10px; padding: 8px 12px; background: rgba(139, 92, 246, 0.06); border-radius: 8px; border-left: 3px solid #8b5cf6; font-size: 0.78rem; color: var(--text-color); line-height: 1.4;">
             <strong>💡 송폼/진행 메모:</strong> ${item.memo}
