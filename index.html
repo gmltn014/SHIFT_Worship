@@ -8481,21 +8481,27 @@ function formatWikiGuideBoxes() {
   const container = document.getElementById('wikiMarkdownArea');
   if (!container) return;
 
-  const h4Elements = container.querySelectorAll('h4');
+  const h4Elements = Array.from(container.querySelectorAll('h4'));
   h4Elements.forEach(h4 => {
-    // h4 다음에 오는 다음 요소(ul)를 정확히 탐색
-    let nextEl = h4.nextElementSibling;
-    while (nextEl && nextEl.tagName !== 'UL' && nextEl.tagName !== 'H4' && nextEl.tagName !== 'H3') {
-      nextEl = nextEl.nextElementSibling;
-    }
+    // 이미 처리된 박스 안에 있으면 스킵
+    if (h4.parentElement && h4.parentElement.classList.contains('guide-box')) return;
 
-    if (nextEl && nextEl.tagName === 'UL') {
-      const box = document.createElement('div');
-      box.className = 'guide-box';
-      
-      h4.parentNode.insertBefore(box, h4);
-      box.appendChild(h4);
-      box.appendChild(nextEl);
+    const box = document.createElement('div');
+    box.className = 'guide-box';
+    h4.parentNode.insertBefore(box, h4);
+    box.appendChild(h4);
+
+    // 다음 h4나 h3, hr이 나오기 전까지의 모든 형제 요소를 box 안으로 수집
+    let nextNode = box.nextSibling;
+    while (nextNode) {
+      const current = nextNode;
+      nextNode = nextNode.nextSibling;
+
+      // 다음 큰 제목이나 섹션 구분선이 나오면 중단
+      if (current.nodeType === 1 && (['H3', 'H4', 'HR'].includes(current.tagName))) {
+        break;
+      }
+      box.appendChild(current);
     }
   });
 }
