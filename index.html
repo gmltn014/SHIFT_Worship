@@ -10184,7 +10184,7 @@ async function handleSaveSpecialSchedule(e) {
     const payload = {
       service_type: serviceType,
       date: date,
-      worship_ti: worshipTitle,
+      worship_title: worshipTitle,
       leader: leader,
       vocal: vocal || null,
       keyboard1: keyboard1 || null,
@@ -10192,10 +10192,9 @@ async function handleSaveSpecialSchedule(e) {
       drum: drum || null,
       guitar: guitar || null,
       bass: bass || null,
-      sound: sound || null,
       song_list: songList,
-      youtube_u: youtubeUrl || null,
-      closing_so: closingSong || null,
+      youtube_url: youtubeUrl || null,
+      closing_song: closingSong || null,
       memo: memo || null
     };
 
