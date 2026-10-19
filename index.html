@@ -4028,24 +4028,22 @@ function updateMonthDisplay() {
 }
 
 /* ========================================================
-   🔍 아카이브 통합 검색, 필터링 및 렌더링 (v2.9.0)
+   🔍 getFilteredArchiveData (안전 참조 수정본)
 ======================================================== */
-
-// 1. 검색 인풋 이벤트 핸들러
-function handleArchiveSearch() {
-  renderArchive();
-}
-
-// 2. 통합 필터링 함수 (주일 콘티, 섬김이 내역, 특별 예배 분기)
 function getFilteredArchiveData() {
-  if (!window.allScheduleArchive || !Array.isArray(window.allScheduleArchive)) {
+  // allScheduleArchive 변수 존재 여부 및 배열 확인
+  if (typeof allScheduleArchive === 'undefined' || !Array.isArray(allScheduleArchive)) {
     return [];
   }
 
   const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
   const selectedLeader = (document.getElementById('archiveLeaderFilter')?.value || '').trim();
   const includeClosing = document.getElementById('archiveIncludeClosingSong')?.checked ?? true;
-  const targetPrefix = `${archiveCurrentYear}-${String(archiveCurrentMonth).padStart(2, '0')}`;
+  
+  const y = typeof archiveCurrentYear !== 'undefined' ? archiveCurrentYear : new Date().getFullYear();
+  const m = typeof archiveCurrentMonth !== 'undefined' ? String(archiveCurrentMonth).padStart(2, '0') : String(new Date().getMonth() + 1).padStart(2, '0');
+  const targetPrefix = `${y}-${m}`;
+  const isViewAll = typeof isArchiveViewAll !== 'undefined' ? isArchiveViewAll : false;
 
   return allScheduleArchive.filter(item => {
     if (!item) return false;
@@ -4053,7 +4051,7 @@ function getFilteredArchiveData() {
     const sType = item.service_type || 'sunday';
     const isSpecial = sType !== 'sunday';
 
-    // 💡 1. 검색어가 없을 때: 각 서브탭별 데이터 및 월별 필터 엄격 적용
+    // 1. 검색어가 없을 때: 각 서브탭별 데이터 및 월별 필터 적용
     if (!keyword) {
       if (typeof currentArchiveSubTab !== 'undefined' && currentArchiveSubTab === 'special') {
         if (!isSpecial) return false;
@@ -4064,7 +4062,7 @@ function getFilteredArchiveData() {
         if (isSpecial) return false;
       }
 
-      if (typeof isArchiveViewAll !== 'undefined' && !isArchiveViewAll && item.date && !item.date.startsWith(targetPrefix)) {
+      if (!isViewAll && item.date && !item.date.startsWith(targetPrefix)) {
         return false;
       }
     }
@@ -4074,7 +4072,7 @@ function getFilteredArchiveData() {
       return false;
     }
 
-    // 💡 3. 검색어가 있을 때: 주일 + 특별예배 전체 스캔 (콘티, 곡명, 세션 라인업, 메모)
+    // 3. 검색어가 있을 때: 주일 + 특별예배 전체 스캔
     if (keyword) {
       const rawTitle = item.worship_title || item.worship_ti || '';
       const closingSong = item.closing_song || item.closing_so || '';
@@ -4082,14 +4080,12 @@ function getFilteredArchiveData() {
       const targets = [item.date, rawTitle, item.song_list, item.leader, sType];
       if (includeClosing && closingSong) targets.push(closingSong);
 
-      // 세션 라인업 전체 포함
       targets.push(
         item.vocal, item.keyboard1, item.keyboard2,
         item.drum, item.guitar, item.bass,
         item.sound, item.broadcast, item.prompter, item.video
       );
 
-      // 인도자 메모 포함
       if (item.memo) targets.push(item.memo);
 
       const matchText = targets.filter(Boolean).join(' ').toLowerCase();
