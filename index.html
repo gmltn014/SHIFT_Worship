@@ -4106,7 +4106,7 @@ function renderArchive() {
   const keyword = (document.getElementById('archiveSearchInput')?.value || '').trim();
   const filtered = (typeof getFilteredArchiveData === 'function') 
     ? getFilteredArchiveData() 
-    : allScheduleArchive;
+    : (allScheduleArchive || []);
 
   const contiContainer = document.getElementById('archiveContiList');
   const membersContainer = document.getElementById('archiveMembersList');
@@ -4117,18 +4117,21 @@ function renderArchive() {
   if (membersContainer) membersContainer.style.display = 'none';
   if (specialContainer) specialContainer.style.display = 'none';
 
-  // 1. 검색어가 있는 경우: 통합 검색 결과 렌더링
+  // 💡 1. 검색어가 있는 경우: 서브탭 무시하고 통합 검색 결과 출력
   if (keyword) {
     if (contiContainer) {
       contiContainer.style.display = 'flex';
+      // renderIntegratedSearchResultsView가 있으면 사용하고, 없으면 기존 renderContiArchive로 안전하게 폴백
       if (typeof renderIntegratedSearchResultsView === 'function') {
         renderIntegratedSearchResultsView(filtered, keyword, contiContainer);
+      } else if (typeof renderContiArchive === 'function') {
+        renderContiArchive(filtered, keyword);
       }
     }
-    return; // 함수 내부이므로 안전하게 종료
+    return;
   }
 
-  // 2. 검색어가 없는 경우: 본래 서브탭별 기본 렌더링
+  // 📋 2. 검색어가 없는 경우: 본래 서브탭별 기본 렌더링
   if (currentArchiveSubTab === 'conti') {
     if (contiContainer) contiContainer.style.display = 'flex';
     if (typeof renderContiArchive === 'function') {
@@ -4146,7 +4149,7 @@ function renderArchive() {
     }
   }
 }
-
+    
 // 4. 특별 예배 필터 칩 클릭 함수 (renderArchive 호출로 즉각 연동)
 function filterSpecialArchive(category, btnElement) {
   currentSpecialFilter = category;
