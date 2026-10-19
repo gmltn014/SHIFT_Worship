@@ -14,6 +14,8 @@
   <!-- YouTube IFrame Player API -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+
   <style>
     @font-face {
     font-family: 'Pretendard';
@@ -4112,19 +4114,23 @@ function renderArchive() {
   if (membersContainer) membersContainer.style.display = 'none';
   if (specialContainer) specialContainer.style.display = 'none';
 
-  // 🔍 1. 검색어가 입력된 경우: 탭 구분 없이 '통합 검색 결과 뷰' 렌더링
+  // 1. 검색어가 있는 경우: 통합 검색 결과 렌더링
   if (keyword) {
     if (contiContainer) {
       contiContainer.style.display = 'flex';
-      renderIntegratedSearchResultsView(filtered, keyword, contiContainer);
+      if (typeof renderIntegratedSearchResultsView === 'function') {
+        renderIntegratedSearchResultsView(filtered, keyword, contiContainer);
+      }
     }
-    return;
+    return; // 함수 내부이므로 안전하게 종료
   }
 
-  // 📋 2. 검색어가 없는 경우: 본래 서브탭별 기본 화면 렌더링
+  // 2. 검색어가 없는 경우: 본래 서브탭별 기본 렌더링
   if (currentArchiveSubTab === 'conti') {
     if (contiContainer) contiContainer.style.display = 'flex';
-    renderContiArchive(filtered);
+    if (typeof renderContiArchive === 'function') {
+      renderContiArchive(filtered);
+    }
   } else if (currentArchiveSubTab === 'members') {
     if (membersContainer) membersContainer.style.display = 'flex';
     if (typeof renderMembersArchive === 'function') {
