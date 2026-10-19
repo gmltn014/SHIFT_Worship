@@ -10441,6 +10441,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+    window.handleArchiveSearch = function() {
+  const searchInput = document.getElementById('archiveSearchInput');
+  const keyword = (searchInput?.value || '').trim().toLowerCase();
+
+  console.log('👉 [1] 검색 함수 정상 실행! 검색어:', keyword);
+
+  // 검색어가 없으면 기본 화면 복원
+  if (!keyword) {
+    if (typeof renderArchive === 'function') {
+      renderArchive();
+    }
+    return;
+  }
+
+  // 데이터 소스 확인
+  const rawList = (typeof allScheduleArchive !== 'undefined' && Array.isArray(allScheduleArchive)) 
+    ? allScheduleArchive 
+    : [];
+
+  // 컬럼명 구분 없이 모든 텍스트 필드에서 검색어 매칭
+  const matched = rawList.filter(item => {
+    if (!item) return false;
+    const combinedText = Object.values(item)
+      .filter(v => typeof v === 'string')
+      .join(' ')
+      .toLowerCase();
+    return combinedText.includes(keyword);
+  });
+
+  console.log('👉 [2] 매칭된 데이터 건수:', matched.length);
+
+  // 컨테이너 제어
+  const contiContainer = document.getElementById('archiveContiList');
+  const membersContainer = document.getElementById('archiveMembersList');
+  const specialContainer = document.getElementById('archiveSpecialList');
+
+  if (membersContainer) membersContainer.style.display = 'none';
+  if (specialContainer) specialContainer.style.display = 'none';
+
+  if (contiContainer) {
+    contiContainer.style.display = 'flex';
+    if (typeof renderContiArchive === 'function') {
+      renderContiArchive(matched, keyword);
+      console.log('👉 [3] 화면 렌더링 완료');
+    }
+  }
+};
 </script>
 
 <!-- 플로팅 BGM 플레이어 바 (화면 우측 하단 고정) -->
