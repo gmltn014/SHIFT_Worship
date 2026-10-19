@@ -8477,22 +8477,25 @@ async function fillRandomNickname(targetInputId) {
 const GITHUB_WIKI_DOC_URL = 'https://raw.githubusercontent.com/gmltn014/SHIFT_Worship/refs/heads/main/docs/wiki-guide.md';
 let isWikiLoaded = false;
 
-// 💡 h4(세부 기능 제목)와 하위 ul(설명 리스트)을 자동으로 guide-box로 감싸주는 함수
 function formatWikiGuideBoxes() {
   const container = document.getElementById('wikiMarkdownArea');
   if (!container) return;
 
   const h4Elements = container.querySelectorAll('h4');
   h4Elements.forEach(h4 => {
-    const ul = h4.nextElementSibling;
-    if (ul && ul.tagName === 'UL') {
+    // h4 다음에 오는 다음 요소(ul)를 정확히 탐색
+    let nextEl = h4.nextElementSibling;
+    while (nextEl && nextEl.tagName !== 'UL' && nextEl.tagName !== 'H4' && nextEl.tagName !== 'H3') {
+      nextEl = nextEl.nextElementSibling;
+    }
+
+    if (nextEl && nextEl.tagName === 'UL') {
       const box = document.createElement('div');
       box.className = 'guide-box';
       
-      // h4 앞에 box를 만들고 h4와 ul을 그 안으로 이동
       h4.parentNode.insertBefore(box, h4);
       box.appendChild(h4);
-      box.appendChild(ul);
+      box.appendChild(nextEl);
     }
   });
 }
