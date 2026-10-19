@@ -4512,7 +4512,7 @@ function renderSpecialArchiveList() {
   container.innerHTML = filtered.map(item => {
     const category = item.service_type || '특별예배';
     const date = item.date || '날짜 미정';
-    const worshipTitle = item.worship_ti || `${date} ${category}`;
+    const worshipTitle = item.worship_title || `${date} ${category}`;
     const leader = item.leader || '미정';
 
     // 1) 라인업 칩 추출 (비어있지 않은 파트만 뱃지로 생성)
@@ -4550,9 +4550,9 @@ function renderSpecialArchiveList() {
     }
 
     // 3) 유튜브 및 결단찬양 링크
-    const mainYtUrl = item.youtube_u || '';
-    const closingSong = item.closing_so || '';
-    const closingYtUrl = item.closing_yo || '';
+    const mainYtUrl = item.youtube_url || '';
+    const closingSong = item.closing_song || '';
+    const closingYtUrl = item.closing_youtube_url || '';
 
     return `
       <div class="card" style="border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg, #fff); padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
