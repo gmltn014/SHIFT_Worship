@@ -2847,7 +2847,7 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
             <input type="text" id="spcYoutubeUrl" placeholder="콘티 유튜브 링크/재생목록 URL" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
           </div>
           <div>
-            <input type="text" id="spcClosingSong" placeholder="결단 찬양 (곡명)" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
+            <input type="text" id="spcClosingSong" placeholder="특송(곡명)" style="width: 100%; padding: 7px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.82rem; box-sizing: border-box;">
           </div>
         </div>
         <div>
@@ -4530,13 +4530,12 @@ function renderSpecialArchiveList(dataToRender) {
       .map(r => `<span style="display: inline-block; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; color: var(--text-color); font-weight: 500;"><strong>${r.label}</strong> ${r.val}</span>`)
       .join('');
 
-    // 2) 유튜브 URL 및 11자리 ID 파싱
+    // 2) 유튜브 URL 및 11자리 코드 파싱 (전체 연속재생 URL 생성)
     const rawYt = (item.youtube_url || item.youtube_u || '').trim();
     const hasUrlPattern = /https?|\/|\?|=|&|youtu/i.test(rawYt);
     const rawTokens = rawYt ? rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean) : [];
     const isPure11CodeFormat = !hasUrlPattern && rawTokens.length > 0 && rawTokens.every(t => /^[a-zA-Z0-9_-]{11}$/.test(t));
 
-    // 전체 재생목록 URL 계산
     let playlistUrl = '';
     if (isPure11CodeFormat) {
       if (typeof buildYoutubePlaylistUrl === 'function') {
@@ -4548,49 +4547,37 @@ function renderSpecialArchiveList(dataToRender) {
       playlistUrl = (typeof buildYoutubePlaylistUrl === 'function') ? buildYoutubePlaylistUrl(rawYt) : rawYt;
     }
 
-    // 3) 찬양 곡 목록 파싱 및 개별 음원 버튼 매칭 (하트 제거)
+    // 3) 찬양 곡 목록 파싱 (개별 음원 버튼 없이 순번 및 제목만 깔끔하게 노출)
     let songsHtml = '';
     const songText = item.song_list || '';
     const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
     if (songLines.length > 0) {
-      songsHtml = songLines.map((line, sIdx) => {
-        let songPlayBtn = '';
-
-        if (isPure11CodeFormat) {
-          const vid = rawTokens[sIdx];
-          if (vid && /^[a-zA-Z0-9_-]{11}$/.test(vid)) {
-            songPlayBtn = `<a href="https://youtu.be/${vid}" target="_blank" rel="noopener noreferrer" style="font-size:0.75rem; color:#ef4444; text-decoration:none; margin-left:auto; display:inline-flex; align-items:center; gap:2px; font-weight:600; padding:2px 6px; background:rgba(239, 68, 68, 0.08); border-radius:4px;">▶ 음원</a>`;
-          }
-        }
-
-        return `
-          <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
-            <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${sIdx + 1}.</span>
-            <span style="font-weight: 600; color: var(--text-color);">${line}</span>
-            ${songPlayBtn}
-          </li>
-        `;
-      }).join('');
+      songsHtml = songLines.map((line, sIdx) => `
+        <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
+          <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${sIdx + 1}.</span>
+          <span style="font-weight: 600; color: var(--text-color);">${line}</span>
+        </li>
+      `).join('');
     } else {
       songsHtml = '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
     }
 
-    // 4) 결단 찬양 (하트 제거)
-    const closingSong = item.closing_song || item.closing_so || '';
-    const rawClosingYt = (item.closing_youtube_url || item.closing_yo || '').trim();
-    let closingPlayUrl = rawClosingYt;
+    // 4) 특송(DB의 closing_song / closing_youtube_url 컬럼 매핑)
+    const specialSong = item.closing_song || item.closing_so || '';
+    const rawSpecialSongYt = (item.closing_youtube_url || item.closing_yo || '').trim();
+    let specialSongPlayUrl = rawSpecialSongYt;
 
-    if (rawClosingYt && !/list=/i.test(rawClosingYt)) {
+    if (rawSpecialSongYt && !/list=/i.test(rawSpecialSongYt)) {
       let closingVid = null;
       if (typeof extractYoutubeId === 'function') {
-        closingVid = extractYoutubeId(rawClosingYt);
-      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawClosingYt)) {
-        closingVid = rawClosingYt;
+        closingVid = extractYoutubeId(rawSpecialSongYt);
+      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawSpecialSongYt)) {
+        closingVid = rawSpecialSongYt;
       }
 
       if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
-        closingPlayUrl = `https://youtu.be/${closingVid}`;
+        specialSongPlayUrl = `https://youtu.be/${closingVid}`;
       }
     }
 
@@ -4614,7 +4601,7 @@ function renderSpecialArchiveList(dataToRender) {
           </div>
         </div>
 
-        <!-- 라인업 칩 그룹 -->
+        <!-- 섬김이 라인업 칩 그룹 -->
         <div style="margin-bottom: 14px;">
           <div style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text); margin-bottom: 6px;">👥 섬김이 라인업</div>
           <div style="display: flex; flex-wrap: wrap; gap: 4px;">
@@ -4622,7 +4609,7 @@ function renderSpecialArchiveList(dataToRender) {
           </div>
         </div>
 
-        <!-- 찬양 순서 및 유튜브 연속재생 링크 -->
+        <!-- 찬양 순서 및 전곡 연속재생 -->
         <div style="margin-bottom: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">🎵 찬양 순서</span>
@@ -4636,17 +4623,17 @@ function renderSpecialArchiveList(dataToRender) {
           </ul>
         </div>
 
-        <!-- 결단 찬양 -->
-        ${closingSong ? `
+        <!-- 특송 영역 (결단 찬양 컬럼 데이터 활용) -->
+        ${specialSong ? `
           <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
             <div>
-              <strong>🕊️ 결단:</strong> <span>${closingSong}</span>
+              <strong>🎤 특송:</strong> <span>${specialSong}</span>
             </div>
-            ${closingPlayUrl ? `<a href="${closingPlayUrl}" target="_blank" rel="noopener noreferrer" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem; padding: 2px 6px; background: rgba(239, 68, 68, 0.08); border-radius: 4px;">▶ 음원</a>` : ''}
+            ${specialSongPlayUrl ? `<a href="${specialSongPlayUrl}" target="_blank" rel="noopener noreferrer" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem; padding: 2px 6px; background: rgba(239, 68, 68, 0.08); border-radius: 4px;">▶ 특송 영상</a>` : ''}
           </div>
         ` : ''}
 
-        <!-- 인도자 진행 메모 -->
+        <!-- 인도자 송폼/진행 메모 -->
         ${item.memo ? `
           <div style="margin-top: 10px; padding: 8px 12px; background: rgba(139, 92, 246, 0.06); border-radius: 8px; border-left: 3px solid #8b5cf6; font-size: 0.78rem; color: var(--text-color); line-height: 1.4;">
             <strong>💡 송폼/진행 메모:</strong> ${item.memo}
@@ -4656,7 +4643,7 @@ function renderSpecialArchiveList(dataToRender) {
     `;
   }).join('');
 }
-
+    
     async function loadSpecialArchiveData() {
   const container = document.getElementById('specialArchiveCardsContainer');
   if (container) {
