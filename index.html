@@ -1159,6 +1159,50 @@ html[data-theme="dark"] body.theme-autumn {
   --text-color: #f3f4f6 !important;
   --sub-text: #a8a29e !important;
 }
+
+    /* 낙엽 컨테이너: 화면 전체를 덮되 클릭은 무조건 통과 */
+#fallingLeavesContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 9999;
+  display: none; /* 기본은 숨김 */
+}
+
+/* 가을 테마일 때만 낙엽 활성화 */
+body.theme-autumn #fallingLeavesContainer {
+  display: block;
+}
+
+/* 낙엽 낱개 스타일 */
+.leaf {
+  position: absolute;
+  top: -40px;
+  user-select: none;
+  opacity: 0.75;
+  animation-name: fallAndSway;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* 위에서 아래로 흔들리며 떨어지는 애니메이션 */
+@keyframes fallAndSway {
+  0% {
+    top: -40px;
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(60px) rotate(180deg);
+  }
+  100% {
+    top: 105vh;
+    transform: translateX(-30px) rotate(360deg);
+  }
+}
     
 </style>
 </head>
@@ -10618,6 +10662,40 @@ document.addEventListener('DOMContentLoaded', () => {
   initSpecialTheme();
 });
 
+    function initFallingLeaves() {
+  const container = document.getElementById('fallingLeavesContainer');
+  if (!container) return;
+
+  const leafIcons = ['🍁', '🍂'];
+  const leafCount = 10; // 화면에 떠다닐 개수 (너무 많지 않게 10개 권장)
+
+  container.innerHTML = ''; // 초기화
+
+  for (let i = 0; i < leafCount; i++) {
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+    leaf.innerText = leafIcons[Math.floor(Math.random() * leafIcons.length)];
+
+    // 랜덤 위치, 크기, 낙하 속도 및 딜레이 설정
+    const leftPercent = Math.random() * 95; // 0~95vw
+    const duration = 6 + Math.random() * 6; // 6초~12초 천천히 떨어짐
+    const delay = Math.random() * 8;       // 시작 시점 분산
+    const fontSize = 16 + Math.random() * 12; // 16px~28px
+
+    leaf.style.left = `${leftPercent}vw`;
+    leaf.style.animationDuration = `${duration}s`;
+    leaf.style.animationDelay = `${delay}s`;
+    leaf.style.fontSize = `${fontSize}px`;
+
+    container.appendChild(leaf);
+  }
+}
+
+// 기존 테마 초기화 시점에 함께 호출
+document.addEventListener('DOMContentLoaded', () => {
+  initFallingLeaves();
+});
+
 /* 15. 페이지 시작 진입점 */
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof checkMaintenanceStatus === 'function') checkMaintenanceStatus();
@@ -10787,6 +10865,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- 실제 재생용 숨김 YouTube IFrame 컨테이너 -->
 <div id="hiddenYoutubePlayer" style="position: fixed; bottom: 0; left: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none;"></div>
+
+<div id="fallingLeavesContainer" aria-hidden="true"></div>
 
 </body>
 </html>
