@@ -1125,37 +1125,39 @@ input[type="checkbox"]:checked + .maint-slider-fixed::before {
 }
 
 /* ===================================================
-   🍁 가을 & 추수감사절 시즌 테마 (Autumn Warm)
+   🍁 가을 & 추수감사절 시즌 테마 (Autumn Warm 보완본)
 =================================================== */
 
-/* 1. 라이트 모드 + 가을 테마: 포근한 오트밀 / 밀크티 베이지 톤 */
+/* 1. 기본 (라이트 모드) 가을 테마: 포근한 밀크티 베이지 */
 body.theme-autumn {
-  /* 포인트 강조 컬러 (따뜻한 감귤/앰버) */
   --accent-color: #d97706;
   --accent-hover: #b45309;
 
-  /* 배경색: 차가운 회백색 대신 은은한 웜 베이지 */
-  --bg-color: #fcf9f5;        /* 메인 페이지 배경 */
-  --card-bg: #ffffff;         /* 메인 카드 배경 (깔끔한 화이트 유지) */
-  --card-sub-bg: #f7f2ea;     /* 서브 박스/입력폼 배경 (연한 밀크티색) */
-  
-  /* 테두리선: 베이지톤에 어우러지는 소프트 브라운 그레이 */
+  --bg-color: #fcf9f5;
+  --card-bg: #ffffff;
+  --card-sub-bg: #f7f2ea;
   --border-color: #ede5da;
+  --text-color: #1f2937; /* 글자색을 어둡게 고정하여 가독성 보장 */
 }
 
-/* 2. 다크 모드 + 가을 테마: 깊고 아늑한 다크 초콜릿 / 모닥불 톤 */
-body.dark.theme-autumn {
-  /* 포인트 강조 컬러 (어두운 곳에서도 또렷한 골든 앰버) */
-  --accent-color: #f59e0b;
-  --accent-hover: #d97706;
+/* 2. 다크 모드 가을 테마 (포털의 다양한 다크 모드 방식 모두 지원) */
+body.dark.theme-autumn,
+body.dark-mode.theme-autumn,
+body[data-theme="dark"].theme-autumn,
+html.dark body.theme-autumn,
+html[data-theme="dark"] body.theme-autumn {
+  --accent-color: #f59e0b !important;
+  --accent-hover: #d97706 !important;
 
-  /* 배경색: 차가운 푸른빛 블랙 대신 딥 브라운/다크 초콜릿 */
-  --bg-color: #1a1614;        /* 메인 페이지 배경 (따뜻한 딥 에스프레소) */
-  --card-bg: #26211e;         /* 카드 배경 (다크 초콜릿 톤) */
-  --card-sub-bg: #322b27;     /* 서브 박스/입력창 배경 */
-
-  /* 테두리선: 부드러운 웜톤 다크 그레이 */
-  --border-color: #433a34;
+  /* 다크 초콜릿 / 딥 브라운 톤 */
+  --bg-color: #1a1614 !important;
+  --card-bg: #26211e !important;
+  --card-sub-bg: #322b27 !important;
+  --border-color: #433a34 !important;
+  
+  /* 글자색을 또렷한 밝은색으로 확실하게 지정 */
+  --text-color: #f3f4f6 !important;
+  --sub-text: #a8a29e !important;
 }
     
 </style>
