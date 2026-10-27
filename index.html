@@ -3129,6 +3129,40 @@ body.theme-autumn #fallingLeavesContainer {
     return false;
   }
 }
+
+    async function loadTodayVisitorCount() {
+  const countEl = document.getElementById('todayVisitorCount');
+  if (!countEl) return;
+
+  countEl.innerText = '...';
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  try {
+    const { count, error } = await supabase
+      .from('site_visits')
+      .select('*', { count: 'exact', head: true })
+      .eq('visited_date', todayStr);
+
+    if (error) {
+      console.error('방문자 수 조회 Supabase 오류:', error);
+      countEl.innerText = '0';
+      return;
+    }
+
+    countEl.innerText = count !== null ? count : 0;
+  } catch (err) {
+    console.error('방문자 수 조회 스크립트 오류:', err);
+    countEl.innerText = '0';
+  }
+}
+
+// 💡 어디서든 onclick으로 접근할 수 있도록 window 객체에 등록
+window.loadTodayVisitorCount = loadTodayVisitorCount;
     
     function adminLogout() {
       sessionStorage.removeItem(SESSION_KEY);
