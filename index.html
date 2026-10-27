@@ -1996,9 +1996,22 @@ body.theme-autumn #fallingLeavesContainer {
 
     <!-- 최고관리자 (SUPER ADMIN) 전용 구역 -->
     <div id="superAdminSection" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--accent-color);">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-        <span style="background: #3b82f6; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">SUPER ADMIN</span>
-        <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 최고관리자 제어판</h4>
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="background: #3b82f6; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px;">SUPER ADMIN</span>
+          <h4 style="font-size: 1.1rem; font-weight: 700;">⚡ 서버 최고관리자 제어판</h4>
+        </div>
+
+        <!-- 💡 [추가] 금일 접속자 통계 미니 뱃지 카드 -->
+        <div class="card" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; margin: 0; background: var(--card-sub-bg, #f8fafc); border-color: #93c5fd;">
+          <span style="font-size: 1.1rem;">👀</span>
+          <span style="font-size: 0.8rem; color: var(--sub-text); font-weight: 600;">오늘 접속:</span>
+          <span id="todayVisitorCount" style="font-size: 1rem; font-weight: 700; color: #2563eb;">-</span>
+          <span style="font-size: 0.8rem; font-weight: 500;">명</span>
+          <button type="button" onclick="loadTodayVisitorCount()" title="새로고침" style="background: none; border: none; cursor: pointer; color: var(--sub-text); font-size: 0.85rem; padding: 0 2px; margin-left: 4px;">
+            🔄
+          </button>
+        </div>
       </div>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
@@ -3093,24 +3106,30 @@ body.theme-autumn #fallingLeavesContainer {
     }
 
     function authenticateAdmin(inputPw) {
-      if (inputPw === SUPER_ADMIN_PW) {
-        sessionStorage.setItem(SESSION_KEY, 'true');
-        sessionStorage.setItem(SUPER_SESSION_KEY, 'true');
-        syncAdminUI();
-        alert('⚡ 서버 최고관리자(Super Admin)로 인증되었습니다.');
-        return true;
-      } else if (inputPw === GENERAL_ADMIN_PW) {
-        sessionStorage.setItem(SESSION_KEY, 'true');
-        sessionStorage.removeItem(SUPER_SESSION_KEY);
-        syncAdminUI();
-        alert('일반 관리자로 로그인되었습니다.');
-        return true;
-      } else {
-        alert('비밀번호가 올바르지 않습니다.');
-        return false;
-      }
+  if (inputPw === SUPER_ADMIN_PW) {
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    sessionStorage.setItem(SUPER_SESSION_KEY, 'true');
+    syncAdminUI();
+
+    // 💡 최고관리자 인증 시 오늘 방문자 수 로드
+    if (typeof loadTodayVisitorCount === 'function') {
+      loadTodayVisitorCount();
     }
 
+    alert('⚡ 서버 최고관리자(Super Admin)로 인증되었습니다.');
+    return true;
+  } else if (inputPw === GENERAL_ADMIN_PW) {
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    sessionStorage.removeItem(SUPER_SESSION_KEY);
+    syncAdminUI();
+    alert('일반 관리자로 로그인되었습니다.');
+    return true;
+  } else {
+    alert('비밀번호가 올바르지 않습니다.');
+    return false;
+  }
+}
+    
     function adminLogout() {
       sessionStorage.removeItem(SESSION_KEY);
       sessionStorage.removeItem(SUPER_SESSION_KEY);
@@ -3119,33 +3138,40 @@ body.theme-autumn #fallingLeavesContainer {
     }
 
     function syncAdminUI() {
-      const isAuth = isAdminAuthenticated();
-      const isSuper = isSuperAdmin();
-      const loginForm = document.getElementById('adminLoginForm');
-      const dashboard = document.getElementById('adminDashboard');
-      const superSec = document.getElementById('superAdminSection');
-      const roleBadge = document.getElementById('adminRoleBadge');
-      const pwInput = document.getElementById('adminPasswordInput');
+  const isAuth = isAdminAuthenticated();
+  const isSuper = isSuperAdmin();
+  const loginForm = document.getElementById('adminLoginForm');
+  const dashboard = document.getElementById('adminDashboard');
+  const superSec = document.getElementById('superAdminSection');
+  const roleBadge = document.getElementById('adminRoleBadge');
+  const pwInput = document.getElementById('adminPasswordInput');
 
-      if (loginForm && dashboard) {
-        if (isAuth) {
-          loginForm.style.display = 'none';
-          dashboard.style.display = 'block';
-          if (pwInput) pwInput.value = '';
-          if (roleBadge) {
-            roleBadge.innerText = isSuper ? 'SUPER ADMIN' : '일반 관리자';
-            roleBadge.style.background = isSuper ? '#3b82f6' : '#d1fae5';
-            roleBadge.style.color = isSuper ? '#ffffff' : '#047857';
-          }
-          if (superSec) superSec.style.display = isSuper ? 'block' : 'none';
-        } else {
-          loginForm.style.display = 'block';
-          dashboard.style.display = 'none';
-          if (superSec) superSec.style.display = 'none';
-        }
+  if (loginForm && dashboard) {
+    if (isAuth) {
+      loginForm.style.display = 'none';
+      dashboard.style.display = 'block';
+      if (pwInput) pwInput.value = '';
+      if (roleBadge) {
+        roleBadge.innerText = isSuper ? 'SUPER ADMIN' : '일반 관리자';
+        roleBadge.style.background = isSuper ? '#3b82f6' : '#d1fae5';
+        roleBadge.style.color = isSuper ? '#ffffff' : '#047857';
       }
-    }
+      if (superSec) {
+        superSec.style.display = isSuper ? 'block' : 'none';
+      }
 
+      // 💡 최고관리자 인증 상태일 때 오늘 방문자 수 로드
+      if (isSuper && typeof loadTodayVisitorCount === 'function') {
+        loadTodayVisitorCount();
+      }
+    } else {
+      loginForm.style.display = 'block';
+      dashboard.style.display = 'none';
+      if (superSec) superSec.style.display = 'none';
+    }
+  }
+}
+    
     function handleAdminLoginSubmit() {
       const pwInput = document.getElementById('adminPasswordInput');
       const val = pwInput ? pwInput.value.trim() : '';
