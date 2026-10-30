@@ -5575,9 +5575,9 @@ function renderMembers() {
       ? `🤝 객원 (${item.main_part || '세션'})` 
       : (item.main_category || (item.main_part ? item.main_part : 'TEAM')));
 
-    const displayBadgeBg = isGuest ? guestBadgeBg : badgeBg;
-    const displayBadgeColor = isGuest ? guestTextColor : badgeColor;
-    const displayBadgeBorder = isGuest ? guestBadgeBorder : borderColor;
+    const displayBadgeBg = isGuest ? (isDark ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.18)') : badgeBg;
+const displayBadgeColor = isGuest ? guestTextColor : badgeColor;
+const displayBadgeBorder = isGuest ? (isDark ? 'rgba(245, 158, 11, 0.55)' : 'rgba(245, 158, 11, 0.4)') : borderColor;
 
     return `
       <div class="member-card ${borderClass} ${isGuest ? 'member-card-guest' : ''}" style="${cardCustomStyle}">
