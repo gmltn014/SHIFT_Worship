@@ -5337,47 +5337,70 @@ function handleMemberSearch() {
 }
 
 function getFilteredMembers() {
-  if (!allMembersList) return [];
+  if (!allMembersList || allMembersList.length === 0) return [];
 
   const keyword = (document.getElementById('memberSearchInput')?.value || '').trim().toLowerCase();
-  const currentTab = (selectedMemberCategory || 'ALL').trim().toUpperCase();
+  const currentTab = (typeof selectedMemberCategory !== 'undefined' && selectedMemberCategory) 
+    ? String(selectedMemberCategory).trim().toUpperCase() 
+    : 'ALL';
 
   return allMembersList.filter(item => {
-    // 💡 1. 활동 상태 체크 ('활동 중'이거나 관리자/객원은 표시되도록 유연하게 처리)
-    const activeStatus = (item.active || '').trim();
-    const isAdmin = /admin|관리자|시스템/i.test(item.main_category || '') || /admin|관리자|시스템/i.test(item.main_part || '');
-
-    // 관리자가 아니면서 '활동 중'이 아니면 제외 (active가 비어있는 경우 방지)
-    if (!isAdmin && activeStatus && activeStatus !== '활동 중') {
-      return false;
+    // 💡 1. 활동 상태 체크 (active가 없거나 '활동 중', '활동', 'Y', 빈값 등 유연하게 허용)
+    const rawActive = (item.active || '').trim();
+    if (rawActive && !/활동|정상|재직|Y|true/i.test(rawActive) && /휴식|비활동|퇴단|졸업/i.test(rawActive)) {
+      return false; // 명시적으로 '휴식'이나 '비활동'인 사람만 제외
     }
 
-    // 💡 2. 카테고리 탭 필터링
+    // 💡 2. 멤버의 모든 카테고리/파트 텍스트 종합
+    const checkText = [
+      item.main_category,
+      item.category,
+      item.main_part,
+      item.part,
+      item.part_b,
+      item.part_tag
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    const isAdmin = /admin|관리자|시스템|웹마스터/i.test(checkText);
+
+    // 💡 3. 카테고리 탭 필터링
     if (currentTab !== 'ALL' && currentTab !== '전체') {
-      // 특정 파트 탭을 누르면 관리자는 숨기고 해당 파트 멤버만 표시
+      // 실무 파트 탭에서는 관리자 숨김
       if (isAdmin) return false;
 
-      const itemCat = (item.main_category || '').trim().toUpperCase();
-      if (itemCat !== currentTab) return false;
+      // (1) 워십 / 싱어 / 보컬 탭
+      if (currentTab === 'WORSHIP' || currentTab === '워십') {
+        if (!/worship|워십|인도|싱어|보컬|리더/i.test(checkText)) return false;
+      }
+      // (2) 악기 / 세션 탭
+      else if (currentTab === 'SESSION' || currentTab === '세션') {
+        if (!/session|세션|건반|피아노|신디|드럼|베이스|기타|일렉|어쿠스틱/i.test(checkText)) return false;
+      }
+      // (3) 라이브옵스 / 엔지니어 탭
+      else if (currentTab === 'LIVEOPS' || currentTab === '라이브옵스' || currentTab === 'LIVE') {
+        if (!/live|라이브|음향|방송|중계|자막|엔지니어|카메라/i.test(checkText)) return false;
+      }
+      // (4) 미디어 / 포스트 프로덕션 탭
+      else if (currentTab === 'MEDIA' || currentTab === '미디어' || currentTab === 'POST') {
+        if (!/post|media|미디어|포스트|영상|디자인|사진|편집/i.test(checkText)) return false;
+      }
+      // (5) 그 외 직접 매칭
+      else {
+        const itemCat = (item.main_category || '').trim().toUpperCase();
+        if (itemCat !== currentTab) return false;
+      }
     }
 
-    // 💡 3. 검색어 필터링
+    // 💡 4. 검색창 키워드 필터링
     if (keyword) {
-      const searchSource = [
-        item.name, 
-        item.main_category, 
-        item.main_part, 
-        item.part_b, 
-        item.part_tag
-      ].filter(Boolean).join(' ').toLowerCase();
-
+      const searchSource = `${item.name || ''} ${checkText}`.toLowerCase();
       if (!searchSource.includes(keyword)) return false;
     }
 
     return true;
   });
 }
-
+    
     // 팀원별 파트 색상 매핑 헬퍼 함수 (신규 추가)
 function getMemberPartBadgeStyle(item) {
   const fullText = [
