@@ -5463,18 +5463,17 @@ function renderMembers() {
     return;
   }
 
-  // 💡 다크모드 활성화 여부 감지 (프로젝트 설정에 맞게 자동 판별)
+  // 다크모드 활성화 여부 감지
   const isDark = document.body.classList.contains('dark-mode') || 
                  document.documentElement.classList.contains('dark-mode') ||
                  document.documentElement.getAttribute('data-theme') === 'dark';
 
   grid.innerHTML = filtered.map(item => {
-    // 💡 0. 객원 여부 판별 (is_guest 컬럼 또는 파트/태그 텍스트에 '객원' 포함 여부)
+    // 💡 0. 객원 및 관리자 여부 판별
     const isGuest = item.is_guest === true || 
                     String(item.role_type).toLowerCase() === 'guest' ||
                     /객원|guest/i.test([item.main_part, item.part, item.part_b, item.part_tag].filter(Boolean).join(' '));
 
-    // 1. 모든 파트/카테고리 관련 필드를 소문자로 결합하여 포괄 판별
     const checkText = [
       item.main_category,
       item.category,
@@ -5484,58 +5483,53 @@ function renderMembers() {
       item.part_tag
     ].filter(Boolean).join(' ').toLowerCase();
 
-    // 2. 파트별 색상 정의 (배경색, 텍스트색, 카드 테두리색)
+    const isAdmin = /admin|관리자|시스템|웹마스터/i.test(checkText);
+
+    // 💡 변수 선언 시점에 스코프 에러 방지 (기본값 선언)
     let badgeBg = 'rgba(139, 92, 246, 0.15)'; 
     let badgeColor = '#8b5cf6';
     let borderColor = 'rgba(139, 92, 246, 0.3)';
     let badgeClass = 'badge-worship';
     let borderClass = 'border-worship';
-    let isAdmin = false;
 
-    // 💡 0. 시스템 관리자 (모든 색을 섞은 올블랙 테마)
-    if (/admin|관리자|시스템|웹마스터/i.test(checkText)) {
-      isAdmin = true;
+    // 객원 전용 변수를 미리 선언 (ReferenceError 방지)
+    let guestTextColor = isDark ? '#fbbf24' : '#b45309';
+    let guestBadgeBg = isDark ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.18)';
+    let guestBadgeBorder = isDark ? 'rgba(245, 158, 11, 0.55)' : 'rgba(245, 158, 11, 0.4)';
+
+    // 💡 1. 파트별 기본 색상 분기
+    if (isAdmin) {
       badgeClass = 'badge-admin';
       borderClass = 'border-admin';
-
       if (isDark) {
-        // 🌙 다크모드: 칠흑 같은 딥 블랙 배경 + 은은한 메탈릭 테두리 + 실버 화이트 텍스트
         badgeBg = 'rgba(255, 255, 255, 0.08)';
         badgeColor = '#f3f4f6';
         borderColor = 'rgba(255, 255, 255, 0.25)';
       } else {
-        // ☀️ 라이트모드: 매트한 제트 블랙 뱃지 + 흰색 글씨
         badgeBg = '#18181b';
         badgeColor = '#ffffff';
         borderColor = '#18181b';
       }
-    }
-    // (1) 세션 파트 -> 파란색
-    else if (/session|세션|건반|피아노|신디|드럼|베이스|기타|일렉|어쿠스틱/i.test(checkText)) {
+    } else if (/session|세션|건반|피아노|신디|드럼|베이스|기타|일렉|어쿠스틱/i.test(checkText)) {
       badgeBg = 'rgba(59, 130, 246, 0.15)';
       badgeColor = '#3b82f6';
       borderColor = 'rgba(59, 130, 246, 0.35)';
       badgeClass = 'badge-session';
       borderClass = 'border-session';
-    }
-    // (2) 라이브옵스 / 엔지니어 -> 초록색
-    else if (/live|라이브|옵스|음향|방송|중계|자막|엔지니어|카메라/i.test(checkText)) {
+    } else if (/live|라이브|옵스|음향|방송|중계|자막|엔지니어|카메라/i.test(checkText)) {
       badgeBg = 'rgba(16, 185, 129, 0.15)';
       badgeColor = '#10b981';
       borderColor = 'rgba(16, 185, 129, 0.35)';
       badgeClass = 'badge-liveops';
       borderClass = 'border-liveops';
-    }
-    // (3) 미디어 / 포스트 프로덕션 -> 주황/핑크색
-    else if (/post|media|미디어|포스트|영상|디자인|사진|편집/i.test(checkText)) {
+    } else if (/post|media|미디어|포스트|영상|디자인|사진|편집/i.test(checkText)) {
       badgeBg = 'rgba(249, 115, 22, 0.15)';
       badgeColor = '#f97316';
       borderColor = 'rgba(249, 115, 22, 0.35)';
       badgeClass = 'badge-postprod';
       borderClass = 'border-postprod';
-    }
-    // (4) 워십 / 싱어 / 보컬 -> 보라색
-    else {
+    } else {
+      // 워십 / 싱어 / 보컬
       badgeBg = 'rgba(139, 92, 246, 0.15)';
       badgeColor = '#8b5cf6';
       borderColor = 'rgba(139, 92, 246, 0.35)';
@@ -5543,12 +5537,11 @@ function renderMembers() {
       borderClass = 'border-worship';
     }
 
-    // 💡 3. 관리자 및 객원 카드 스타일 오버라이드
+    // 💡 2. 카드 본체 스타일 결정
     let cardCustomStyle = `border-left: 4px solid ${borderColor};`;
 
     if (isAdmin) {
       if (isDark) {
-        // 🌙 다크모드 관리자 카드: 깊은 다크 차콜 그라데이션 + 플래티넘 실버 테두리
         cardCustomStyle = `
           border-left: 4px solid #d1d5db;
           background: linear-gradient(135deg, rgba(24, 24, 27, 0.95) 0%, rgba(9, 9, 11, 0.85) 100%);
@@ -5558,7 +5551,6 @@ function renderMembers() {
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         `;
       } else {
-        // ☀️ 라이트모드 관리자 카드: 묵직한 제트 블랙 포인트 + 소프트 오프블랙 배경
         cardCustomStyle = `
           border-left: 4px solid #18181b;
           background: linear-gradient(135deg, rgba(24, 24, 27, 0.04) 0%, rgba(39, 39, 42, 0.08) 100%);
@@ -5569,7 +5561,6 @@ function renderMembers() {
         `;
       }
     } else if (isGuest) {
-      // (앞서 작업한 객원 스타일 유지)
       if (isDark) {
         cardCustomStyle = `
           border-left: 4px solid #f59e0b;
@@ -5589,7 +5580,7 @@ function renderMembers() {
       }
     }
 
-    // 태그 리스트 생성
+    // 💡 3. 태그 생성
     let tagsHtml = '';
     if (item.part_tag && item.part_tag.trim() !== '') {
       tagsHtml = item.part_tag.split(/[,\s]+/).map(t => {
@@ -5601,7 +5592,6 @@ function renderMembers() {
       if (item.part_b) tagsHtml += `<span class="member-tag-pill">#${item.part_b}</span>`;
     }
 
-    // 💡 객원 전용 태그 알약 (다크모드 대응 색상 적용)
     if (isGuest) {
       tagsHtml = `<span class="member-tag-pill" style="background: ${guestBadgeBg}; color: ${guestTextColor}; font-weight: 700; border: 1px solid ${guestBadgeBorder};">#객원지원</span> ` + tagsHtml;
     }
@@ -5610,19 +5600,23 @@ function renderMembers() {
       ? getBirthdayBadgeHtml(item.member_id) 
       : '';
 
-    // 카테고리 텍스트 결정
-    const categoryText = isAdmin
-  ? '⚙️ 시스템 관리'
-  : (isGuest 
-      ? `🤝 객원 (${item.main_part || '세션'})` 
-      : (item.main_category || (item.main_part ? item.main_part : 'TEAM')));
+    // 💡 4. 카테고리 텍스트 및 뱃지 스타일 최종 매핑 (안전하게 처리)
+    let categoryText = item.main_category || (item.main_part ? item.main_part : 'TEAM');
+    let displayBadgeBg = badgeBg;
+    let displayBadgeColor = badgeColor;
+    let displayBadgeBorder = borderColor;
 
-    const displayBadgeBg = isGuest ? (isDark ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.18)') : badgeBg;
-const displayBadgeColor = isGuest ? guestTextColor : badgeColor;
-const displayBadgeBorder = isGuest ? (isDark ? 'rgba(245, 158, 11, 0.55)' : 'rgba(245, 158, 11, 0.4)') : borderColor;
+    if (isAdmin) {
+      categoryText = '⚙️ 시스템 관리';
+    } else if (isGuest) {
+      categoryText = `🤝 객원 (${item.main_part || '세션'})`;
+      displayBadgeBg = guestBadgeBg;
+      displayBadgeColor = guestTextColor;
+      displayBadgeBorder = guestBadgeBorder;
+    }
 
     return `
-      <div class="member-card ${borderClass} ${isGuest ? 'member-card-guest' : ''}" style="${cardCustomStyle}">
+      <div class="member-card ${borderClass} ${isGuest ? 'member-card-guest' : ''} ${isAdmin ? 'member-card-admin' : ''}" style="${cardCustomStyle}">
         <div>
           <div class="member-card-header">
             <span class="member-name">
