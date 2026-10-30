@@ -5569,9 +5569,11 @@ function renderMembers() {
       : '';
 
     // 카테고리 텍스트 결정
-    const categoryText = isGuest 
+    const categoryText = isAdmin
+  ? '⚙️ 시스템 관리'
+  : (isGuest 
       ? `🤝 객원 (${item.main_part || '세션'})` 
-      : (item.main_category || (item.main_part ? item.main_part : 'TEAM'));
+      : (item.main_category || (item.main_part ? item.main_part : 'TEAM')));
 
     const displayBadgeBg = isGuest ? guestBadgeBg : badgeBg;
     const displayBadgeColor = isGuest ? guestTextColor : badgeColor;
