@@ -5339,51 +5339,39 @@ function handleMemberSearch() {
 function getFilteredMembers() {
   if (!allMembersList) return [];
 
-  // 현재 선택된 상단 카테고리 탭 (예: 'ALL', 'WORSHIP', 'SESSION', 'LIVEOPS', 'MEDIA')
-  const currentTab = currentMemberCategory || 'ALL'; 
-  const searchKeyword = (document.getElementById('memberSearchInput')?.value || '').trim().toLowerCase();
+  const keyword = (document.getElementById('memberSearchInput')?.value || '').trim().toLowerCase();
+  const currentTab = (selectedMemberCategory || 'ALL').trim().toUpperCase();
 
   return allMembersList.filter(item => {
-    // 1. 검색어 필터링이 있다면 먼저 검사
-    if (searchKeyword) {
-      const matchName = (item.name || '').toLowerCase().includes(searchKeyword);
-      const matchPart = (item.main_part || '').toLowerCase().includes(searchKeyword);
-      const matchTag = (item.part_tag || '').toLowerCase().includes(searchKeyword);
-      if (!matchName && !matchPart && !matchTag) return false;
+    // 💡 1. 활동 상태 체크 ('활동 중'이거나 관리자/객원은 표시되도록 유연하게 처리)
+    const activeStatus = (item.active || '').trim();
+    const isAdmin = /admin|관리자|시스템/i.test(item.main_category || '') || /admin|관리자|시스템/i.test(item.main_part || '');
+
+    // 관리자가 아니면서 '활동 중'이 아니면 제외 (active가 비어있는 경우 방지)
+    if (!isAdmin && activeStatus && activeStatus !== '활동 중') {
+      return false;
     }
 
-    // 💡 2. '전체(ALL)' 탭일 때는 관리자를 포함해 모든 팀원을 그대로 노출
-    if (currentTab === 'ALL' || currentTab === '전체') {
-      return true;
+    // 💡 2. 카테고리 탭 필터링
+    if (currentTab !== 'ALL' && currentTab !== '전체') {
+      // 특정 파트 탭을 누르면 관리자는 숨기고 해당 파트 멤버만 표시
+      if (isAdmin) return false;
+
+      const itemCat = (item.main_category || '').trim().toUpperCase();
+      if (itemCat !== currentTab) return false;
     }
 
-    // 3. 개별 파트 탭 필터링 로직
-    const checkText = [
-      item.main_category,
-      item.category,
-      item.main_part,
-      item.part,
-      item.part_b,
-      item.part_tag
-    ].filter(Boolean).join(' ').toLowerCase();
+    // 💡 3. 검색어 필터링
+    if (keyword) {
+      const searchSource = [
+        item.name, 
+        item.main_category, 
+        item.main_part, 
+        item.part_b, 
+        item.part_tag
+      ].filter(Boolean).join(' ').toLowerCase();
 
-    // 관리자(ADMIN)는 특정 실무 파트 탭(세션/라이브옵스 등)을 눌렀을 때는 안 나오고 '전체'에서만 보이도록 처리
-    if (/admin|관리자|시스템/i.test(checkText)) {
-      return false; 
-    }
-
-    // 파트별 필터링
-    if (currentTab === 'WORSHIP' || currentTab === '워십') {
-      return /worship|워십|인도|싱어|보컬/i.test(checkText);
-    }
-    if (currentTab === 'SESSION' || currentTab === '세션') {
-      return /session|세션|건반|피아노|신디|드럼|베이스|기타/i.test(checkText);
-    }
-    if (currentTab === 'LIVEOPS' || currentTab === '라이브옵스') {
-      return /live|라이브|음향|방송|중계|자막|엔지니어/i.test(checkText);
-    }
-    if (currentTab === 'MEDIA' || currentTab === '미디어') {
-      return /post|media|미디어|포스트|영상|디자인|사진|편집/i.test(checkText);
+      if (!searchSource.includes(keyword)) return false;
     }
 
     return true;
