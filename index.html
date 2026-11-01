@@ -11159,29 +11159,32 @@ async function handleSaveSpecialSchedule(e) {
 
       const SPECIAL_THEME_KEY = 'shift_special_theme';
 
-// 특별 테마 적용 함수
+// 특별 시즌 테마 적용 함수
 function applySpecialTheme(themeName) {
-  const body = document.body;
-  const select = document.getElementById('settingSpecialThemeSelect');
+  // 1. 기존 테마 클래스 제거
+  document.body.classList.remove('theme-autumn', 'theme-christmas');
 
-  // 기존 시즌 테마 클래스 제거
-  body.classList.remove('theme-autumn');
-
+  // 2. 선택된 테마 적용
   if (themeName === 'autumn') {
-    body.classList.add('theme-autumn');
-    localStorage.setItem(SPECIAL_THEME_KEY, 'autumn');
+    document.body.classList.add('theme-autumn');
+    localStorage.setItem('shift_special_theme', 'autumn');
+  } else if (themeName === 'christmas') {
+    document.body.classList.add('theme-christmas');
+    localStorage.setItem('shift_special_theme', 'christmas');
   } else {
-    localStorage.setItem(SPECIAL_THEME_KEY, 'none');
+    localStorage.setItem('shift_special_theme', 'none');
   }
 
-  if (select && select.value !== themeName) {
-    select.value = themeName;
+  // 셀렉트 박스 상태 동기화
+  const selectElem = document.getElementById('settingSpecialThemeSelect');
+  if (selectElem) {
+    selectElem.value = themeName;
   }
 }
 
-// 사이트 초기 로드 시 저장된 테마 불러오기 (초기화 함수 안에 추가)
-function initSpecialTheme() {
-  const savedTheme = localStorage.getItem(SPECIAL_THEME_KEY) || 'none';
+// 페이지 초기 로딩 시 저장된 테마 불러오기 (초기화 구문)
+document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('shift_special_theme') || 'none';
   applySpecialTheme(savedTheme);
 }
 
