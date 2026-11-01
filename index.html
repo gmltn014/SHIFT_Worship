@@ -4976,84 +4976,78 @@ function renderSpecialArchiveList(dataToRender) {
   }
 
   // 5. 카드 렌더링
-  container.innerHTML = targetData.map(item => {
-    const category = item.service_type || '특별예배';
-    const date = item.date || '날짜 미정';
-    const worshipTitle = item.worship_title || item.worship_ti || `${date} ${category}`;
-    const leader = item.leader || '미정';
+container.innerHTML = targetData.map(item => {
+  const category = item.service_type || '특별예배';
+  const date = item.date || '날짜 미정';
+  const worshipTitle = item.worship_title || item.worship_ti || `${date} ${category}`;
+  const leader = item.leader || '미정';
 
-    const contiUrl = (item.sheet_url || '').trim();
-    const sessionScoreUrl = (item.session_score_url || '').trim();
-    const specialScoreUrl = (item.closing_sheet_url || '').trim(); // 특송 악보 링크
-    const rawSpecialYt = (item.closing_youtube_url || item.closing_yo || '').trim(); // 👈 특송 영상 전용 열
+  // 1. URL 변수 추출
+  const contiUrl = (item.sheet_url || '').trim();
+  const sessionScoreUrl = (item.session_score_url || '').trim();
+  const specialScoreUrl = (item.closing_sheet_url || '').trim(); // 특송 악보 링크
+  const rawSpecialYt = (item.closing_youtube_url || item.closing_yo || '').trim(); // 특송 영상 전용 열
 
-    // 특송 유튜브 링크 정제
-    if (rawSpecialYt && !/list=/i.test(rawSpecialYt)) {
-      let closingVid = null;
-      if (typeof extractYoutubeId === 'function') {
-        closingVid = extractYoutubeId(rawSpecialYt);
-      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawSpecialYt)) {
-        closingVid = rawSpecialYt;
-      }
-      if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
-        specialSongPlayUrl = `https://youtu.be/${closingVid}`;
-      }
+  // 💡 [핵심] 특송 영상 링크를 여기서 바로 선언과 동시에 완성 (아래쪽 중복 제거)
+  let specialSongPlayUrl = rawSpecialYt;
+  if (rawSpecialYt && !/list=/i.test(rawSpecialYt)) {
+    let closingVid = null;
+    if (typeof extractYoutubeId === 'function') {
+      closingVid = extractYoutubeId(rawSpecialYt);
+    } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawSpecialYt)) {
+      closingVid = rawSpecialYt;
     }
-
-    const lineupRoles = [
-      { label: '인도', val: item.leader },
-      { label: '보컬', val: item.vocal },
-      { label: '메인건반', val: item.keyboard1 },
-      { label: '세컨건반', val: item.keyboard2 },
-      { label: '드럼', val: item.drum },
-      { label: '기타', val: item.guitar },
-      { label: '베이스', val: item.bass },
-      { label: '음향', val: item.sound },
-      { label: '방송', val: item.broadcast },
-      { label: '프롬프터', val: item.prompter },
-      { label: '영상', val: item.video }
-    ];
-
-    const lineupChipsHtml = lineupRoles
-      .filter(r => r.val && r.val.trim())
-      .map(r => `<span style="display: inline-block; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; color: var(--text-color); font-weight: 500;"><strong>${r.label}</strong> ${r.val}</span>`)
-      .join('');
-
-    const rawYt = (item.youtube_url || item.youtube_u || '').trim();
-    let playlistUrl = '';
-    if (rawYt && typeof buildYoutubePlaylistUrl === 'function') {
-      playlistUrl = buildYoutubePlaylistUrl(rawYt);
-    } else if (rawYt) {
-      playlistUrl = rawYt;
+    if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
+      specialSongPlayUrl = `https://youtu.be/${closingVid}`;
     }
+  }
 
-    let songsHtml = '';
-    const songText = item.song_list || '';
-    const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
-    if (songLines.length > 0) {
-      songsHtml = songLines.map((line, sIdx) => `
-        <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
-          <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${sIdx + 1}.</span>
-          <span style="font-weight: 600; color: var(--text-color);">${line}</span>
-        </li>
-      `).join('');
-    } else {
-      songsHtml = '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
-    }
+  // 2. 섬김이 라인업 추출
+  const lineupRoles = [
+    { label: '인도', val: item.leader },
+    { label: '보컬', val: item.vocal },
+    { label: '메인건반', val: item.keyboard1 },
+    { label: '세컨건반', val: item.keyboard2 },
+    { label: '드럼', val: item.drum },
+    { label: '기타', val: item.guitar },
+    { label: '베이스', val: item.bass },
+    { label: '음향', val: item.sound },
+    { label: '방송', val: item.broadcast },
+    { label: '프롬프터', val: item.prompter },
+    { label: '영상', val: item.video }
+  ];
 
-    const specialSong = item.closing_song || item.closing_so || '';
-    let specialSongPlayUrl = rawSpecialYt;
-    if (rawSpecialYt && !/list=/i.test(rawSpecialYt)) {
-      let closingVid = null;
-      if (typeof extractYoutubeId === 'function') {
-        closingVid = extractYoutubeId(rawSpecialYt);
-      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawSpecialYt)) {
-        closingVid = rawSpecialYt;
-      }
-      if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
-        specialSongPlayUrl = `https://youtu.be/${closingVid}`;
-      }
-    }
+  const lineupChipsHtml = lineupRoles
+    .filter(r => r.val && r.val.trim())
+    .map(r => `<span style="display: inline-block; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; color: var(--text-color); font-weight: 500;"><strong>${r.label}</strong> ${r.val}</span>`)
+    .join('');
+
+  // 3. 찬양 유튜브 연속재생 URL
+  const rawYt = (item.youtube_url || item.youtube_u || '').trim();
+  let playlistUrl = '';
+  if (rawYt && typeof buildYoutubePlaylistUrl === 'function') {
+    playlistUrl = buildYoutubePlaylistUrl(rawYt);
+  } else if (rawYt) {
+    playlistUrl = rawYt;
+  }
+
+  // 4. 찬양 곡 목록
+  let songsHtml = '';
+  const songText = item.song_list || '';
+  const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+  if (songLines.length > 0) {
+    songsHtml = songLines.map((line, sIdx) => `
+      <li style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem;">
+        <span style="font-weight: 700; width: 22px; color: var(--sub-text); font-size: 0.75rem;">${sIdx + 1}.</span>
+        <span style="font-weight: 600; color: var(--text-color);">${line}</span>
+      </li>
+    `).join('');
+  } else {
+    songsHtml = '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
+  }
+
+  // 5. 특송 곡명 (이 아래에 있던 중복 let specialSongPlayUrl 블록은 깔끔히 삭제되었습니다)
+  const specialSong = item.closing_song || item.closing_so || '';
 
     return `
       <div class="card" style="border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg, #fff); padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
