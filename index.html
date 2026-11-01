@@ -4303,153 +4303,6 @@ function updateMonthDisplay() {
   }
 }
 
-    /**
- * 특별예배 아카이브 카드 렌더링
- * @param {Object} item - schedules 테이블의 한 행 데이터
- */
-function renderSpecialArchiveCard(item) {
-  const dateStr = item.date || item.worship_date || '';
-  const title = item.worship_title || item.title || '특별 예배';
-
-  // 💡 명시해주신 3대 컬럼 링크 매핑
-  const contiUrl = (item.sheet_url || '').trim();              // 콘티 링크
-  const specialVideoUrl = (item.closing_sheet_url || '').trim(); // 특송 유튜브 링크
-  const sessionScoreUrl = (item.session_score_url || '').trim(); // 세션 악보 링크
-
-  return `
-    <div class="archive-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: var(--card-shadow, 0 2px 6px rgba(0,0,0,0.04));">
-      
-      <!-- 상단 헤더: 일자 및 예배 타이틀 -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-        <div>
-          <span class="worship-date-badge" style="font-size: 0.78rem; font-weight: 700; color: #8b5cf6;">${dateStr}</span>
-          <h4 style="margin: 4px 0 6px 0; font-size: 1.08rem; font-weight: 700; color: var(--text-color);">
-            ${title}
-          </h4>
-        </div>
-      </div>
-
-      <!-- 찬양 곡 목록 또는 요약이 있는 경우 -->
-      ${item.song_list ? `
-        <div style="font-size: 0.83rem; color: var(--sub-text); margin: 6px 0 12px 0; line-height: 1.45;">
-          🎶 ${item.song_list.replace(/\n/g, ' · ')}
-        </div>
-      ` : ''}
-
-      <!-- 💡 3대 핵심 액션 버튼 영역 -->
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--border-color); align-items: center;">
-        
-        <!-- 1. 세션 악보 링크 (session_score_url) -->
-        ${sessionScoreUrl ? `
-          <a href="${sessionScoreUrl}" target="_blank" rel="noopener noreferrer" 
-             class="btn-action" 
-             style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
-            🎼 세션 악보
-          </a>
-        ` : `
-          <span style="font-size: 0.78rem; color: var(--sub-text); padding: 5px 8px; background: rgba(125, 125, 125, 0.08); border-radius: 4px;">
-            악보 미등록
-          </span>
-        `}
-
-        <!-- 2. 특송 유튜브 링크 (closing_sheet_url) -->
-        ${specialVideoUrl ? `
-          <a href="${specialVideoUrl}" target="_blank" rel="noopener noreferrer" 
-             class="btn-action" 
-             style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
-            ▶️ 특송 영상
-          </a>
-        ` : ''}
-
-        <!-- 3. 일반 콘티 열람 (모달 열기 또는 sheet_url 바로가기) -->
-        <div style="margin-left: auto; display: flex; gap: 6px;">
-          ${contiUrl ? `
-            <a href="${contiUrl}" target="_blank" rel="noopener noreferrer" 
-               class="btn-action btn-secondary" 
-               style="padding: 6px 10px; font-size: 0.8rem; font-weight: 600; text-decoration: none; border-radius: 6px;">
-              🔗 웹 콘티
-            </a>
-          ` : ''}
-          <button type="button" 
-                  class="btn-action btn-secondary" 
-                  onclick="openContiDetailModal('${dateStr}')" 
-                  style="padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px;">
-            📋 콘티 상세
-          </button>
-        </div>
-
-      </div>
-    </div>
-  `;
-}
-
-    /**
- * 특별예배 아카이브 목록 렌더링 함수
- * @param {Array} [sourceList] - 선택적 전달 데이터. 미전달 시 전역 schedulesList 사용
- */
-function renderSpecialArchiveList(sourceList) {
-  const container = document.getElementById('specialArchiveList') || document.getElementById('specialWorshipContainer');
-  const countBadge = document.getElementById('specialArchiveCountBadge');
-  if (!container) return;
-
-  // 1. 데이터 소스 확보 (전역 변수 이름에 맞게 폴백)
-  const rawList = sourceList || (typeof allSchedulesList !== 'undefined' ? allSchedulesList : (typeof schedulesList !== 'undefined' ? schedulesList : []));
-
-  if (!rawList || rawList.length === 0) {
-    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--sub-text);">등록된 예배 데이터가 없습니다.</div>';
-    if (countBadge) countBadge.innerText = '0건';
-    return;
-  }
-
-  // 2. 특별예배 판별 키워드 정규식
-  // (예배 유형, 제목, 비고, 태그 중 하나라도 특별예배 성격에 해당하면 추출)
-  const specialRegex = /특별|수련회|부흥회|성탄|송구영신|부활|신년|찬양의밤|금요|기도회|캠프|절기|special/i;
-
-  const specialWorships = rawList.filter(item => {
-    // 💡 A. 명시적 플래그 컬럼이 있는 경우 최우선 인정
-    if (item.is_special === true || String(item.worship_type).toLowerCase() === 'special') {
-      return true;
-    }
-
-    // 💡 B. 텍스트 필드 포괄 검색
-    const combinedText = [
-      item.worship_title,
-      item.title,
-      item.worship_type,
-      item.category,
-      item.note,
-      item.description
-    ].filter(Boolean).join(' ');
-
-    return specialRegex.test(combinedText);
-  });
-
-  // 3. 일자 기준 최신순 정렬 (YYYY-MM-DD 내림차순)
-  specialWorships.sort((a, b) => {
-    const dateA = new Date(a.date || a.worship_date || 0);
-    const dateB = new Date(b.date || b.worship_date || 0);
-    return dateB - dateA;
-  });
-
-  // 카운트 배지 갱신
-  if (countBadge) {
-    countBadge.innerText = `${specialWorships.length}건`;
-  }
-
-  // 4. 빈 목록 처리
-  if (specialWorships.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 48px 20px; color: var(--sub-text); background: rgba(0,0,0,0.02); border-radius: 12px; border: 1px dashed var(--border-color);">
-        아카이브된 특별예배 내역이 없습니다.
-      </div>
-    `;
-    return;
-  }
-
-  // 5. 앞서 정의한 renderSpecialArchiveCard로 렌더링
-  container.innerHTML = specialWorships.map(item => renderSpecialArchiveCard(item)).join('');
-}
-
 /* ========================================================
    🔍 getFilteredArchiveData (안전 참조 수정본)
 ======================================================== */
@@ -5083,7 +4936,12 @@ function renderSpecialArchiveList(dataToRender) {
     const worshipTitle = item.worship_title || item.worship_ti || `${date} ${category}`;
     const leader = item.leader || '미정';
 
-    // 1) 라인업 칩 추출
+    // 💡 1. 3대 핵심 URL 매핑
+    const contiUrl = (item.sheet_url || '').trim();                               // 콘티 링크
+    const rawSpecialYt = (item.closing_sheet_url || item.closing_youtube_url || item.closing_yo || '').trim(); // 특송 유튜브 링크
+    const sessionScoreUrl = (item.session_score_url || '').trim();                 // 세션 악보 링크
+
+    // 2. 라인업 칩 추출
     const lineupRoles = [
       { label: '인도', val: item.leader },
       { label: '보컬', val: item.vocal },
@@ -5103,7 +4961,7 @@ function renderSpecialArchiveList(dataToRender) {
       .map(r => `<span style="display: inline-block; background: var(--bg-color); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; color: var(--text-color); font-weight: 500;"><strong>${r.label}</strong> ${r.val}</span>`)
       .join('');
 
-    // 2) 유튜브 URL 및 11자리 코드 파싱 (전체 연속재생 URL 생성)
+    // 3. 찬양 유튜브 URL 및 재생목록 링크 생성
     const rawYt = (item.youtube_url || item.youtube_u || '').trim();
     const hasUrlPattern = /https?|\/|\?|=|&|youtu/i.test(rawYt);
     const rawTokens = rawYt ? rawYt.split(/[\n,\s]+/).map(v => v.trim()).filter(Boolean) : [];
@@ -5120,7 +4978,7 @@ function renderSpecialArchiveList(dataToRender) {
       playlistUrl = (typeof buildYoutubePlaylistUrl === 'function') ? buildYoutubePlaylistUrl(rawYt) : rawYt;
     }
 
-    // 3) 찬양 곡 목록 파싱 (개별 음원 버튼 없이 순번 및 제목만 깔끔하게 노출)
+    // 4. 찬양 곡 목록 파싱
     let songsHtml = '';
     const songText = item.song_list || '';
     const songLines = songText ? songText.split('\n').map(s => s.trim()).filter(Boolean) : [];
@@ -5136,19 +4994,16 @@ function renderSpecialArchiveList(dataToRender) {
       songsHtml = '<div style="font-size: 0.8rem; color: var(--sub-text); padding: 4px 0;">등록된 곡 정보가 없습니다.</div>';
     }
 
-    // 4) 특송(DB의 closing_song / closing_youtube_url 컬럼 매핑)
+    // 5. 특송 유튜브 링크 정제
     const specialSong = item.closing_song || item.closing_so || '';
-    const rawSpecialSongYt = (item.closing_youtube_url || item.closing_yo || '').trim();
-    let specialSongPlayUrl = rawSpecialSongYt;
-
-    if (rawSpecialSongYt && !/list=/i.test(rawSpecialSongYt)) {
+    let specialSongPlayUrl = rawSpecialYt;
+    if (rawSpecialYt && !/list=/i.test(rawSpecialYt)) {
       let closingVid = null;
       if (typeof extractYoutubeId === 'function') {
-        closingVid = extractYoutubeId(rawSpecialSongYt);
-      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawSpecialSongYt)) {
-        closingVid = rawSpecialSongYt;
+        closingVid = extractYoutubeId(rawSpecialYt);
+      } else if (/^[a-zA-Z0-9_-]{11}$/.test(rawSpecialYt)) {
+        closingVid = rawSpecialYt;
       }
-
       if (closingVid && /^[a-zA-Z0-9_-]{11}$/.test(closingVid)) {
         specialSongPlayUrl = `https://youtu.be/${closingVid}`;
       }
@@ -5183,7 +5038,7 @@ function renderSpecialArchiveList(dataToRender) {
         </div>
 
         <!-- 찬양 순서 및 전곡 연속재생 -->
-        <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span style="font-size: 0.75rem; font-weight: 600; color: var(--sub-text);">🎵 찬양 순서</span>
             ${playlistUrl ? `
@@ -5196,13 +5051,12 @@ function renderSpecialArchiveList(dataToRender) {
           </ul>
         </div>
 
-        <!-- 특송 영역 (결단 찬양 컬럼 데이터 활용) -->
+        <!-- 특송 영역 (곡명 표시) -->
         ${specialSong ? `
           <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
             <div>
               <strong>🎤 특송:</strong> <span>${specialSong}</span>
             </div>
-            ${specialSongPlayUrl ? `<a href="${specialSongPlayUrl}" target="_blank" rel="noopener noreferrer" style="color: #ef4444; text-decoration: none; font-weight: 600; font-size: 0.75rem; padding: 2px 6px; background: rgba(239, 68, 68, 0.08); border-radius: 4px;">▶ 특송 영상</a>` : ''}
           </div>
         ` : ''}
 
@@ -5212,6 +5066,46 @@ function renderSpecialArchiveList(dataToRender) {
             <strong>💡 송폼/진행 메모:</strong> ${item.memo}
           </div>
         ` : ''}
+
+        <!-- 💡 [신규] 핵심 3대 링크 액션 버튼 바 -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color); align-items: center;">
+          
+          <!-- 1. 세션 악보 링크 (session_score_url) -->
+          ${sessionScoreUrl ? `
+            <a href="${sessionScoreUrl}" target="_blank" rel="noopener noreferrer" 
+               style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+              🎼 세션 악보
+            </a>
+          ` : `
+            <span style="font-size: 0.76rem; color: var(--sub-text); padding: 5px 8px; background: rgba(125, 125, 125, 0.08); border-radius: 4px;">
+              악보 없음
+            </span>
+          `}
+
+          <!-- 2. 특송 유튜브 링크 (closing_sheet_url) -->
+          ${specialSongPlayUrl ? `
+            <a href="${specialSongPlayUrl}" target="_blank" rel="noopener noreferrer" 
+               style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+              ▶️ 특송 영상
+            </a>
+          ` : ''}
+
+          <!-- 3. 일반 콘티 열람 (웹 링크 및 상세 모달) -->
+          <div style="margin-left: auto; display: flex; gap: 6px;">
+            ${contiUrl ? `
+              <a href="${contiUrl}" target="_blank" rel="noopener noreferrer" 
+                 style="display: inline-flex; align-items: center; padding: 6px 10px; font-size: 0.8rem; font-weight: 600; text-decoration: none; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                🔗 웹 콘티
+              </a>
+            ` : ''}
+            <button type="button" 
+                    onclick="typeof openContiDetailModal === 'function' ? openContiDetailModal('${date}') : alert('${date} 콘티 상세 모달 함수를 확인하세요.')" 
+                    style="display: inline-flex; align-items: center; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); cursor: pointer;">
+              📋 콘티 열람
+            </button>
+          </div>
+
+        </div>
       </div>
     `;
   }).join('');
