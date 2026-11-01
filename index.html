@@ -4885,10 +4885,57 @@ function renderSpecialArchiveList(dataToRender) {
   // 1. 전체 데이터 소스 확보
   const allList = typeof allScheduleArchive !== 'undefined' ? allScheduleArchive : [];
 
-  // 2. 현재 선택된 연월(Month) 가져오기 (전역 변수 currentYear, currentMonth 기준)
-  const selYear = typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear();
-  const selMonth = typeof currentMonth !== 'undefined' ? String(currentMonth).padStart(2, '0') : String(new Date().getMonth() + 1).padStart(2, '0');
-  const targetYearMonth = `${selYear}-${selMonth}`;
+  // 💡 2. 현재 화면에서 선택된 연월(YYYY-MM) 정밀 감지
+  let targetYearMonth = '';
+  let displayMonthText = '';
+
+  // [방법 A] 상단 연/월 셀렉트 박스나 텍스트가 DOM에 존재하는 경우
+  const yearSelect = document.getElementById('archiveYearSelect') || document.getElementById('selectYear') || document.getElementById('yearSelect');
+  const monthSelect = document.getElementById('archiveMonthSelect') || document.getElementById('selectMonth') || document.getElementById('monthSelect');
+  const titleDisplay = document.querySelector('.archive-current-month') || document.getElementById('archiveMonthDisplay') || document.getElementById('currentMonthDisplay');
+
+  if (yearSelect && monthSelect) {
+    const yVal = yearSelect.value;
+    const mVal = String(monthSelect.value).replace(/[^0-9]/g, '').padStart(2, '0');
+    targetYearMonth = `${yVal}-${mVal}`;
+    displayMonthText = mVal;
+  } else if (titleDisplay && titleDisplay.innerText) {
+    // 텍스트에 "2026년 10월" 또는 "2026-10" 형태로 적혀 있는 경우 파싱
+    const match = titleDisplay.innerText.match(/(\d{4})[^\d]+(\d{1,2})/);
+    if (match) {
+      targetYearMonth = `${match[1]}-${match[2].padStart(2, '0')}`;
+      displayMonthText = match[2].padStart(2, '0');
+    }
+  }
+
+  // [방법 B] 전역 변수에서 읽어오기 (다양한 네이밍 대응)
+  if (!targetYearMonth) {
+    let y = typeof archiveYear !== 'undefined' ? archiveYear :
+            typeof selectedYear !== 'undefined' ? selectedYear :
+            typeof currentYear !== 'undefined' ? currentYear : null;
+
+    let m = typeof archiveMonth !== 'undefined' ? archiveMonth :
+            typeof selectedMonth !== 'undefined' ? selectedMonth :
+            typeof currentMonth !== 'undefined' ? currentMonth : null;
+
+    // 만약 currentArchiveDate나 currentDate가 "YYYY-MM" 형태의 문자열 또는 Date 객체인 경우
+    if (typeof currentArchiveDate !== 'undefined') {
+      if (typeof currentArchiveDate === 'string' && /^\d{4}-\d{2}/.test(currentArchiveDate)) {
+        targetYearMonth = currentArchiveDate.substring(0, 7);
+      } else if (currentArchiveDate instanceof Date) {
+        y = currentArchiveDate.getFullYear();
+        m = currentArchiveDate.getMonth() + 1;
+      }
+    }
+
+    if (!targetYearMonth) {
+      const now = new Date();
+      y = y || now.getFullYear();
+      m = m || (now.getMonth() + 1);
+      targetYearMonth = `${y}-${String(m).padStart(2, '0')}`;
+      displayMonthText = String(m).padStart(2, '0');
+    }
+  }
 
   // 3. 특별예배 + 현재 선택된 연월 + 상단 칩 필터링
   const targetData = dataToRender || allList.filter(item => {
@@ -4898,9 +4945,9 @@ function renderSpecialArchiveList(dataToRender) {
     const isSpecial = sType !== 'sunday' || /특별|수련회|심야|금요|새벽|성탄|송구영신/.test(title);
     if (!isSpecial) return false;
 
-    // B. 선택된 월 일치 여부 확인 (item.date 기준 YYYY-MM)
-    const itemDate = item.date || item.worship_date || '';
-    if (!itemDate.startsWith(targetYearMonth)) return false;
+    // B. 선택된 월 일치 여부 확인 (targetYearMonth와 매칭)
+    const itemDate = (item.date || item.worship_date || '').trim();
+    if (targetYearMonth && !itemDate.startsWith(targetYearMonth)) return false;
 
     // C. 카테고리 칩 필터 (전체, 심야예배, 수련회, 새벽예배)
     if (typeof currentSpecialFilter !== 'undefined' && currentSpecialFilter !== 'all') {
@@ -4918,10 +4965,11 @@ function renderSpecialArchiveList(dataToRender) {
 
   // 4. 데이터가 없을 경우 비둘기 UI 출력
   if (targetData.length === 0) {
+    const emptyMonth = displayMonthText || (targetYearMonth ? targetYearMonth.split('-')[1] : '');
     container.innerHTML = `
       <div style="text-align: center; padding: 40px; color: var(--sub-text);">
         <div style="font-size: 1.8rem; margin-bottom: 8px;">🕊️</div>
-        <div>${selMonth}월 등록된 특별 예배 기록이 없습니다.</div>
+        <div>${emptyMonth ? emptyMonth + '월 ' : ''}등록된 특별 예배 기록이 없습니다.</div>
       </div>
     `;
     return;
