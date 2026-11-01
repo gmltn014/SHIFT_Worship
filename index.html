@@ -5067,10 +5067,10 @@ function renderSpecialArchiveList(dataToRender) {
           </div>
         ` : ''}
 
-        <!-- 💡 [신규] 핵심 3대 링크 액션 버튼 바 -->
+        <!-- 💡 핵심 버튼 바 (세션 악보 / 특송 영상 / 콘티 열람 / 특송 악보) -->
         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color); align-items: center;">
           
-          <!-- 1. 세션 악보 링크 (session_score_url) -->
+          <!-- 1. 세션 악보 (session_score_url) -->
           ${sessionScoreUrl ? `
             <a href="${sessionScoreUrl}" target="_blank" rel="noopener noreferrer" 
                style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
@@ -5078,11 +5078,11 @@ function renderSpecialArchiveList(dataToRender) {
             </a>
           ` : `
             <span style="font-size: 0.76rem; color: var(--sub-text); padding: 5px 8px; background: rgba(125, 125, 125, 0.08); border-radius: 4px;">
-              악보 없음
+              세션 악보 없음
             </span>
           `}
 
-          <!-- 2. 특송 유튜브 링크 (closing_sheet_url) -->
+          <!-- 2. 특송 유튜브 영상 (closing_sheet_url이 유튜브 링크일 때) -->
           ${specialSongPlayUrl ? `
             <a href="${specialSongPlayUrl}" target="_blank" rel="noopener noreferrer" 
                style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
@@ -5090,23 +5090,33 @@ function renderSpecialArchiveList(dataToRender) {
             </a>
           ` : ''}
 
-          <!-- 3. 일반 콘티 열람 (웹 링크 및 상세 모달) -->
-          <div style="margin-left: auto; display: flex; gap: 6px;">
+          <!-- 우측 액션 버튼 그룹 -->
+          <div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">
+            
+            <!-- 3. 콘티 열람 (기존 웹 콘티 자리 -> sheet_url 링크) -->
             ${contiUrl ? `
               <a href="${contiUrl}" target="_blank" rel="noopener noreferrer" 
-                 style="display: inline-flex; align-items: center; padding: 6px 10px; font-size: 0.8rem; font-weight: 600; text-decoration: none; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
-                🔗 웹 콘티
+                 style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(139, 92, 246, 0.12); color: #7c3aed; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+                📋 콘티 열람
               </a>
             ` : ''}
-            <button type="button" 
-                    onclick="typeof openContiDetailModal === 'function' ? openContiDetailModal('${date}') : alert('${date} 콘티 상세 모달 함수를 확인하세요.')" 
-                    style="display: inline-flex; align-items: center; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); cursor: pointer;">
-              📋 콘티 열람
-            </button>
-          </div>
 
+            <!-- 4. 특송 악보 (기존 콘티 열람 자리) -->
+            ${item.closing_sheet_url && !/youtu\.?be|youtube\.com/i.test(item.closing_sheet_url) ? `
+              <a href="${item.closing_sheet_url}" target="_blank" rel="noopener noreferrer" 
+                 style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+                📄 특송 악보
+              </a>
+            ` : `
+              <button type="button" 
+                      onclick="typeof openContiDetailModal === 'function' ? openContiDetailModal('${date}') : alert('악보 링크를 확인하세요.')" 
+                      style="display: inline-flex; align-items: center; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); cursor: pointer;">
+                📄 특송 악보
+              </button>
+            `}
+
+          </div>
         </div>
-      </div>
     `;
   }).join('');
 }
