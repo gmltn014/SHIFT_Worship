@@ -11182,15 +11182,15 @@ function applySpecialTheme(themeName) {
   }
 }
 
-// 페이지 초기 로딩 시 저장된 테마 불러오기 (초기화 구문)
+// 💡 페이지 초기 로딩 시 단일 리스너로 통합 실행
 document.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('shift_special_theme') || 'none';
   applySpecialTheme(savedTheme);
-}
 
-// 문서 로드 완료 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-  initSpecialTheme();
+  // 별도의 initSpecialTheme 함수가 정의되어 있다면 안전하게 호출
+  if (typeof initSpecialTheme === 'function') {
+    initSpecialTheme();
+  }
 });
 
 /* 15. 페이지 시작 진입점 */
