@@ -1454,14 +1454,28 @@ body.theme-autumn #fallingLeavesContainer {
       <div id="archiveMembersList" style="display: none; flex-direction: column; gap: 12px;"></div>
 
       <!-- [신규 3: 특별 예배 아카이브 컨테이너] -->
-      <div id="archiveSpecialList" style="display: none; flex-direction: column; gap: 14px;">
-        <!-- 특별 예배 아카이브 상단 안내 박스 -->
-<div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px;">
-  <span style="font-size: 1.1rem; line-height: 1.2;">💡</span>
-  <div style="font-size: 0.82rem; color: var(--text-color); line-height: 1.5;">
-    <strong style="color: #8b5cf6; display: block; margin-bottom: 2px;">특별 예배 아카이브 이용 안내</strong>
-    특별 예배는 금요기도회·수련회 등 비정기 사역을 기록하는 보관소로, 주일 콘티와 달리 <strong>찬양 플레이어 및 일부 세부 기능이 제공되지 않습니다.</strong> 이는 시스템 오류가 아닌 특별 예배 전용 운영 방식이오니 이용에 참고해 주시기 바랍니다.
+<div id="archiveSpecialList" style="display: none; flex-direction: column; gap: 14px;">
+  
+  <!-- 1. 특별 예배 아카이브 상단 안내 박스 -->
+  <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 4px; display: flex; align-items: flex-start; gap: 10px;">
+    <span style="font-size: 1.1rem; line-height: 1.2;">💡</span>
+    <div style="font-size: 0.82rem; color: var(--text-color); line-height: 1.5;">
+      <strong style="color: #8b5cf6; display: block; margin-bottom: 2px;">특별 예배 아카이브 이용 안내</strong>
+      특별 예배는 금요기도회·수련회 등 비정기 사역을 기록하는 보관소로, 주일 콘티와 달리 <strong>찬양 플레이어 및 일부 세부 기능이 제공되지 않습니다.</strong> 이는 시스템 오류가 아닌 특별 예배 전용 운영 방식이오니 이용에 참고해 주시기 바랍니다.
+    </div>
   </div>
+
+  <!-- 2. 건수 표시 헤더 (선택 사항) -->
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+    <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-color);">아카이브 목록</span>
+    <span id="specialArchiveCountBadge" class="badge" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 3px 8px; border-radius: 12px; font-weight: 700; font-size: 0.78rem;">
+      0건
+    </span>
+  </div>
+
+  <!-- 3. 특별예배 카드들이 실제로 주입되는 영역 -->
+  <div id="specialCardsContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
+
 </div>
         
         <!-- 상단 필터 칩 & 건수 뱃지 -->
@@ -4287,6 +4301,153 @@ function updateMonthDisplay() {
       viewAllBtn.innerText = '전체 보기';
     }
   }
+}
+
+    /**
+ * 특별예배 아카이브 카드 렌더링
+ * @param {Object} item - schedules 테이블의 한 행 데이터
+ */
+function renderSpecialArchiveCard(item) {
+  const dateStr = item.date || item.worship_date || '';
+  const title = item.worship_title || item.title || '특별 예배';
+
+  // 💡 명시해주신 3대 컬럼 링크 매핑
+  const contiUrl = (item.sheet_url || '').trim();              // 콘티 링크
+  const specialVideoUrl = (item.closing_sheet_url || '').trim(); // 특송 유튜브 링크
+  const sessionScoreUrl = (item.session_score_url || '').trim(); // 세션 악보 링크
+
+  return `
+    <div class="archive-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: var(--card-shadow, 0 2px 6px rgba(0,0,0,0.04));">
+      
+      <!-- 상단 헤더: 일자 및 예배 타이틀 -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+        <div>
+          <span class="worship-date-badge" style="font-size: 0.78rem; font-weight: 700; color: #8b5cf6;">${dateStr}</span>
+          <h4 style="margin: 4px 0 6px 0; font-size: 1.08rem; font-weight: 700; color: var(--text-color);">
+            ${title}
+          </h4>
+        </div>
+      </div>
+
+      <!-- 찬양 곡 목록 또는 요약이 있는 경우 -->
+      ${item.song_list ? `
+        <div style="font-size: 0.83rem; color: var(--sub-text); margin: 6px 0 12px 0; line-height: 1.45;">
+          🎶 ${item.song_list.replace(/\n/g, ' · ')}
+        </div>
+      ` : ''}
+
+      <!-- 💡 3대 핵심 액션 버튼 영역 -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--border-color); align-items: center;">
+        
+        <!-- 1. 세션 악보 링크 (session_score_url) -->
+        ${sessionScoreUrl ? `
+          <a href="${sessionScoreUrl}" target="_blank" rel="noopener noreferrer" 
+             class="btn-action" 
+             style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+            🎼 세션 악보
+          </a>
+        ` : `
+          <span style="font-size: 0.78rem; color: var(--sub-text); padding: 5px 8px; background: rgba(125, 125, 125, 0.08); border-radius: 4px;">
+            악보 미등록
+          </span>
+        `}
+
+        <!-- 2. 특송 유튜브 링크 (closing_sheet_url) -->
+        ${specialVideoUrl ? `
+          <a href="${specialVideoUrl}" target="_blank" rel="noopener noreferrer" 
+             class="btn-action" 
+             style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">
+            ▶️ 특송 영상
+          </a>
+        ` : ''}
+
+        <!-- 3. 일반 콘티 열람 (모달 열기 또는 sheet_url 바로가기) -->
+        <div style="margin-left: auto; display: flex; gap: 6px;">
+          ${contiUrl ? `
+            <a href="${contiUrl}" target="_blank" rel="noopener noreferrer" 
+               class="btn-action btn-secondary" 
+               style="padding: 6px 10px; font-size: 0.8rem; font-weight: 600; text-decoration: none; border-radius: 6px;">
+              🔗 웹 콘티
+            </a>
+          ` : ''}
+          <button type="button" 
+                  class="btn-action btn-secondary" 
+                  onclick="openContiDetailModal('${dateStr}')" 
+                  style="padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px;">
+            📋 콘티 상세
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+    /**
+ * 특별예배 아카이브 목록 렌더링 함수
+ * @param {Array} [sourceList] - 선택적 전달 데이터. 미전달 시 전역 schedulesList 사용
+ */
+function renderSpecialArchiveList(sourceList) {
+  const container = document.getElementById('specialArchiveList') || document.getElementById('specialWorshipContainer');
+  const countBadge = document.getElementById('specialArchiveCountBadge');
+  if (!container) return;
+
+  // 1. 데이터 소스 확보 (전역 변수 이름에 맞게 폴백)
+  const rawList = sourceList || (typeof allSchedulesList !== 'undefined' ? allSchedulesList : (typeof schedulesList !== 'undefined' ? schedulesList : []));
+
+  if (!rawList || rawList.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--sub-text);">등록된 예배 데이터가 없습니다.</div>';
+    if (countBadge) countBadge.innerText = '0건';
+    return;
+  }
+
+  // 2. 특별예배 판별 키워드 정규식
+  // (예배 유형, 제목, 비고, 태그 중 하나라도 특별예배 성격에 해당하면 추출)
+  const specialRegex = /특별|수련회|부흥회|성탄|송구영신|부활|신년|찬양의밤|금요|기도회|캠프|절기|special/i;
+
+  const specialWorships = rawList.filter(item => {
+    // 💡 A. 명시적 플래그 컬럼이 있는 경우 최우선 인정
+    if (item.is_special === true || String(item.worship_type).toLowerCase() === 'special') {
+      return true;
+    }
+
+    // 💡 B. 텍스트 필드 포괄 검색
+    const combinedText = [
+      item.worship_title,
+      item.title,
+      item.worship_type,
+      item.category,
+      item.note,
+      item.description
+    ].filter(Boolean).join(' ');
+
+    return specialRegex.test(combinedText);
+  });
+
+  // 3. 일자 기준 최신순 정렬 (YYYY-MM-DD 내림차순)
+  specialWorships.sort((a, b) => {
+    const dateA = new Date(a.date || a.worship_date || 0);
+    const dateB = new Date(b.date || b.worship_date || 0);
+    return dateB - dateA;
+  });
+
+  // 카운트 배지 갱신
+  if (countBadge) {
+    countBadge.innerText = `${specialWorships.length}건`;
+  }
+
+  // 4. 빈 목록 처리
+  if (specialWorships.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 48px 20px; color: var(--sub-text); background: rgba(0,0,0,0.02); border-radius: 12px; border: 1px dashed var(--border-color);">
+        아카이브된 특별예배 내역이 없습니다.
+      </div>
+    `;
+    return;
+  }
+
+  // 5. 앞서 정의한 renderSpecialArchiveCard로 렌더링
+  container.innerHTML = specialWorships.map(item => renderSpecialArchiveCard(item)).join('');
 }
 
 /* ========================================================
