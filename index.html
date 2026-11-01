@@ -4940,7 +4940,6 @@ function renderSpecialArchiveList(dataToRender) {
     const rawSpecialYt = (item.closing_youtube_url || item.closing_yo || '').trim(); // 👈 특송 영상 전용 열
 
     // 특송 유튜브 링크 정제
-    let specialSongPlayUrl = rawSpecialYt;
     if (rawSpecialYt && !/list=/i.test(rawSpecialYt)) {
       let closingVid = null;
       if (typeof extractYoutubeId === 'function') {
