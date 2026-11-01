@@ -1410,7 +1410,7 @@ html[data-theme="dark"] body.theme-autumn {
       <div id="archiveMembersList" style="display: none; flex-direction: column; gap: 12px;"></div>
 
       <!-- [신규 3: 특별 예배 아카이브 컨테이너] -->
-<div id="archiveSpecialList" style="display: none; flex-direction: column; gap: 14px;">
+<div id="archiveSpecialList" style="display: none; flex-direction: column; gap: 14px;"></div>
   
   <!-- 1. 특별 예배 아카이브 상단 안내 박스 -->
   <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 4px; display: flex; align-items: flex-start; gap: 10px;">
@@ -4172,40 +4172,49 @@ function switchArchiveSubTab(subTab) {
   const listSpecial = document.getElementById('archiveSpecialList');
   const btnReq = document.getElementById('btnLineupChangeRequest');
 
-  // 3. 모든 버튼 스타일 초기화 (기본 회색 비활성)
+  // 3. 모든 버튼 스타일 초기화 (기본 비활성)
   if (btnConti) btnConti.className = 'btn-action btn-secondary';
   if (btnMembers) btnMembers.className = 'btn-action btn-secondary';
   if (btnSpecial) btnSpecial.className = 'btn-action btn-secondary';
 
-  // 4. 모든 컨테이너 숨김 및 라인업 변경요청 버튼 숨김
+  // 4. 모든 컨테이너 숨김 (확실하게 display: none 처리)
   if (listConti) listConti.style.display = 'none';
   if (listMembers) listMembers.style.display = 'none';
   if (listSpecial) listSpecial.style.display = 'none';
   if (btnReq) btnReq.style.display = 'none';
 
-  // 5. 선택된 탭 활성화 처리
+  // 5. 선택된 탭 활성화 및 전용 렌더링 실행
   if (subTab === 'conti') {
     if (btnConti) btnConti.className = 'btn-action btn-primary';
     if (listConti) listConti.style.display = 'flex';
+    
+    // 💡 [콘티 탭] 주일 콘티 아카이브만 렌더링
+    if (typeof renderArchive === 'function') {
+      renderArchive();
+    }
+
   } else if (subTab === 'members') {
     if (btnMembers) btnMembers.className = 'btn-action btn-primary';
     if (listMembers) listMembers.style.display = 'flex';
     if (btnReq) btnReq.style.display = 'inline-flex';
+
+    // 💡 [라인업 탭] 멤버/라인업 렌더링 함수가 따로 있다면 여기서 호출
+    if (typeof renderLineupArchive === 'function') {
+      renderLineupArchive();
+    } else if (typeof renderArchive === 'function') {
+      renderArchive();
+    }
+
   } else if (subTab === 'special') {
     if (btnSpecial) btnSpecial.className = 'btn-action btn-primary';
     if (listSpecial) listSpecial.style.display = 'flex';
     
-    // 특별 예배 데이터를 아직 불러오지 않았거나 렌더링이 필요한 경우 실행
+    // 💡 [특별예배 탭] 특별예배 아카이브만 단독 렌더링
     if (typeof renderSpecialArchiveList === 'function') {
       renderSpecialArchiveList();
     }
   }
-
-  // 기존 주일 아카이브 렌더링 유지
-  if (typeof renderArchive === 'function') {
-    renderArchive();
-  }
-}
+  
 function navigateArchiveMonth(delta) {
   isArchiveViewAll = false;
   archiveCurrentMonth += delta;
