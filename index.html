@@ -1161,61 +1161,32 @@ html[data-theme="dark"] body.theme-autumn {
 }
 
 /* ========================================================
-   🎄 [성탄절 특별 테마] 완성형 (라이트 & 다크 완벽 대응)
+   🎄 [성탄절 특별 테마] 완성형 (가독성 & 다크모드 완벽 대응)
    ======================================================== */
 
 /* --------------------------------------------------------
-   1. [라이트 모드] 성탄절 테마 (따뜻한 크림/아이보리 + 딥 와인레드 & 트리 그린)
+   1. [기본 / 라이트 모드] 성탄절 테마
    -------------------------------------------------------- */
 body.theme-christmas {
-  /* [배경] 차가운 흰색이 아닌 아늑하고 따뜻한 윈터 크림 바닐라 */
   --bg-color: #fcf9f5 !important;
-  
-  /* [카드] 순백색 카드에 은은한 웜톤 */
   --card-bg: #ffffff !important;
-  
-  /* [경계선] 은은한 웜 베이지 & 그린 틴트 */
   --border-color: #e5ded3 !important;
-
-  /* [텍스트] 또렷한 다크 차콜 */
   --text-color: #1c2826 !important;
   --sub-text: #63756c !important;
 
-  /* [포인트 컬러] 클래식 크리스마스 레드 & 포레스트 그린 */
-  --primary-color: #c92a2a !important;        /* 깊이 있는 클래식 레드 */
+  --primary-color: #c92a2a !important;        /* 클래식 레드 */
   --primary-hover: #b02525 !important;
-  --secondary-color: #1b5e20 !important;      /* 차분한 포레스트 그린 */
-  --accent-gold: #d97706 !important;          /* 앤틱 골드 */
+  --secondary-color: #1b5e20 !important;      /* 포레스트 그린 */
+  --accent-gold: #d97706 !important;
 
-  /* 배지 및 테두리 하이라이트 */
   --badge-special-bg: rgba(201, 42, 42, 0.1) !important;
   --badge-special-text: #c92a2a !important;
   --border-focus: rgba(201, 42, 42, 0.35) !important;
 }
 
-/* 라이트 모드 상단 은은한 웜 레드/그린 빛 */
-body.theme-christmas::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 220px;
-  background: radial-gradient(circle at 50% -20%, rgba(201, 42, 42, 0.08), rgba(27, 94, 32, 0.05) 65%, transparent 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* 라이트 모드 카드/배너 디테일 */
 body.theme-christmas .card {
   background-color: var(--card-bg) !important;
   border-color: var(--border-color) !important;
-  box-shadow: 0 4px 14px rgba(60, 40, 20, 0.06) !important;
-}
-
-body.theme-christmas .card[style*="gradient"] {
-  background: linear-gradient(135deg, rgba(201, 42, 42, 0.08), rgba(27, 94, 32, 0.08)) !important;
-  border-left-color: #c92a2a !important;
 }
 
 body.theme-christmas .btn-action.btn-primary,
@@ -1227,144 +1198,98 @@ body.theme-christmas .special-filter-chip.active {
 
 
 /* --------------------------------------------------------
-   2. [다크 모드] 성탄절 테마 (미드나잇 파인 그린 + 딥 웜 와인 + 웜 골드)
+   2. [다크 모드] 성탄절 테마 (가을 테마처럼 전체 배경 & 폰트 완전 전환)
+   html / body 어디에 다크 클래스가 붙어도 무조건 발동
    -------------------------------------------------------- */
+html.dark .theme-christmas,
+html[data-theme="dark"] .theme-christmas,
+body.dark-mode.theme-christmas,
+body[data-theme="dark"].theme-christmas,
+body.theme-dark.theme-christmas,
+.dark-mode .theme-christmas {
+  /* [배경 & 카드] 깊고 아늑한 미드나잇 파인 그린 */
+  --bg-color: #0c1813 !important;
+  --card-bg: #14241d !important;
+  --border-color: #213a2f !important;
+
+  /* [텍스트] 어두운 배경 위 선명한 밀크 화이트 */
+  --text-color: #f8fafc !important;
+  --sub-text: #a7c4b5 !important;
+
+  /* [액센트 포인트] 크리스마스 레드 & 에메랄드 */
+  --primary-color: #ef4444 !important;
+  --primary-hover: #dc2626 !important;
+  --secondary-color: #10b981 !important;
+  --accent-gold: #fbbf24 !important;
+
+  --badge-special-bg: rgba(239, 68, 68, 0.25) !important;
+  --badge-special-text: #fca5a5 !important;
+}
+
+/* 다크모드 성탄절: body 및 기본 배경 강제 주입 */
+html.dark body.theme-christmas,
+html[data-theme="dark"] body.theme-christmas,
 body.dark-mode.theme-christmas,
 body[data-theme="dark"].theme-christmas,
 body.theme-dark.theme-christmas {
-  /* [배경] 칠흑 같은 검정이 아닌 깊고 차분한 미드나잇 파인 그린 */
-  --bg-color: #0d1813 !important;
-  
-  /* [카드] 숲속 솔잎 느낌의 딥 포레스트 그린 표면 */
-  --card-bg: #14231c !important;
-  
-  /* [경계선] 은은하게 감도는 성탄 그린 테두리 */
-  --border-color: #1f382c !important;
-
-  /* [텍스트] 눈이 편안한 웜 아이보리/밀크 화이트 */
-  --text-color: #f1f5f3 !important;
-  --sub-text: #9ab4a7 !important;
-
-  /* [포인트 액센트] 벨벳 딥 레드 & 웜 골드 */
-  --primary-color: #ef4444 !important;        /* 산뜻한 크리스마스 베리 레드 */
-  --primary-hover: #dc2626 !important;
-  --secondary-color: #10b981 !important;      /* 맑은 에메랄드 */
-  --accent-gold: #f59e0b !important;          /* 따뜻한 트리 전구 골드 */
-
-  /* 배지 및 하이라이트 */
-  --badge-special-bg: rgba(239, 68, 68, 0.22) !important;
-  --badge-special-text: #fca5a5 !important;
-  --border-focus: rgba(239, 68, 68, 0.45) !important;
+  background-color: #0c1813 !important;
+  color: #f8fafc !important;
 }
 
-/* 다크 모드 상단 조명 효과 오버라이드 */
-body.dark-mode.theme-christmas::before,
-body[data-theme="dark"].theme-christmas::before,
-body.theme-dark.theme-christmas::before {
-  background: radial-gradient(circle at 50% -20%, rgba(220, 38, 38, 0.18), rgba(21, 128, 61, 0.12) 60%, transparent 100%) !important;
-}
-
-/* 다크 모드 카드/배너 디테일 */
+/* 다크모드 성탄절: 카드 요소 배경 및 테두리 */
+html.dark .theme-christmas .card,
+html[data-theme="dark"] .theme-christmas .card,
 body.dark-mode.theme-christmas .card,
 body[data-theme="dark"].theme-christmas .card,
 body.theme-dark.theme-christmas .card {
-  background-color: var(--card-bg) !important;
-  border-color: var(--border-color) !important;
-  box-shadow: 0 4px 14px rgba(5, 15, 10, 0.45) !important;
+  background-color: #14241d !important;
+  border-color: #213a2f !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
 }
 
-body.dark-mode.theme-christmas .card[style*="gradient"],
-body[data-theme="dark"].theme-christmas .card[style*="gradient"] {
-  background: linear-gradient(135deg, rgba(185, 28, 28, 0.22), rgba(21, 128, 61, 0.25)) !important;
-  border-left-color: #ef4444 !important;
-}
-
-/* 다크 모드 버튼 및 칩 */
-body.dark-mode.theme-christmas .btn-action.btn-primary,
-body.dark-mode.theme-christmas .special-filter-chip.active {
-  background: #dc2626 !important;
-  border-color: #ef4444 !important;
-  color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3) !important;
-}
-
+/* --------------------------------------------------------
+   3. [핵심] 남색 메뉴 버튼 및 네비게이션 탭 텍스트 시인성 강제 보정
+   -------------------------------------------------------- */
+/* 비활성화된 메뉴 버튼들 (짙은 네이비/그린 배경 위의 흰색 텍스트) */
+html.dark .theme-christmas .btn-action.btn-secondary,
+html[data-theme="dark"] .theme-christmas .btn-action.btn-secondary,
 body.dark-mode.theme-christmas .btn-action.btn-secondary,
-body.dark-mode.theme-christmas .special-filter-chip {
-  background: rgba(20, 35, 28, 0.9) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-color) !important;
+body[data-theme="dark"].theme-christmas .btn-action.btn-secondary,
+body.theme-dark.theme-christmas .btn-action.btn-secondary,
+body.theme-christmas.dark-mode button:not(.btn-primary) {
+  background-color: #182b23 !important;      /* 카드보다 살짝 밝은 딥 포레스트 */
+  border-color: #28473a !important;
+  color: #f8fafc !important;                 /* 글자색을 선명한 화이트로 고정 */
 }
 
-/* 다크 모드 입력창/셀렉트 박스 */
-body.dark-mode.theme-christmas input,
-body.dark-mode.theme-christmas select,
-body.dark-mode.theme-christmas textarea {
-  background-color: #111e18 !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-color) !important;
-}
-
-    /* ========================================================
-   🎄 [성탄절 테마 x 다크모드] 메뉴 바 및 텍스트 시인성 교정
-   ======================================================== */
-
-/* 1. 성탄 테마 + 다크모드 시 전체 텍스트 밝은 화이트 강제 */
-body.dark-mode.theme-christmas,
-body[data-theme="dark"].theme-christmas,
-body.theme-dark.theme-christmas {
-  --text-color: #f8fafc !important;        /* 선명한 스노우 화이트 */
-  --sub-text: #cbd5e1 !important;          /* 읽기 편한 밝은 실버 */
-  color: #f8fafc !important;
-}
-
-/* 2. 남색/딥그린 메뉴 바 및 네비게이션 탭 글자색 선명화 */
-body.dark-mode.theme-christmas .nav-tab,
-body.dark-mode.theme-christmas .tab-btn,
-body.dark-mode.theme-christmas nav button,
-body.dark-mode.theme-christmas header button,
-body[data-theme="dark"].theme-christmas .nav-tab,
-body.theme-dark.theme-christmas .nav-tab {
-  color: #ffffff !important;               /* 남색/그린 배경 위 순백색 텍스트 */
-  font-weight: 600 !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
-}
-
-/* 비활성화된 메뉴 탭 (어두운 남색/포레스트 그린 배경 + 뚜렷한 텍스트) */
-body.dark-mode.theme-christmas .nav-tab:not(.active),
-body.dark-mode.theme-christmas .tab-btn:not(.active) {
-  background-color: rgba(15, 23, 42, 0.85) !important;  /* 딥 네이비 */
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  color: #f1f5f9 !important;
-}
-
-/* 활성화된 메뉴 탭 (성탄 레드 + 흰색 텍스트) */
-body.dark-mode.theme-christmas .nav-tab.active,
-body.dark-mode.theme-christmas .tab-btn.active {
+/* 활성화된 주 메뉴 버튼 (크리스마스 레드 강조) */
+html.dark .theme-christmas .btn-action.btn-primary,
+html[data-theme="dark"] .theme-christmas .btn-action.btn-primary,
+body.dark-mode.theme-christmas .btn-action.btn-primary,
+body[data-theme="dark"].theme-christmas .btn-action.btn-primary,
+body.theme-dark.theme-christmas .btn-action.btn-primary {
   background-color: #dc2626 !important;
   border-color: #ef4444 !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.45) !important;
 }
 
-/* 3. 보조 버튼(btn-secondary) 글자색이 어둡게 묻히는 문제 해결 */
-body.dark-mode.theme-christmas .btn-action.btn-secondary,
-body[data-theme="dark"].theme-christmas .btn-action.btn-secondary,
-body.theme-dark.theme-christmas .btn-action.btn-secondary {
-  background-color: rgba(30, 41, 59, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+/* 텍스트 요소들이 어두운 색으로 상속받는 것 완전 차단 */
+html.dark .theme-christmas h1, html.dark .theme-christmas h2, html.dark .theme-christmas h3, html.dark .theme-christmas h4,
+html.dark .theme-christmas p, html.dark .theme-christmas span, html.dark .theme-christmas label,
+body.dark-mode.theme-christmas h1, body.dark-mode.theme-christmas h2, body.dark-mode.theme-christmas h3, body.dark-mode.theme-christmas h4,
+body.dark-mode.theme-christmas p, body.dark-mode.theme-christmas span, body.dark-mode.theme-christmas label,
+body[data-theme="dark"].theme-christmas h1, body[data-theme="dark"].theme-christmas h2, body[data-theme="dark"].theme-christmas h3, body[data-theme="dark"].theme-christmas h4,
+body[data-theme="dark"].theme-christmas p, body[data-theme="dark"].theme-christmas span, body[data-theme="dark"].theme-christmas label {
   color: #f8fafc !important;
 }
 
-/* 4. 카드 및 본문 헤딩, 문단 태그 컬러 일괄 상속 보정 */
-body.dark-mode.theme-christmas h1,
-body.dark-mode.theme-christmas h2,
-body.dark-mode.theme-christmas h3,
-body.dark-mode.theme-christmas h4,
-body.dark-mode.theme-christmas p,
-body.dark-mode.theme-christmas span,
-body.dark-mode.theme-christmas label,
-body.dark-mode.theme-christmas div {
-  color: inherit;
+/* 서브텍스트만 눈에 거슬리지 않는 차분한 톤 */
+html.dark .theme-christmas .sub-text,
+body.dark-mode.theme-christmas .sub-text,
+body[data-theme="dark"].theme-christmas .sub-text {
+  color: #a7c4b5 !important;
 }
     
 </style>
