@@ -1303,6 +1303,69 @@ body.dark-mode.theme-christmas textarea {
   border-color: var(--border-color) !important;
   color: var(--text-color) !important;
 }
+
+    /* ========================================================
+   🎄 [성탄절 테마 x 다크모드] 메뉴 바 및 텍스트 시인성 교정
+   ======================================================== */
+
+/* 1. 성탄 테마 + 다크모드 시 전체 텍스트 밝은 화이트 강제 */
+body.dark-mode.theme-christmas,
+body[data-theme="dark"].theme-christmas,
+body.theme-dark.theme-christmas {
+  --text-color: #f8fafc !important;        /* 선명한 스노우 화이트 */
+  --sub-text: #cbd5e1 !important;          /* 읽기 편한 밝은 실버 */
+  color: #f8fafc !important;
+}
+
+/* 2. 남색/딥그린 메뉴 바 및 네비게이션 탭 글자색 선명화 */
+body.dark-mode.theme-christmas .nav-tab,
+body.dark-mode.theme-christmas .tab-btn,
+body.dark-mode.theme-christmas nav button,
+body.dark-mode.theme-christmas header button,
+body[data-theme="dark"].theme-christmas .nav-tab,
+body.theme-dark.theme-christmas .nav-tab {
+  color: #ffffff !important;               /* 남색/그린 배경 위 순백색 텍스트 */
+  font-weight: 600 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 비활성화된 메뉴 탭 (어두운 남색/포레스트 그린 배경 + 뚜렷한 텍스트) */
+body.dark-mode.theme-christmas .nav-tab:not(.active),
+body.dark-mode.theme-christmas .tab-btn:not(.active) {
+  background-color: rgba(15, 23, 42, 0.85) !important;  /* 딥 네이비 */
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #f1f5f9 !important;
+}
+
+/* 활성화된 메뉴 탭 (성탄 레드 + 흰색 텍스트) */
+body.dark-mode.theme-christmas .nav-tab.active,
+body.dark-mode.theme-christmas .tab-btn.active {
+  background-color: #dc2626 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4) !important;
+}
+
+/* 3. 보조 버튼(btn-secondary) 글자색이 어둡게 묻히는 문제 해결 */
+body.dark-mode.theme-christmas .btn-action.btn-secondary,
+body[data-theme="dark"].theme-christmas .btn-action.btn-secondary,
+body.theme-dark.theme-christmas .btn-action.btn-secondary {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #f8fafc !important;
+}
+
+/* 4. 카드 및 본문 헤딩, 문단 태그 컬러 일괄 상속 보정 */
+body.dark-mode.theme-christmas h1,
+body.dark-mode.theme-christmas h2,
+body.dark-mode.theme-christmas h3,
+body.dark-mode.theme-christmas h4,
+body.dark-mode.theme-christmas p,
+body.dark-mode.theme-christmas span,
+body.dark-mode.theme-christmas label,
+body.dark-mode.theme-christmas div {
+  color: inherit;
+}
     
 </style>
 </head>
