@@ -1195,6 +1195,43 @@ html[data-theme="dark"] body.theme-christmas {
   --text-color: #f3f4f6 !important;
   --sub-text: #9ab4a7 !important;
 }
+
+    /* ===================================================
+   📜 세피아 & 페이퍼 테마 (Sepia Warm / 세션 연주자 전용)
+=================================================== */
+
+/* 1. 기본 (라이트 모드) 세피아 테마: 눈부심 없는 오래된 악보/양장본 종이 질감 */
+body.theme-sepia {
+  --accent-color: #854d0e;        /* 차분한 앤틱 앰버 브라운 */
+  --accent-hover: #713f12;
+
+  --bg-color: #fbf0d9;           /* 눈이 편안한 리얼 세피아 웜 베이지 */
+  --card-bg: #f4e5c8;           /* 클래식 양피지 톤 메인 카드 */
+  --card-sub-bg: #ebd8b5;       /* 메뉴 탭 및 서브 영역: 톤다운 베이지 */
+  --border-color: #dfcaa2;      /* 은은한 잉크빛 테두리 */
+  --text-color: #382d21;        /* 칠흑 블랙이 아닌 따뜻한 잉크 브라운 (눈 피로 최소화) */
+  --sub-text: #78644f;
+}
+
+/* 2. 다크 모드 세피아 테마 (어두운 무대/강단에서 블루라이트 완벽 차단) */
+body.dark.theme-sepia,
+body.dark-mode.theme-sepia,
+body[data-theme="dark"].theme-sepia,
+html.dark body.theme-sepia,
+html[data-theme="dark"] body.theme-sepia {
+  --accent-color: #fbbf24 !important;       /* 가독성 높은 웜 앰버 골드 */
+  --accent-hover: #f59e0b !important;
+
+  /* 다크 앰버 / 올드 파치먼트 나이트 톤 */
+  --bg-color: #19140f !important;           /* 전체 배경: 은은한 웜 차콜 */
+  --card-bg: #261f18 !important;           /* 메인 카드: 딥 세피아 브라운 */
+  --card-sub-bg: #352c23 !important;       /* 메뉴 탭/서브 카드: 살짝 밝은 앰버 브라운 */
+  --border-color: #4a3d31 !important;      /* 테두리: 부드러운 가죽 브라운 */
+
+  /* 글자색을 쨍한 흰색 대신 부드러운 양피지 크림색으로 지정 */
+  --text-color: #faebd7 !important;         /* 앤틱 화이트 */
+  --sub-text: #b8a690 !important;
+}
     
 </style>
 </head>
@@ -2434,6 +2471,7 @@ html[data-theme="dark"] body.theme-christmas {
       <option value="none">사용 안 함 (기본)</option>
       <option value="autumn">🍁 가을 & 추수감사 (Warm)</option>
       <option value="christmas">🎄 성탄절 (Christmas Red & Green)</option>
+      <option value="sepia">📜 세피아 & 페이퍼 (세션/악보용 눈편한 모드)</option>
     </select>
   </div>
 </div>
@@ -11138,10 +11176,10 @@ async function handleSaveSpecialSchedule(e) {
 
       const SPECIAL_THEME_KEY = 'shift_special_theme';
 
-// 특별 시즌 테마 적용 함수
+// 특별 시즌/편의 테마 적용 함수
 function applySpecialTheme(themeName) {
-  // 1. 기존 테마 클래스 제거
-  document.body.classList.remove('theme-autumn', 'theme-christmas');
+  // 1. 기존 테마 클래스 모두 제거
+  document.body.classList.remove('theme-autumn', 'theme-christmas', 'theme-sepia');
 
   // 2. 선택된 테마 적용
   if (themeName === 'autumn') {
@@ -11150,11 +11188,14 @@ function applySpecialTheme(themeName) {
   } else if (themeName === 'christmas') {
     document.body.classList.add('theme-christmas');
     localStorage.setItem('shift_special_theme', 'christmas');
+  } else if (themeName === 'sepia') {
+    document.body.classList.add('theme-sepia');
+    localStorage.setItem('shift_special_theme', 'sepia');
   } else {
     localStorage.setItem('shift_special_theme', 'none');
   }
 
-  // 셀렉트 박스 상태 동기화
+  // 셀렉트 박스 UI 값 동기화
   const selectElem = document.getElementById('settingSpecialThemeSelect');
   if (selectElem) {
     selectElem.value = themeName;
