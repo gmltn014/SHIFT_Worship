@@ -2486,6 +2486,8 @@ html[data-theme="dark"] body.theme-sepia {
         </div>
       </div>
 
+    </div>
+  </div>
 </div>
   
   <!-- 6. 세션 악보 모달 -->
@@ -4384,7 +4386,7 @@ function renderContiArchive(list) {
   const container = document.getElementById('archiveContiList');
   if (!container) return;
 
-  // 💡 [추가] 특별예배 데이터를 제외하고 순수 주일예배만 필터링
+  // 💡 특별예배 데이터를 제외하고 순수 주일예배만 필터링
   const rawList = list || (typeof allScheduleArchive !== 'undefined' ? allScheduleArchive : []);
   const sundayOnlyList = rawList.filter(item => {
     const sType = (item.service_type || 'sunday').toLowerCase();
@@ -4398,9 +4400,6 @@ function renderContiArchive(list) {
     return;
   }
 
-  const favorites = (typeof getMyFavoriteSongs === 'function') ? getMyFavoriteSongs() : [];
-
-  // 기존 list.map 대신 sundayOnlyList.map 사용
   const htmlArray = sundayOnlyList.map((item, idx) => {
     try {
       const rawTitle = (item.worship_title || '').trim();
@@ -4456,7 +4455,7 @@ function renderContiArchive(list) {
 
               ${item.closing_song ? `
                 <div style="margin: 8px 0; font-size: 0.88rem; display: flex; align-items: center;">
-                  <strong>🕊️ 결단찬양:</strong>&nbsp;<span>${item.closing_song}</span>${closingHeartBtn}
+                  <strong>🕊️ 결단찬양:</strong>&nbsp;<span>${item.closing_song}</span>
                 </div>` : ''}
 
               <div class="action-btn-group" style="margin-top: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
